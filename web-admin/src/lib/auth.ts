@@ -181,6 +181,34 @@ export async function requireRole(allowed: TenantRole[]): Promise<CurrentUser> {
   return user;
 }
 
+/**
+ * Server-action equivalent of `requireRole` — returns null on missing auth /
+ * wrong role instead of throwing notFound (so the action can return a typed
+ * error to the form). Pre-fix, several Server Actions forwarded directly to
+ * Laravel without any client-side role check; if an attacker hit the action
+ * endpoint with a valid cookie of the wrong role, Laravel rejected but the
+ * action surface itself leaked which actions exist + exact backend errors.
+ */
+export async function actionRequireRole(allowed: TenantRole[]): Promise<CurrentUser | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  if (!user.roles.some((r) => allowed.includes(r))) return null;
+  return user;
+}
+
+/**
+ * Returns the super-admin user, or null. Super-admins are identified by
+ * `tenant_id === null` server-side; here we proxy that via getCurrentTenant.
+ */
+export async function actionRequireSuperAdmin(): Promise<CurrentUser | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  const tenant = await getCurrentTenant();
+  // Tenant info is null for super-admins; non-null for tenant users.
+  if (tenant !== null) return null;
+  return user;
+}
+
 export async function logoutRequest(): Promise<void> {
   try {
     await apiFetch("/api/v1/auth/logout", { method: "POST" });

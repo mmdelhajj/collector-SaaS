@@ -88,6 +88,17 @@ class SettingsController extends Controller
         ]);
     }
 
+    /**
+     * Subkeys whose values are sensitive (API keys, tokens, RADIUS secret).
+     * They're encrypted-at-rest in tenants.settings JSONB and never echoed
+     * back through the API — only their `*_set` boolean is exposed.
+     */
+    private const ENCRYPTED_INTEGRATION_KEYS = [
+        'whatsapp.api_key',
+        'sms.token',
+        'radius.shared_secret',
+    ];
+
     public function updateIntegrations(Request $request): JsonResponse
     {
         $this->authorize('settings.manage');
@@ -107,13 +118,59 @@ class SettingsController extends Controller
             'radius.allowed_ips.*' => ['string', 'max:64'],
         ]);
 
+        // Encrypt-at-rest sensitive subkeys before they hit the JSONB column.
+        // CLAUDE.md SECURITY REQUIREMENTS: "Encrypted-at-rest: NAS secrets,
+        // RADIUS passwords (separate from user passwords), API keys."
+        $changedSecrets = [];
+        foreach (self::ENCRYPTED_INTEGRATION_KEYS as $dotted) {
+            [$section, $field] = explode('.', $dotted, 2);
+            if (array_key_exists($section, $data) && array_key_exists($field, $data[$section])) {
+                $value = $data[$section][$field];
+                if ($value === null || $value === '') {
+                    $data[$section][$field] = null;
+                } else {
+                    $data[$section][$field] = \Illuminate\Support\Facades\Crypt::encryptString((string) $value);
+                }
+                $changedSecrets[] = $dotted;
+            }
+        }
+
         $settings = $tenant->settings ?? [];
         foreach ($data as $section => $values) {
             $settings[$section] = array_replace($settings[$section] ?? [], $values);
         }
         $tenant->update(['settings' => $settings]);
 
+        // Audit *which keys* changed but not their values — both the new
+        // value and the old plaintext stay out of audit_logs.changes.
+        if ($changedSecrets) {
+            \App\Support\Audit::record(
+                'tenant.integration_secrets_updated',
+                $tenant,
+                ['keys' => $changedSecrets],
+            );
+        }
+
         return $this->integrations();
+    }
+
+    /**
+     * Decrypt one of the encrypted subkeys for a runtime caller (driver
+     * factory, gateway client). Returns null if missing or decryption fails.
+     */
+    public static function readIntegrationSecret(\App\Models\Tenant $tenant, string $section, string $field): ?string
+    {
+        $cipher = $tenant->settings[$section][$field] ?? null;
+        if (! is_string($cipher) || $cipher === '') {
+            return null;
+        }
+        try {
+            return \Illuminate\Support\Facades\Crypt::decryptString($cipher);
+        } catch (\Throwable) {
+            // Legacy plaintext value pre-encryption — return as-is so the
+            // call doesn't break. The next save() will re-encrypt.
+            return $cipher;
+        }
     }
 
     public function notifications(): JsonResponse

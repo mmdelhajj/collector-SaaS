@@ -10,17 +10,11 @@
         "bacon/bacon-qr-code": "^2.0",
         "barryvdh/laravel-dompdf": "^3.1",
         "laravel/framework": "^11.31",
-        "laravel/horizon": "^5.46",
-        "laravel/reverb": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "maatwebsite/excel": "^3.1",
         "pragmarx/google2fa": "^9.0",
-        "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-activitylog": "^4.12",
-        "spatie/laravel-pdf": "^2.8",
-        "spatie/laravel-permission": "^6.25",
-        "stancl/tenancy": "^3.10"
+        "spatie/laravel-permission": "^6.25"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

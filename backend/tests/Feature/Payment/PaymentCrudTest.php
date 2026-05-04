@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Support\Rbac;
 use App\Support\TenantContext;
 use Database\Seeders\RolesSeeder;
+use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
@@ -124,6 +125,109 @@ it('rejects payments with amount <= 0', function () {
         ])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['amount']);
+});
+
+it('converts LBP cash to USD invoice currency at the locked rate', function () {
+    // Tenant has a USD primary, LBP secondary, rate 89500 LBP per USD.
+    $this->tenant->update([
+        'currency_primary' => 'USD',
+        'currency_secondary' => 'LBP',
+        'exchange_rate' => 89500,
+    ]);
+
+    $invoice = Invoice::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'customer_id' => $this->customer->id,
+        'currency' => 'USD',
+        'total' => 50,
+        'paid_amount' => 0,
+        'balance_due' => 50,
+        'status' => 'open',
+    ]);
+
+    // Customer pays 4,475,000 LBP (= $50 at 89500 LBP/USD).
+    $resp = $this->actingAs($this->collector, 'sanctum')
+        ->postJson('/api/v1/payments', [
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice->id,
+            'amount_received' => 4_475_000,
+            'currency_received' => 'LBP',
+            'method' => 'cash',
+        ])
+        ->assertCreated();
+
+    $payment = Payment::query()->find($resp->json('data.id'));
+    expect((float) $payment->amount)->toBe(50.0);
+    expect($payment->currency)->toBe('USD');
+    expect((float) $payment->amount_received)->toBe(4475000.0);
+    expect($payment->currency_received)->toBe('LBP');
+    expect((float) $payment->exchange_rate_used)->toBe(89500.0);
+
+    // Invoice gets credited in invoice currency, not received currency.
+    expect((float) $invoice->fresh()->paid_amount)->toBe(50.0);
+    expect($invoice->fresh()->status)->toBe('paid');
+});
+
+it('rejects cross-currency payment when tenant has no exchange rate', function () {
+    $this->tenant->update([
+        'currency_primary' => 'USD',
+        'currency_secondary' => null,
+        'exchange_rate' => null,
+    ]);
+
+    $invoice = Invoice::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'customer_id' => $this->customer->id,
+        'currency' => 'USD',
+        'total' => 50,
+        'paid_amount' => 0,
+        'balance_due' => 50,
+        'status' => 'open',
+    ]);
+
+    $this->actingAs($this->collector, 'sanctum')
+        ->postJson('/api/v1/payments', [
+            'customer_id' => $this->customer->id,
+            'invoice_id' => $invoice->id,
+            'amount_received' => 4_475_000,
+            'currency_received' => 'LBP',
+            'method' => 'cash',
+        ])
+        ->assertStatus(500); // InvalidArgumentException — caller must configure FX first
+});
+
+it('returns the same payment on duplicate client_uuid (idempotency)', function () {
+    $invoice = Invoice::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'customer_id' => $this->customer->id,
+        'total' => 50,
+        'paid_amount' => 0,
+        'balance_due' => 50,
+        'status' => 'open',
+    ]);
+
+    $clientUuid = (string) Str::uuid();
+    $payload = [
+        'customer_id' => $this->customer->id,
+        'invoice_id' => $invoice->id,
+        'amount' => 50,
+        'currency' => 'USD',
+        'method' => 'cash',
+        'client_uuid' => $clientUuid,
+    ];
+
+    $first = $this->actingAs($this->collector, 'sanctum')
+        ->postJson('/api/v1/payments', $payload)
+        ->assertCreated();
+    $firstId = $first->json('data.id');
+
+    $second = $this->actingAs($this->collector, 'sanctum')
+        ->postJson('/api/v1/payments', $payload)
+        ->assertOk();
+    expect($second->json('data.id'))->toBe($firstId);
+
+    expect(Payment::query()->where('client_uuid', $clientUuid)->count())->toBe(1);
+    expect((float) $invoice->fresh()->paid_amount)->toBe(50.0);
 });
 
 it('rejects unknown payment methods', function () {

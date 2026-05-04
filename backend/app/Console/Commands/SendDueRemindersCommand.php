@@ -48,37 +48,45 @@ class SendDueRemindersCommand extends Command
     {
         $settings = $tenant->settings['notifications'] ?? [];
 
-        if ($this->insideQuietHours($settings)) {
+        // All time-of-day decisions must use the tenant's timezone, not the
+        // app's. A tenant in UTC+8 with quiet_hours 21:00–08:00 expects local
+        // time, not Asia/Beirut. Same for "today" / "due in N days" — these
+        // wall-clock concepts straddle UTC midnight differently per region.
+        $tz = $tenant->timezone ?: config('app.timezone', 'UTC');
+
+        if ($this->insideQuietHours($settings, $tz)) {
             return 0;
         }
 
         $reminderDays = $this->normalizeDays($settings['reminder_days_before'] ?? [5, 2]);
         $overdueDays = $this->normalizeDays($settings['overdue_days_after'] ?? [1, 3, 7]);
 
+        $today = Carbon::now($tz)->startOfDay();
+
         $queued = 0;
 
         // Pre-due reminders.
         foreach ($reminderDays as $days) {
-            $target = today()->addDays($days);
+            $target = $today->copy()->addDays($days);
             $queued += $this->dispatchFor(
                 $tenant->id,
                 fn ($q) => $q
                     ->whereIn('status', ['open', 'partial'])
                     ->where('balance_due', '>', 0)
-                    ->whereDate('due_at', $target),
+                    ->whereDate('due_at', $target->toDateString()),
                 'invoice_reminder',
             );
         }
 
         // Post-due chases.
         foreach ($overdueDays as $days) {
-            $target = today()->subDays($days);
+            $target = $today->copy()->subDays($days);
             $queued += $this->dispatchFor(
                 $tenant->id,
                 fn ($q) => $q
                     ->whereIn('status', ['open', 'partial', 'overdue'])
                     ->where('balance_due', '>', 0)
-                    ->whereDate('due_at', $target),
+                    ->whereDate('due_at', $target->toDateString()),
                 'invoice_overdue',
             );
         }
@@ -135,7 +143,7 @@ class SendDueRemindersCommand extends Command
     /**
      * @param  array<string, mixed>  $settings
      */
-    private function insideQuietHours(array $settings): bool
+    private function insideQuietHours(array $settings, string $tz): bool
     {
         $start = $settings['quiet_hours_start'] ?? null;
         $end = $settings['quiet_hours_end'] ?? null;
@@ -144,7 +152,7 @@ class SendDueRemindersCommand extends Command
         }
 
         try {
-            $now = Carbon::now()->format('H:i');
+            $now = Carbon::now($tz)->format('H:i');
             // Wrap-around (e.g. 21:00 → 08:00) is handled by string compare with
             // an OR clause: inside if (now >= start) OR (now < end).
             if ($start > $end) {

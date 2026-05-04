@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { actionRequireSuperAdmin } from "@/lib/auth";
 import {
   createTenant,
   type CreateTenantPayload,
@@ -15,6 +16,9 @@ export type CreateResult =
 export async function createTenantAction(
   payload: CreateTenantPayload,
 ): Promise<CreateResult> {
+  if (!(await actionRequireSuperAdmin())) {
+    return { ok: false, error: "Not authorized." };
+  }
   try {
     const result = await createTenant(payload);
     revalidatePath("/super-admin");

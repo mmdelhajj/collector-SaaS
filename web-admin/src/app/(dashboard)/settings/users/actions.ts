@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ApiError } from "@/lib/api";
+import { actionRequireRole } from "@/lib/auth";
 import {
   inviteUser,
   updateUser,
@@ -30,6 +31,10 @@ export async function inviteUserAction(
   _prev: InviteState | undefined,
   formData: FormData,
 ): Promise<InviteState> {
+  if (!(await actionRequireRole(["tenant_owner", "tenant_admin"]))) {
+    return { error: "Not authorized." };
+  }
+
   const raw = Object.fromEntries(formData.entries()) as Record<string, string>;
   const parsed = inviteSchema.safeParse(raw);
   if (!parsed.success) {
@@ -84,6 +89,9 @@ export async function changeRoleAction(
   userId: number,
   role: TenantRole,
 ): Promise<RoleChangeState> {
+  if (!(await actionRequireRole(["tenant_owner", "tenant_admin"]))) {
+    return { error: "Not authorized." };
+  }
   try {
     await updateUser(userId, { role });
     revalidatePath("/settings/users");
@@ -103,6 +111,9 @@ export async function resetPasswordAction(
   userId: number,
   customPassword?: string,
 ): Promise<PasswordResetState> {
+  if (!(await actionRequireRole(["tenant_owner", "tenant_admin"]))) {
+    return { error: "Not authorized." };
+  }
   const trimmed = customPassword?.trim();
   if (trimmed && trimmed.length < 8) {
     return {
@@ -140,6 +151,9 @@ export async function toggleActiveAction(
   userId: number,
   shouldActivate: boolean,
 ): Promise<RoleChangeState> {
+  if (!(await actionRequireRole(["tenant_owner", "tenant_admin"]))) {
+    return { error: "Not authorized." };
+  }
   try {
     if (shouldActivate) {
       await updateUser(userId, { is_active: true });

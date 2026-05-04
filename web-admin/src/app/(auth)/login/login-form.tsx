@@ -28,8 +28,14 @@ export function LoginForm() {
   if (inTwoFactor) {
     return (
       <form action={formAction} className="space-y-4">
-        <input type="hidden" name="email" value={state?.email ?? ""} />
-        <input type="hidden" name="password" value={state?.password ?? ""} />
+        {/*
+          Pre-fix: hidden inputs echoed back state.email + state.password from
+          the action result. That meant the plaintext password was visible in
+          the browser network tab and the React state tree. Now the server
+          stashes credentials in an httpOnly encrypted cookie keyed to /login
+          (see lib/two-factor-challenge.ts) and reads them back when the
+          2FA-code submit lands. The browser never sees the password again.
+        */}
 
         <div className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-primary" />

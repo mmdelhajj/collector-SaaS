@@ -28,8 +28,12 @@ class Payment extends Model
         'invoice_id',
         'amount',
         'currency',
+        'amount_received',
+        'currency_received',
+        'exchange_rate_used',
         'method',
         'reference_number',
+        'client_uuid',
         'status',
         'collected_by_user_id',
         'cash_handover_id',
@@ -53,6 +57,8 @@ class Payment extends Model
     {
         return [
             'amount' => 'decimal:2',
+            'amount_received' => 'decimal:2',
+            'exchange_rate_used' => 'decimal:6',
             'collected_at' => 'datetime',
             'receipt_sent_at' => 'datetime',
             'latitude' => 'decimal:7',

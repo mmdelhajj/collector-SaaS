@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { actionRequireSuperAdmin } from "@/lib/auth";
 import {
   createPlan,
   deletePlan,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/super-admin";
 
 type Result = { ok?: boolean; error?: string };
+const NOT_AUTHORIZED: Result = { error: "Not authorized." };
 
 function describe(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
@@ -27,6 +29,7 @@ export async function savePlanAction(
   id: number,
   payload: PlanWritePayload,
 ): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
   try {
     await updatePlan(id, payload);
     revalidatePath("/super-admin/plans");
@@ -41,6 +44,7 @@ export async function savePlanAction(
 export async function createPlanAction(
   payload: PlanWritePayload,
 ): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
   try {
     await createPlan(payload);
     revalidatePath("/super-admin/plans");
@@ -51,6 +55,7 @@ export async function createPlanAction(
 }
 
 export async function deletePlanAction(id: number): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
   try {
     await deletePlan(id);
     revalidatePath("/super-admin/plans");

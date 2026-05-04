@@ -72,6 +72,22 @@ class PaymentController extends Controller
 
         $data = $request->validated();
 
+        // Idempotency: if the client supplies a client_uuid that has been
+        // seen before for this tenant, return the original payment instead
+        // of creating a new one. The DB also has a partial unique index so
+        // a race that bypasses this check still gets caught at INSERT time.
+        if (! empty($data['client_uuid'])) {
+            $existing = Payment::query()
+                ->where('client_uuid', $data['client_uuid'])
+                ->with(['customer', 'invoice', 'collector'])
+                ->first();
+            if ($existing) {
+                return (new PaymentResource($existing))
+                    ->response()
+                    ->setStatusCode(200);
+            }
+        }
+
         // Defence: if an invoice is provided, ensure it belongs to the same customer.
         if (! empty($data['invoice_id'])) {
             $invoice = Invoice::query()->find($data['invoice_id']);

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
+import { actionRequireSuperAdmin } from "@/lib/auth";
 import {
   testSmtp,
   updateBranding,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/super-admin";
 
 type Result = { ok?: boolean; error?: string };
+const NOT_AUTHORIZED: Result = { error: "Not authorized." };
 
 export async function saveSmtpAction(payload: {
   host: string;
@@ -20,6 +22,7 @@ export async function saveSmtpAction(payload: {
   from_address: string;
   from_name: string;
 }): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
   try {
     await updateSmtp(payload);
     revalidatePath("/super-admin/settings");
@@ -39,6 +42,7 @@ export async function saveBrandingAction(payload: {
   logo_url?: string;
   tagline?: string;
 }): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
   try {
     await updateBranding(payload);
     revalidatePath("/super-admin/settings");
@@ -58,6 +62,7 @@ export async function saveDefaultsAction(payload: {
   default_signup_plan: "starter" | "growth" | "pro";
   allow_public_signup: boolean;
 }): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
   try {
     await updateDefaults(payload);
     revalidatePath("/super-admin/settings");
@@ -74,6 +79,9 @@ export async function saveDefaultsAction(payload: {
 export async function testSmtpAction(
   to: string,
 ): Promise<{ ok: boolean; message: string }> {
+  if (!(await actionRequireSuperAdmin())) {
+    return { ok: false, message: "Not authorized." };
+  }
   try {
     return await testSmtp(to);
   } catch (err) {
