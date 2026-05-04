@@ -55,3 +55,19 @@ export async function createPackage(
     body: JSON.stringify(payload),
   });
 }
+
+export type UpdatePackagePayload = Partial<CreatePackagePayload>;
+
+export async function updatePackage(
+  id: number,
+  payload: UpdatePackagePayload,
+): Promise<{ data: Package }> {
+  return apiFetch<{ data: Package }>(`/api/v1/packages/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deletePackage(id: number): Promise<void> {
+  await apiFetch(`/api/v1/packages/${id}`, { method: "DELETE" });
+}

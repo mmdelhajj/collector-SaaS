@@ -8,7 +8,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { ActiveBadge } from "@/components/packages/active-badge";
 import { PackagesFilters } from "@/components/packages/packages-filters";
 import { DataPagination } from "@/components/data-pagination";
-import { NewPackageSheet } from "@/components/packages/new-package-sheet";
+import { PackageSheet } from "@/components/packages/package-sheet";
 import {
   Table,
   TableBody,
@@ -76,7 +76,7 @@ export default async function PackagesPage({
             Each maps to a billing cycle and (for internet) a FreeRADIUS group.
           </p>
         </div>
-        <NewPackageSheet />
+        <PackageSheet mode={{ kind: "create" }} />
       </div>
 
       <PackagesFilters />
@@ -92,12 +92,13 @@ export default async function PackagesPage({
               <TableHead className="text-right">Price</TableHead>
               <TableHead className="text-center">Subscribers</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="w-10"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {list.data.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center">
+                <TableCell colSpan={8} className="h-32 text-center">
                   <div className="flex flex-col items-center justify-center gap-1.5 text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">
                       No packages match your filters.
@@ -147,6 +148,12 @@ export default async function PackagesPage({
                   </TableCell>
                   <TableCell>
                     <ActiveBadge isActive={p.is_active} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <PackageSheet
+                      mode={{ kind: "edit", pkg: p }}
+                      triggerVariant="ghost"
+                    />
                   </TableCell>
                 </TableRow>
               ))
