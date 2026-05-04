@@ -14,8 +14,13 @@ import {
   Wrench,
 } from "lucide-react";
 import { LocalDateTime } from "@/components/ui/local-datetime";
-import { getAvailablePlans, getSubscription } from "@/lib/settings";
+import {
+  getAvailablePlans,
+  getPendingPlanRequest,
+  getSubscription,
+} from "@/lib/settings";
 import { ChangePlanSheet } from "./change-plan-sheet";
+import { PendingRequestBanner } from "./pending-request-banner";
 
 export const metadata: Metadata = { title: "Subscription · Settings" };
 
@@ -33,9 +38,10 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default async function BillingPage() {
-  const [sub, plans] = await Promise.all([
+  const [sub, plans, pendingRequest] = await Promise.all([
     getSubscription(),
     getAvailablePlans(),
+    getPendingPlanRequest(),
   ]);
 
   const { tenant, plan, usage, limits } = sub;
@@ -65,6 +71,8 @@ export default async function BillingPage() {
           Your plan with the platform, current usage, and trial status.
         </p>
       </div>
+
+      {pendingRequest && <PendingRequestBanner request={pendingRequest} />}
 
       {/* Current plan */}
       <section className="space-y-4 rounded-2xl border bg-gradient-to-br from-primary/5 to-primary/[0.02] p-6">

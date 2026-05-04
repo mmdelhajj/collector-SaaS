@@ -219,11 +219,35 @@ export async function getAvailablePlans(): Promise<SubscriptionPlan[]> {
   return res.data;
 }
 
+export type PendingPlanRequest = {
+  id: number;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  requested_plan: {
+    code: string;
+    name: string;
+    price_monthly: number;
+    price_annual: number | null;
+  } | null;
+  requested_period: "monthly" | "annual";
+  current_plan_code: string | null;
+  current_period: string | null;
+  requester_note: string | null;
+  decision_note: string | null;
+  requested_by: string | null;
+  created_at: string | null;
+  decided_at: string | null;
+};
+
+/**
+ * Submits a plan change for super-admin approval. Returns the created
+ * PlanChangeRequest. The tenant's plan is NOT updated until approval.
+ */
 export async function changePlan(payload: {
   plan_code: string;
   billing_period: "monthly" | "annual";
-}): Promise<SubscriptionInfo> {
-  const res = await apiFetch<{ data: SubscriptionInfo }>(
+  note?: string;
+}): Promise<PendingPlanRequest> {
+  const res = await apiFetch<{ data: PendingPlanRequest }>(
     "/api/v1/billing/change-plan",
     {
       method: "POST",
@@ -231,4 +255,17 @@ export async function changePlan(payload: {
     },
   );
   return res.data;
+}
+
+export async function getPendingPlanRequest(): Promise<PendingPlanRequest | null> {
+  const res = await apiFetch<{ data: PendingPlanRequest | null }>(
+    "/api/v1/billing/pending-plan-request",
+  );
+  return res.data;
+}
+
+export async function cancelPendingPlanRequest(id: number): Promise<void> {
+  await apiFetch(`/api/v1/billing/cancel-plan-request/${id}`, {
+    method: "POST",
+  });
 }

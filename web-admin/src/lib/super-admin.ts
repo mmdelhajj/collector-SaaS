@@ -281,3 +281,61 @@ export async function updatePlan(
 export async function deletePlan(id: number): Promise<void> {
   await apiFetch(`/api/v1/super-admin/plans/${id}`, { method: "DELETE" });
 }
+
+// ─── Plan-change approval queue ────────────────────────────────────────────
+
+export type PlanChangeRequestRow = {
+  id: number;
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    current_plan: string | null;
+    current_period: string | null;
+  } | null;
+  status: "pending" | "approved" | "rejected" | "cancelled";
+  requested_plan: {
+    code: string;
+    name: string;
+    price_monthly: number;
+    price_annual: number | null;
+  } | null;
+  requested_period: "monthly" | "annual";
+  requested_by: { id: number; name: string; email: string } | null;
+  requester_note: string | null;
+  decision_note: string | null;
+  decided_by: string | null;
+  created_at: string | null;
+  decided_at: string | null;
+};
+
+export async function listPlanChangeRequests(
+  status: "pending" | "approved" | "rejected" | "cancelled" | "all" = "pending",
+): Promise<{ requests: PlanChangeRequestRow[]; pendingCount: number }> {
+  const res = await apiFetch<{
+    data: PlanChangeRequestRow[];
+    pending_count: number;
+  }>(`/api/v1/super-admin/plan-change-requests?status=${status}`);
+  return { requests: res.data, pendingCount: res.pending_count };
+}
+
+export async function approvePlanChangeRequest(
+  id: number,
+  note?: string,
+): Promise<void> {
+  await apiFetch(`/api/v1/super-admin/plan-change-requests/${id}/approve`, {
+    method: "POST",
+    body: JSON.stringify({ decision_note: note ?? null }),
+  });
+}
+
+export async function rejectPlanChangeRequest(
+  id: number,
+  note: string,
+): Promise<void> {
+  await apiFetch(`/api/v1/super-admin/plan-change-requests/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ decision_note: note }),
+  });
+}

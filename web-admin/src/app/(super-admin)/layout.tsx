@@ -45,6 +45,17 @@ export default async function SuperAdminLayout({
   const messages = getMessages(locale);
   const t = makeTranslator(locale);
 
+  // Pending plan-change count drives the sidebar badge so super-admins
+  // see at a glance that something needs review.
+  let pendingPlanChanges = 0;
+  try {
+    const { listPlanChangeRequests } = await import("@/lib/super-admin");
+    const { pendingCount } = await listPlanChangeRequests("pending");
+    pendingPlanChanges = pendingCount;
+  } catch {
+    // non-fatal — badge just won't show if the API blips
+  }
+
   return (
     <I18nProvider locale={locale} messages={messages}>
       <div className="flex min-h-screen flex-1">
@@ -61,7 +72,7 @@ export default async function SuperAdminLayout({
             </span>
           </div>
 
-          <SuperAdminNav />
+          <SuperAdminNav pendingPlanChanges={pendingPlanChanges} />
 
           <div className="border-t p-3">
             <Link

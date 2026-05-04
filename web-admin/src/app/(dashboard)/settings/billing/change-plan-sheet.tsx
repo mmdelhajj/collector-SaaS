@@ -5,6 +5,7 @@ import { ArrowLeftRight, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Sheet,
   SheetClose,
@@ -39,6 +40,7 @@ export function ChangePlanSheet({
   const [period, setPeriod] = useState<"monthly" | "annual">(
     (currentPeriod as "monthly" | "annual") || "monthly",
   );
+  const [note, setNote] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function submit() {
@@ -50,12 +52,16 @@ export function ChangePlanSheet({
       const res = await changePlanAction({
         plan_code: selectedCode,
         billing_period: period,
+        note: note.trim() || undefined,
       });
       if (res.ok) {
-        toast.success("Plan changed");
+        toast.success("Submitted for super-admin review", {
+          description: "Your current plan stays active until approved.",
+        });
         setOpen(false);
+        setNote("");
       } else {
-        toast.error(res.error ?? "Change failed");
+        toast.error(res.error ?? "Could not submit");
       }
     });
   }
@@ -72,10 +78,11 @@ export function ChangePlanSheet({
       />
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Change subscription plan</SheetTitle>
+          <SheetTitle>Request plan change</SheetTitle>
           <SheetDescription>
-            Pick a new plan or switch billing period. Changes apply immediately;
-            payment reconciliation happens with your next invoice.
+            Pick a new plan or switch billing period. Your request goes to a
+            super-admin for approval — your current plan stays active until
+            then.
           </SheetDescription>
         </SheetHeader>
 
@@ -176,6 +183,18 @@ export function ChangePlanSheet({
               })}
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="note">Note for super-admin (optional)</Label>
+            <Textarea
+              id="note"
+              rows={3}
+              placeholder="Why you're upgrading, payment method, urgency…"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={1000}
+            />
+          </div>
         </div>
 
         <SheetFooter className="flex-row justify-end gap-2 border-t px-4 py-3">
@@ -188,7 +207,7 @@ export function ChangePlanSheet({
             ) : (
               <Check className="size-4" />
             )}
-            Confirm change
+            Submit for review
           </Button>
         </SheetFooter>
       </SheetContent>

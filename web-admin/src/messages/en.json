@@ -20,7 +20,8 @@
     "superAdmin": "Super admin",
     "platform": "Platform",
     "tenants": "Tenants",
-    "plans": "Plans"
+    "plans": "Plans",
+    "planChanges": "Plan changes"
   },
   "common": {
     "save": "Save",

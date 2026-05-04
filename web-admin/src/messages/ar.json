@@ -20,7 +20,8 @@
     "superAdmin": "مدير المنصة",
     "platform": "المنصة",
     "tenants": "المستأجرون",
-    "plans": "الخطط"
+    "plans": "الخطط",
+    "planChanges": "تغييرات الخطة"
   },
   "common": {
     "save": "حفظ",

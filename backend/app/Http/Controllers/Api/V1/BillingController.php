@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Plan;
+use App\Models\PlanChangeRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Audit;
@@ -73,10 +74,15 @@ class BillingController extends Controller
     }
 
     /**
-     * Tenant self-service plan change. Records audit and exits trial state
-     * if the tenant explicitly chose `active`. Stripe wiring lives in a
-     * follow-up — for now we trust the change and leave billing reconciliation
-     * to super-admin.
+     * Tenant self-service plan change — submits a request, doesn't apply.
+     *
+     * Pre-this-feature: tenant.plan_id was mutated immediately. Now the
+     * change goes through a super-admin approval queue (PlanChangeRequest
+     * rows). Tenants see "request pending" until approval.
+     *
+     * Idempotency: only one pending request per tenant at a time (DB
+     * partial unique index enforces it; we also catch the duplicate here
+     * for a friendly error).
      */
     public function changePlan(Request $request): JsonResponse
     {
@@ -86,35 +92,123 @@ class BillingController extends Controller
         $data = $request->validate([
             'plan_code' => ['required', 'string', Rule::exists('plans', 'code')],
             'billing_period' => ['required', Rule::in(['monthly', 'annual'])],
+            'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $plan = Plan::query()->where('code', $data['plan_code'])->firstOrFail();
-        $oldPlan = $tenant->plan;
-        $oldPeriod = $tenant->billing_period;
 
-        if ($oldPlan === $plan->code && $oldPeriod === $data['billing_period']) {
+        if ($tenant->plan === $plan->code && $tenant->billing_period === $data['billing_period']) {
             return response()->json([
                 'message' => 'Already on this plan and billing period.',
             ], 200);
         }
 
-        $tenant->plan = $plan->code;
-        $tenant->plan_id = $plan->id;
-        $tenant->billing_period = $data['billing_period'];
-        // Leaving trial → active when the tenant deliberately picks a plan.
-        if ($tenant->status === 'trial' && $tenant->trial_ends_at && $tenant->trial_ends_at->isPast()) {
-            $tenant->status = 'active';
+        // Existing pending request for this tenant?
+        $existing = PlanChangeRequest::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('status', 'pending')
+            ->first();
+        if ($existing) {
+            return response()->json([
+                'message' => 'You already have a pending plan change request awaiting approval.',
+                'data' => $this->serializeRequest($existing),
+            ], 409);
         }
-        $tenant->save();
 
-        Audit::record('tenant.plan_changed', $tenant, [
-            'old_plan' => $oldPlan,
-            'new_plan' => $plan->code,
-            'old_period' => $oldPeriod,
-            'new_period' => $data['billing_period'],
-        ], $plan->name);
+        $req = PlanChangeRequest::query()->create([
+            'tenant_id' => $tenant->id,
+            'requested_plan_id' => $plan->id,
+            'requested_period' => $data['billing_period'],
+            'current_plan_code' => $tenant->plan,
+            'current_period' => $tenant->billing_period,
+            'status' => 'pending',
+            'requester_note' => $data['note'] ?? null,
+            'requested_by_user_id' => $request->user()->id,
+        ]);
 
-        return $this->subscription();
+        Audit::record(
+            'tenant.plan_change_requested',
+            $tenant,
+            [
+                'from' => $tenant->plan.'/'.$tenant->billing_period,
+                'to' => $plan->code.'/'.$data['billing_period'],
+            ],
+            $plan->name,
+        );
+
+        return response()->json([
+            'message' => 'Your plan change has been submitted for super-admin approval.',
+            'data' => $this->serializeRequest($req->fresh(['requestedPlan', 'requestedBy'])),
+        ], 202);
+    }
+
+    /**
+     * Tenant view of their pending request (if any). Used by the billing UI
+     * to show "Pending: Pro/annual — submitted 2h ago" instead of the change-
+     * plan button when a request is in-flight.
+     */
+    public function pendingPlanRequest(): JsonResponse
+    {
+        $tenant = $this->tenant();
+        $req = PlanChangeRequest::query()
+            ->with(['requestedPlan', 'requestedBy'])
+            ->where('tenant_id', $tenant->id)
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        return response()->json([
+            'data' => $req ? $this->serializeRequest($req) : null,
+        ]);
+    }
+
+    /**
+     * Tenant cancels their own pending request (changed their mind before
+     * super-admin decides).
+     */
+    public function cancelPlanRequest(int $id, Request $request): JsonResponse
+    {
+        $this->authorize('billing.manage');
+        $tenant = $this->tenant();
+
+        $req = PlanChangeRequest::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('id', $id)
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $req->update([
+            'status' => 'cancelled',
+            'decided_by_user_id' => $request->user()->id,
+            'decided_at' => now(),
+        ]);
+
+        Audit::record('tenant.plan_change_cancelled', $tenant, null);
+
+        return response()->json(['message' => 'Request cancelled.']);
+    }
+
+    private function serializeRequest(PlanChangeRequest $r): array
+    {
+        return [
+            'id' => $r->id,
+            'status' => $r->status,
+            'requested_plan' => $r->requestedPlan ? [
+                'code' => $r->requestedPlan->code,
+                'name' => $r->requestedPlan->name,
+                'price_monthly' => (float) $r->requestedPlan->price_monthly,
+                'price_annual' => $r->requestedPlan->price_annual !== null
+                    ? (float) $r->requestedPlan->price_annual : null,
+            ] : null,
+            'requested_period' => $r->requested_period,
+            'current_plan_code' => $r->current_plan_code,
+            'current_period' => $r->current_period,
+            'requester_note' => $r->requester_note,
+            'decision_note' => $r->decision_note,
+            'requested_by' => $r->requestedBy?->name,
+            'created_at' => $r->created_at?->toIso8601String(),
+            'decided_at' => $r->decided_at?->toIso8601String(),
+        ];
     }
 
     /**

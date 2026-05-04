@@ -89,6 +89,20 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
             Route::get('plans/{id}', [PlansController::class, 'show'])->name('plans.show');
             Route::patch('plans/{id}', [PlansController::class, 'update'])->name('plans.update');
             Route::delete('plans/{id}', [PlansController::class, 'destroy'])->name('plans.delete');
+
+            // Plan-change approval queue (tenant submits via /v1/billing/change-plan).
+            Route::get(
+                'plan-change-requests',
+                [\App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController::class, 'index']
+            )->name('plan-change-requests');
+            Route::post(
+                'plan-change-requests/{id}/approve',
+                [\App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController::class, 'approve']
+            )->name('plan-change-requests.approve');
+            Route::post(
+                'plan-change-requests/{id}/reject',
+                [\App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController::class, 'reject']
+            )->name('plan-change-requests.reject');
         });
 
     // Authenticated routes — Bearer token via Sanctum.
@@ -222,6 +236,8 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
             Route::get('billing/subscription', [BillingController::class, 'subscription'])->name('billing.subscription');
             Route::get('billing/available-plans', [BillingController::class, 'availablePlans'])->name('billing.available-plans');
             Route::post('billing/change-plan', [BillingController::class, 'changePlan'])->name('billing.change-plan');
+            Route::get('billing/pending-plan-request', [BillingController::class, 'pendingPlanRequest'])->name('billing.pending-plan-request');
+            Route::post('billing/cancel-plan-request/{id}', [BillingController::class, 'cancelPlanRequest'])->name('billing.cancel-plan-request');
 
             Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 

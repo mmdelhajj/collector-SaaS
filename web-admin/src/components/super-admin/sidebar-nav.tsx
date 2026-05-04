@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, Home, Settings, Tag, UserCircle2 } from "lucide-react";
+import {
+  Building2,
+  ClipboardList,
+  Home,
+  Settings,
+  Tag,
+  UserCircle2,
+} from "lucide-react";
 import { useT } from "@/lib/i18n-provider";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +17,11 @@ const ITEMS = [
   { href: "/super-admin", icon: Home, labelKey: "nav.platform" },
   { href: "/super-admin/tenants", icon: Building2, labelKey: "nav.tenants" },
   { href: "/super-admin/plans", icon: Tag, labelKey: "nav.plans" },
+  {
+    href: "/super-admin/plan-changes",
+    icon: ClipboardList,
+    labelKey: "nav.planChanges",
+  },
   { href: "/super-admin/settings", icon: Settings, labelKey: "nav.settings" },
   {
     href: "/super-admin/profile",
@@ -18,7 +30,11 @@ const ITEMS = [
   },
 ] as const;
 
-export function SuperAdminNav() {
+export function SuperAdminNav({
+  pendingPlanChanges,
+}: {
+  pendingPlanChanges?: number;
+}) {
   const pathname = usePathname();
   const t = useT();
 
@@ -30,6 +46,9 @@ export function SuperAdminNav() {
           const isActive =
             pathname === item.href ||
             (item.href !== "/super-admin" && pathname.startsWith(item.href));
+          const showBadge =
+            item.href === "/super-admin/plan-changes" &&
+            (pendingPlanChanges ?? 0) > 0;
           return (
             <li key={item.href}>
               <Link
@@ -49,7 +68,12 @@ export function SuperAdminNav() {
                       : "text-muted-foreground group-hover:text-foreground",
                   )}
                 />
-                {t(item.labelKey)}
+                <span className="flex-1">{t(item.labelKey)}</span>
+                {showBadge && (
+                  <span className="rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                    {pendingPlanChanges}
+                  </span>
+                )}
               </Link>
             </li>
           );
