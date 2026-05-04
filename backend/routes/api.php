@@ -25,13 +25,18 @@ use Illuminate\Support\Facades\Route;
 
 // ─── PUBLIC RADIUS GATEWAY ──────────────────────────────────────────────
 // Called BY FreeRADIUS via rlm_rest. Gated by IP allowlist + shared secret.
-Route::prefix('radius')->middleware('radius.gateway')->name('radius.')->group(function () {
+// Rate-limited high (1000/min/IP) per CLAUDE.md spec — RADIUS is chatty.
+Route::prefix('radius')->middleware(['radius.gateway', 'throttle:1000,1'])->name('radius.')->group(function () {
     Route::post('authorize', [RadiusGatewayController::class, 'authorize'])->name('authorize');
     Route::post('accounting', [RadiusGatewayController::class, 'accounting'])->name('accounting');
     Route::post('post-auth', [RadiusGatewayController::class, 'postAuth'])->name('post-auth');
 });
 
-Route::prefix('v1')->name('api.v1.')->group(function () {
+// Tenant API: 60 req/min/IP per CLAUDE.md API DESIGN PRINCIPLES.
+// Authenticated routes don't need a higher tier — a real admin/collector at
+// 60/min has plenty of headroom; a compromised token can't scrape the DB.
+// The dedicated login throttle inside AuthController is layered on top.
+Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(function () {
     // Public auth endpoints (rate-limited inside the controller).
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
 

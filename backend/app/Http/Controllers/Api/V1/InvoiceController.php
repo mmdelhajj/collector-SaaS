@@ -84,7 +84,7 @@ class InvoiceController extends Controller
         $items = $data['items'];
         unset($data['items']);
 
-        $invoice = DB::transaction(function () use ($data, $items) {
+        $invoice = \App\Support\UniqueRetry::run(fn () => DB::transaction(function () use ($data, $items) {
             $subtotal = 0.0;
             $tax = 0.0;
 
@@ -125,7 +125,7 @@ class InvoiceController extends Controller
             ]);
 
             return $invoice->fresh(['items', 'customer']);
-        });
+        }));
 
         return (new InvoiceResource($invoice))
             ->response()

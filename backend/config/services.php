@@ -59,6 +59,12 @@ return [
             'trim',
             explode(',', env('RADIUS_ALLOWED_IPS', '127.0.0.1'))
         )),
+        // CoA delivery driver. 'null' = log-only (dev/staging where the box
+        // can't actually send UDP/3799 packets to a real NAS); 'radclient' =
+        // shell out to the radclient binary. The null driver logs at WARNING
+        // when called so monitoring catches "we said we suspended someone
+        // but no packet went anywhere" — silent success used to hide this.
+        'coa_driver' => env('RADIUS_COA_DRIVER', 'null'),
     ],
 
 ];

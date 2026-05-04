@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\AuditLog;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,39 @@ it('issues a Sanctum token for valid credentials', function () {
         ->assertJsonPath('user.email', 'admin@example.test');
 
     expect($user->tokens()->count())->toBe(1);
+});
+
+it('audits successful login', function () {
+    $tenant = Tenant::factory()->create();
+    User::factory()->forTenant($tenant)->create([
+        'email' => 'admin@example.test',
+        'password' => Hash::make('correct-horse'),
+    ]);
+
+    $this->postJson('/api/v1/auth/login', [
+        'email' => 'admin@example.test',
+        'password' => 'correct-horse',
+    ])->assertOk();
+
+    $audit = AuditLog::query()->withoutGlobalScopes()->where('action', 'user.login')->first();
+    expect($audit)->not->toBeNull();
+    expect($audit->tenant_id)->toBe($tenant->id);
+});
+
+it('audits failed login attempt', function () {
+    User::factory()->forTenant(Tenant::factory()->create())->create([
+        'email' => 'admin@example.test',
+        'password' => Hash::make('correct-horse'),
+    ]);
+
+    $this->postJson('/api/v1/auth/login', [
+        'email' => 'admin@example.test',
+        'password' => 'wrong-pass',
+    ])->assertStatus(422);
+
+    $audit = AuditLog::query()->withoutGlobalScopes()->where('action', 'user.login_failed')->first();
+    expect($audit)->not->toBeNull();
+    expect($audit->changes['email'] ?? null)->toBe('admin@example.test');
 });
 
 it('rejects bad credentials with 422', function () {

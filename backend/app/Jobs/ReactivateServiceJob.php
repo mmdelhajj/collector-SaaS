@@ -14,6 +14,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * After a payment lands, check whether the customer's balance is now zero
@@ -68,5 +69,13 @@ class ReactivateServiceJob implements ShouldQueue
                 'username' => $user->username,
             ]);
         }
+    }
+
+    public function failed(Throwable $e): void
+    {
+        Log::error('ReactivateServiceJob failed permanently', [
+            'customer_id' => $this->customerId,
+            'error' => $e->getMessage(),
+        ]);
     }
 }

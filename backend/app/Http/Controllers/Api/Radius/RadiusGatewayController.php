@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Radius;
 
 use App\Http\Controllers\Controller;
+use App\Models\NasDevice;
 use App\Models\RadiusSession;
 use App\Models\RadiusUser;
 use Illuminate\Http\JsonResponse;
@@ -27,13 +28,16 @@ class RadiusGatewayController extends Controller
     public function authorize(Request $request): JsonResponse
     {
         $username = (string) $request->input('username');
-        $tenantId = (string) $request->input('tenant_id', '');
 
-        $query = RadiusUser::withoutTenant()->where('username', $username);
-        if ($tenantId) {
-            $query->where('tenant_id', $tenantId);
+        $tenantId = $this->resolveTenantId($request);
+        if ($tenantId === null) {
+            return response()->json(['message' => 'tenant resolution failed'], 401);
         }
-        $user = $query->first();
+
+        $user = RadiusUser::withoutTenant()
+            ->where('tenant_id', $tenantId)
+            ->where('username', $username)
+            ->first();
 
         if (! $user) {
             return response()->json(['message' => 'unknown user'], 401);
@@ -49,7 +53,7 @@ class RadiusGatewayController extends Controller
         // Optional: PAP password check. With CHAP/MS-CHAP FreeRADIUS does
         // crypto with the cleartext-equivalent we return below.
         $providedPassword = $request->input('password');
-        if ($providedPassword !== null && $providedPassword !== $user->password) {
+        if ($providedPassword !== null && ! hash_equals((string) $user->password, (string) $providedPassword)) {
             return response()->json([
                 'control' => ['Auth-Type' => 'Reject'],
                 'reply' => ['Reply-Message' => 'invalid password'],
@@ -86,14 +90,19 @@ class RadiusGatewayController extends Controller
     {
         $type = $request->input('acct_status_type'); // Start | Interim-Update | Stop
         $username = (string) $request->input('username');
-        $tenantId = (string) $request->input('tenant_id', '');
         $sessionId = (string) $request->input('session_id', '');
 
-        $query = RadiusUser::withoutTenant()->where('username', $username);
-        if ($tenantId) {
-            $query->where('tenant_id', $tenantId);
+        $tenantId = $this->resolveTenantId($request);
+        if ($tenantId === null) {
+            // Acct packets are fire-and-forget for FreeRADIUS; we still ack
+            // 200 so the NAS doesn't retry forever, but we do nothing.
+            return response()->json(['ok' => false, 'reason' => 'tenant resolution failed']);
         }
-        $user = $query->first();
+
+        $user = RadiusUser::withoutTenant()
+            ->where('tenant_id', $tenantId)
+            ->where('username', $username)
+            ->first();
 
         if (! $user) {
             return response()->json(['message' => 'unknown user'], 200);
@@ -163,5 +172,39 @@ class RadiusGatewayController extends Controller
     public function postAuth(Request $request): JsonResponse
     {
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Resolve the tenant for this RADIUS request. Two valid sources:
+     *   1. Explicit `tenant_id` in the request body — preferred when the
+     *      ISP's FreeRADIUS template explicitly templates it in.
+     *   2. Lookup by NAS source IP — `nas_ip` body field is matched against
+     *      the tenant's registered `nas_devices.ip_address`. Each NAS belongs
+     *      to exactly one tenant, so this is unambiguous.
+     *
+     * If neither resolves, return null so the caller rejects. RADIUS usernames
+     * are unique PER TENANT, not globally — without tenant resolution, two
+     * tenants with the same username collide and a customer can authenticate
+     * against a different tenant's policy. CVE-class flaw if left to default.
+     */
+    private function resolveTenantId(Request $request): ?string
+    {
+        $explicit = $request->input('tenant_id');
+        if (is_string($explicit) && $explicit !== '') {
+            return $explicit;
+        }
+
+        $nasIp = $request->input('nas_ip');
+        if (is_string($nasIp) && $nasIp !== '') {
+            $nas = NasDevice::withoutTenant()
+                ->where('ip_address', $nasIp)
+                ->where('is_active', true)
+                ->first();
+            if ($nas) {
+                return $nas->tenant_id;
+            }
+        }
+
+        return null;
     }
 }

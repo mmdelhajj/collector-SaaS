@@ -39,7 +39,7 @@ class InvoiceGenerator
         $package = $subscription->package;
         $price = (float) ($subscription->price_override ?? $package->price);
 
-        return DB::transaction(function () use (
+        return \App\Support\UniqueRetry::run(fn () => DB::transaction(function () use (
             $subscription, $package, $price, $issued, $periodStart, $periodEnd, $netDays
         ) {
             $invoice = Invoice::query()->create([
@@ -80,7 +80,7 @@ class InvoiceGenerator
             ]);
 
             return $invoice->fresh('items');
-        });
+        }));
     }
 
     /**

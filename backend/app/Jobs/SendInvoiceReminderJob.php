@@ -17,6 +17,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Sends a reminder or overdue-chase message to the customer for one invoice.
@@ -168,5 +169,29 @@ class SendInvoiceReminderJob implements ShouldQueue
         }
 
         return $channels;
+    }
+
+    public function failed(Throwable $e): void
+    {
+        Log::error('SendInvoiceReminderJob failed permanently', [
+            'invoice_id' => $this->invoiceId,
+            'template' => $this->templateKey,
+            'error' => $e->getMessage(),
+        ]);
+
+        try {
+            MessageLog::query()
+                ->withoutGlobalScopes()
+                ->where('related_type', Invoice::class)
+                ->where('related_id', $this->invoiceId)
+                ->where('template_key', $this->templateKey)
+                ->where('status', 'queued')
+                ->update([
+                    'status' => 'failed',
+                    'error' => 'job exhausted retries: '.substr($e->getMessage(), 0, 480),
+                ]);
+        } catch (Throwable) {
+            // already logging the original failure
+        }
     }
 }

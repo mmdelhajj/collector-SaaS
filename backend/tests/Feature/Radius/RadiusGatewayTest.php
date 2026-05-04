@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Customer;
+use App\Models\NasDevice;
 use App\Models\RadiusSession;
 use App\Models\RadiusUser;
 use App\Models\Tenant;
@@ -84,6 +85,67 @@ it('rejects on bad password (PAP path)', function () {
             'username' => 'pppoe-test',
             'tenant_id' => $this->tenant->id,
             'password' => 'wrong',
+        ])
+        ->assertStatus(401);
+});
+
+it('rejects authorize when no tenant_id and no NAS IP given', function () {
+    $this->withHeaders(['X-Radius-Secret' => 'test-secret'])
+        ->postJson('/api/radius/authorize', [
+            'username' => 'pppoe-test',
+            'password' => 'super-secret-pwd',
+        ])
+        ->assertStatus(401)
+        ->assertJsonPath('message', 'tenant resolution failed');
+});
+
+it('rejects authorize when NAS IP is unknown', function () {
+    $this->withHeaders(['X-Radius-Secret' => 'test-secret'])
+        ->postJson('/api/radius/authorize', [
+            'username' => 'pppoe-test',
+            'password' => 'super-secret-pwd',
+            'nas_ip' => '203.0.113.99',
+        ])
+        ->assertStatus(401);
+});
+
+it('resolves tenant from NAS IP and authorizes', function () {
+    NasDevice::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'ip_address' => '10.0.0.1',
+        'is_active' => true,
+    ]);
+
+    $resp = $this->withHeaders(['X-Radius-Secret' => 'test-secret'])
+        ->postJson('/api/radius/authorize', [
+            'username' => 'pppoe-test',
+            'password' => 'super-secret-pwd',
+            'nas_ip' => '10.0.0.1',
+        ])
+        ->assertOk();
+
+    expect($resp->json('control.Auth-Type'))->toBe('Accept');
+});
+
+it('does not cross tenants when same username exists in two tenants', function () {
+    // Build a second tenant with a same-named user but different password
+    $otherTenant = Tenant::factory()->create();
+    $otherCustomer = Customer::factory()->create(['tenant_id' => $otherTenant->id]);
+    RadiusUser::factory()->create([
+        'tenant_id' => $otherTenant->id,
+        'customer_id' => $otherCustomer->id,
+        'username' => 'pppoe-test', // same username
+        'password' => 'other-tenant-pwd',
+        'status' => 'active',
+    ]);
+
+    // Send the OTHER tenant's password but NO tenant_id and NO nas_ip.
+    // Pre-fix this would non-deterministically authenticate one of the two.
+    // Post-fix it must fail tenant resolution outright.
+    $this->withHeaders(['X-Radius-Secret' => 'test-secret'])
+        ->postJson('/api/radius/authorize', [
+            'username' => 'pppoe-test',
+            'password' => 'other-tenant-pwd',
         ])
         ->assertStatus(401);
 });

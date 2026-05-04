@@ -7,9 +7,25 @@ const API_BASE_URL = process.env.API_BASE_URL ?? "http://127.0.0.1:8000";
  * Proxies the CSV export from Laravel, attaching the bearer token from the
  * httpOnly cookie. The browser receives a regular file download.
  */
+// Allowlist of report types we proxy. Without this, a misspelt `?type=foo`
+// would silently reach Laravel and surface a 4xx — easier to fail fast and
+// also prevent any future Laravel-side type-dispatch bug from being reached
+// via a hand-crafted query.
+const ALLOWED_TYPES = new Set([
+  "aging",
+  "revenue",
+  "collector-performance",
+  "payments",
+  "invoices",
+]);
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const type = url.searchParams.get("type") ?? "aging";
+
+  if (!ALLOWED_TYPES.has(type)) {
+    return new Response("Unknown report type", { status: 400 });
+  }
 
   const jar = await cookies();
   const token = jar.get(AUTH_COOKIE)?.value;

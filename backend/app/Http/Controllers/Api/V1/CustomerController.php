@@ -63,9 +63,9 @@ class CustomerController extends Controller
 
     public function store(StoreCustomerRequest $request): JsonResponse
     {
-        $customer = Customer::query()->create(
+        $customer = \App\Support\UniqueRetry::run(fn () => Customer::query()->create(
             [...$request->validated(), 'created_by' => $request->user()?->id]
-        );
+        ));
 
         return (new CustomerResource($customer))
             ->response()

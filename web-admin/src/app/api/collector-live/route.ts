@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { apiFetch, ApiError } from "@/lib/api";
+import { getCurrentUser } from "@/lib/auth";
 
 export type LiveCollector = {
   collector: { id: number | null; name: string };
@@ -13,6 +14,13 @@ export type LiveCollector = {
 };
 
 export async function GET() {
+  // Live GPS coordinates of every collector are sensitive — block at the
+  // edge instead of returning empty data on missing auth.
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ message: "unauthenticated" }, { status: 401 });
+  }
+
   try {
     const res = await apiFetch<{ data: LiveCollector[] }>(
       "/api/v1/collector-live",

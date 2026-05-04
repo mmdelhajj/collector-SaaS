@@ -62,7 +62,7 @@ class TicketController extends Controller
             'title' => ['required', 'string', 'max:200'],
             'description' => ['nullable', 'string', 'max:5000'],
             'scheduled_at' => ['nullable', 'date'],
-            'assigned_to_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'assigned_to_user_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', app(TenantContext::class)->id()))],
         ]);
 
         $tenantId = app(TenantContext::class)->id();
@@ -90,7 +90,7 @@ class TicketController extends Controller
             'description' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'scheduled_at' => ['sometimes', 'nullable', 'date'],
             'completed_at' => ['sometimes', 'nullable', 'date'],
-            'assigned_to_user_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
+            'assigned_to_user_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', app(TenantContext::class)->id()))],
         ]);
 
         if (($data['status'] ?? null) === 'done' && empty($data['completed_at'])) {

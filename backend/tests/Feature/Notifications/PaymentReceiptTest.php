@@ -161,10 +161,39 @@ it('public receipt page renders without auth', function () {
         'currency' => 'USD',
     ]);
 
-    // No auth — public route.
+    // No auth — public route. URL must be HMAC-signed with a valid expiry,
+    // mirroring how SendPaymentReceiptJob generates it. An unsigned hit
+    // returns 403; that's the whole point of the signed-URL change.
     $this->get("/receipts/{$payment->id}")
+        ->assertStatus(403);
+
+    $signed = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        'receipts.public',
+        now()->addDays(30),
+        ['paymentId' => $payment->id],
+    );
+
+    $this->get($signed)
         ->assertOk()
         ->assertSee('Payment received')
         ->assertSee('Layla Nasser')
         ->assertSee('USD 75.00');
+});
+
+it('rejects expired receipt links', function () {
+    $customer = Customer::factory()->create([
+        'tenant_id' => $this->tenant->id,
+    ]);
+    $payment = Payment::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'customer_id' => $customer->id,
+    ]);
+
+    $expired = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+        'receipts.public',
+        now()->subMinute(), // already expired
+        ['paymentId' => $payment->id],
+    );
+
+    $this->get($expired)->assertStatus(403);
 });

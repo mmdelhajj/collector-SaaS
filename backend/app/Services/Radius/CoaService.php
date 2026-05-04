@@ -84,18 +84,39 @@ class CoaService
             return false;
         }
 
-        // PRODUCTION: shell out to radclient via Symfony\Component\Process\Process.
-        //   "echo '$attrs' | radclient -x $nas->ip_address:$nas->coa_port $type $secret"
-        // For now we just record the intent so the controller logic remains
-        // testable without root / UDP capabilities.
-        Log::info('coa: dispatched (stub)', [
-            'tenant_id' => $user->tenant_id,
-            'nas' => $nas->name,
-            'nas_ip' => $nas->ip_address,
-            'packet' => $packetType,
-            'attributes' => $attributes,
-        ]);
+        $driver = config('services.radius.coa_driver', 'null');
 
-        return true;
+        if ($driver === 'null') {
+            // WARNING (not info) — staging/CI shouldn't silently report
+            // "RADIUS state changed" when in reality nothing left the box.
+            // The original `Log::info('coa: dispatched (stub)')` made this
+            // invisible in dashboards. Returning false makes callers fail
+            // loud unless they explicitly tolerate the no-op driver.
+            Log::warning('coa: driver=null — packet NOT sent, state change is DB-only', [
+                'tenant_id' => $user->tenant_id,
+                'nas' => $nas->name,
+                'nas_ip' => $nas->ip_address,
+                'packet' => $packetType,
+                'attributes' => $attributes,
+            ]);
+
+            return false;
+        }
+
+        if ($driver === 'radclient') {
+            // PRODUCTION: shell out to radclient via Symfony\Component\Process\Process.
+            //   "echo '$attrs' | radclient -x $nas->ip_address:$nas->coa_port $type $secret"
+            // Not implemented yet — fail loud so prod doesn't lie either.
+            Log::error('coa: radclient driver not yet implemented', [
+                'tenant_id' => $user->tenant_id,
+                'packet' => $packetType,
+            ]);
+
+            return false;
+        }
+
+        Log::error('coa: unknown driver', ['driver' => $driver]);
+
+        return false;
     }
 }

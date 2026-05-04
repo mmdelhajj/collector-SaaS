@@ -9,6 +9,7 @@ use App\Models\CollectorZone;
 use App\Support\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class CollectorZoneController extends Controller
 {
@@ -43,7 +44,7 @@ class CollectorZoneController extends Controller
             'polygon' => ['required', 'array'],
             'polygon.*' => ['array', 'size:2'],
             'polygon.*.*' => ['numeric'],
-            'default_collector_id' => ['nullable', 'integer', 'exists:users,id'],
+            'default_collector_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', app(TenantContext::class)->id()))],
         ]);
 
         $zone = CollectorZone::query()->create([
@@ -67,7 +68,7 @@ class CollectorZoneController extends Controller
             'polygon' => ['sometimes', 'array'],
             'polygon.*' => ['array', 'size:2'],
             'polygon.*.*' => ['numeric'],
-            'default_collector_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
+            'default_collector_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', app(TenantContext::class)->id()))],
             'is_active' => ['sometimes', 'boolean'],
         ]);
 

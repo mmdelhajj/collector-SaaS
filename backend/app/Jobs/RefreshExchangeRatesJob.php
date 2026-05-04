@@ -143,4 +143,12 @@ class RefreshExchangeRatesJob implements ShouldQueue
 
         return ['updated' => $updated, 'skipped' => $skipped, 'errors' => $errors];
     }
+
+    public function failed(\Throwable $e): void
+    {
+        Log::error('RefreshExchangeRatesJob failed permanently', [
+            'tenant_id' => $this->singleTenantId,
+            'error' => $e->getMessage(),
+        ]);
+    }
 }

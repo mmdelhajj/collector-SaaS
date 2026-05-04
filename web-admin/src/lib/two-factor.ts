@@ -37,6 +37,15 @@ export async function confirmTwoFactor(
   return res.data;
 }
 
-export async function disableTwoFactor(): Promise<void> {
-  await apiFetch("/api/v1/auth/2fa/disable", { method: "POST" });
+export async function disableTwoFactor(creds: {
+  password?: string;
+  code?: string;
+}): Promise<void> {
+  // Backend requires re-auth (password OR current TOTP code) for the disable
+  // endpoint when 2FA is currently enabled — a stolen Sanctum token alone
+  // must not be enough to turn it off.
+  await apiFetch("/api/v1/auth/2fa/disable", {
+    method: "POST",
+    body: JSON.stringify(creds),
+  });
 }

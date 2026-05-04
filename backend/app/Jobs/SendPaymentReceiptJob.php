@@ -16,6 +16,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Generates the receipt artefacts for a payment and notifies the customer.
@@ -96,7 +98,11 @@ class SendPaymentReceiptJob implements ShouldQueue
             'amount' => number_format((float) $payment->amount, 2),
             'currency' => $payment->currency,
             'invoice_number' => $payment->invoice?->number ?? '—',
-            'receipt_url' => url("/receipts/{$payment->id}"),
+            'receipt_url' => \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'receipts.public',
+                now()->addDays((int) ($tenant->settings['receipt_link_ttl_days'] ?? 30)),
+                ['paymentId' => $payment->id],
+            ),
             'tenant_name' => $tenant->name,
         ];
 
@@ -190,6 +196,37 @@ class SendPaymentReceiptJob implements ShouldQueue
                 'provider' => $result->provider,
                 'error' => $result->error,
             ]);
+        }
+    }
+
+    /**
+     * Called by the queue worker after $tries attempts have all thrown.
+     * We mark any still-queued message_log rows as failed so the audit
+     * trail isn't stuck saying "queued" forever, and we leave a hard
+     * log entry for ops to investigate.
+     */
+    public function failed(Throwable $e): void
+    {
+        Log::error('SendPaymentReceiptJob failed permanently', [
+            'payment_id' => $this->paymentId,
+            'error' => $e->getMessage(),
+        ]);
+
+        // Best-effort cleanup — flip stuck rows to 'failed'. We do this
+        // outside any tenant context (the job's context is already gone
+        // by the time we reach failed()), so use withoutGlobalScopes.
+        try {
+            MessageLog::query()
+                ->withoutGlobalScopes()
+                ->where('related_type', Payment::class)
+                ->where('related_id', $this->paymentId)
+                ->where('status', 'queued')
+                ->update([
+                    'status' => 'failed',
+                    'error' => 'job exhausted retries: '.substr($e->getMessage(), 0, 480),
+                ]);
+        } catch (Throwable) {
+            // already logging the original failure; don't cascade
         }
     }
 }

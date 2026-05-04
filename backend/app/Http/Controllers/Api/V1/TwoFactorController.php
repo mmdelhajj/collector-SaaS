@@ -12,7 +12,9 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FA\Google2FA;
 
 class TwoFactorController extends Controller
@@ -97,9 +99,33 @@ class TwoFactorController extends Controller
         ]);
     }
 
-    public function disable(Request $request): JsonResponse
+    public function disable(Request $request, Google2FA $g2fa): JsonResponse
     {
         $u = $request->user();
+
+        // Re-auth required: a stolen Sanctum token must not be enough to
+        // turn off 2FA. Accept either the user's password OR a current TOTP
+        // code. If 2FA is already off (idempotency), allow without re-auth.
+        if ($u->two_factor_enabled) {
+            $request->validate([
+                'password' => ['nullable', 'string'],
+                'code' => ['nullable', 'string', 'size:6', 'regex:/^\d{6}$/'],
+            ]);
+
+            $password = (string) $request->input('password', '');
+            $code = (string) $request->input('code', '');
+
+            $passwordOk = $password !== '' && Hash::check($password, (string) $u->password);
+            $codeOk = $code !== '' && $u->two_factor_secret
+                && $g2fa->verifyKey((string) $u->two_factor_secret, $code);
+
+            if (! $passwordOk && ! $codeOk) {
+                throw ValidationException::withMessages([
+                    'password' => 'Re-authentication required to disable 2FA. Provide your current password or a TOTP code.',
+                ]);
+            }
+        }
+
         $u->forceFill([
             'two_factor_enabled' => false,
             'two_factor_secret' => null,

@@ -16,6 +16,14 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
+
+  // UUID format check — if `id` were ever passed unsanitized into the
+  // upstream URL, encoded slashes (..%2F..) could in theory navigate to
+  // a different Laravel route. Belt-and-braces: enforce shape here.
+  if (!/^[0-9a-fA-F-]{36}$/.test(id)) {
+    return new Response("Bad request", { status: 400 });
+  }
+
   const jar = await cookies();
   const token = jar.get(AUTH_COOKIE)?.value;
 
