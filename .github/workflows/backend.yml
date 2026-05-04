@@ -69,7 +69,30 @@ jobs:
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
         run: |
+          set -o pipefail
           cp .env.example .env
           php artisan key:generate
           php artisan migrate --force
-          ./vendor/bin/pest --colors=always
+          # Capture pest output AND tee to stdout. On failure surface every
+          # FAIL/Error line via workflow annotations so it shows up in the
+          # public run summary even when we can't pull the log archive.
+          set +e
+          ./vendor/bin/pest --colors=never 2>&1 | tee /tmp/pest.log
+          PEST_EXIT=${PIPESTATUS[0]}
+          set -e
+          if [ "$PEST_EXIT" -ne 0 ]; then
+            echo "::group::Pest failure summary"
+            grep -nE "FAIL|Error|fail|Tests:" /tmp/pest.log | head -50 | while IFS= read -r line; do
+              # Escape for ::error:: workflow command
+              esc=$(printf '%s' "$line" | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+              echo "::error file=backend,line=1::$esc"
+            done
+            echo "=== ENV ==="
+            php -v
+            php -m | sort | tr '\n' ' '
+            echo ""
+            echo "=== Last 100 lines of pest output ==="
+            tail -100 /tmp/pest.log
+            echo "::endgroup::"
+          fi
+          exit "$PEST_EXIT"
