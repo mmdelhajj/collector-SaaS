@@ -66,7 +66,7 @@ class SignupController extends Controller
     {
         // 5 signups per IP per hour — generous for legit demo flows, harsh
         // enough to stop scripts.
-        $key = 'signup:' . $request->ip();
+        $key = 'signup:'.$request->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
             throw ValidationException::withMessages([
@@ -92,7 +92,7 @@ class SignupController extends Controller
 
         $result = DB::transaction(function () use ($data, $plan) {
             // 1. Create the tenant with a 14-day trial.
-            $slug = Str::slug($data['company_name']) . '-' . Str::lower(Str::random(4));
+            $slug = Str::slug($data['company_name']).'-'.Str::lower(Str::random(4));
             $tenant = Tenant::query()->create([
                 'name' => $data['company_name'],
                 'slug' => $slug,

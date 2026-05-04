@@ -165,7 +165,10 @@ export default async function BillingPage() {
         <section className="rounded-2xl border bg-card p-6">
           <h2 className="text-base font-semibold">Features included</h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            <Feature on={plan.feature_radius} label="RADIUS / NAS integration" />
+            <Feature
+              on={plan.feature_radius}
+              label="RADIUS / NAS integration"
+            />
             <Feature on={plan.feature_whatsapp} label="WhatsApp messaging" />
             <Feature on={plan.feature_sms} label="SMS messaging" />
             <Feature
@@ -204,12 +207,9 @@ function DateCell({
   value?: string;
   tone?: "amber";
 }) {
-  const days =
-    date
-      ? Math.ceil(
-          (new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-        )
-      : null;
+  const days = date
+    ? Math.ceil((new Date(date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
   return (
     <div>
       <p className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -217,7 +217,16 @@ function DateCell({
         {label}
       </p>
       <p className="mt-0.5 text-base font-semibold">
-        {value ?? (date ? <LocalDateTime iso={date} mode="date" options={{ year: "numeric", month: "short", day: "numeric" }} /> : "—")}
+        {value ??
+          (date ? (
+            <LocalDateTime
+              iso={date}
+              mode="date"
+              options={{ year: "numeric", month: "short", day: "numeric" }}
+            />
+          ) : (
+            "—"
+          ))}
       </p>
       {days !== null && days >= 0 && (
         <p
@@ -241,7 +250,8 @@ function UsageBar({
   used: number;
   limit: number | null;
 }) {
-  const pct = limit !== null && limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+  const pct =
+    limit !== null && limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
   const isUnlimited = limit === null;
   const warn = pct >= 90;
   return (
@@ -284,9 +294,7 @@ function Feature({ on, label }: { on: boolean; label: string }) {
       <Check
         className={`size-4 ${on ? "text-emerald-600" : "text-muted-foreground/40"}`}
       />
-      <span
-        className={on ? "" : "text-muted-foreground/60 line-through"}
-      >
+      <span className={on ? "" : "text-muted-foreground/60 line-through"}>
         {label}
       </span>
     </div>

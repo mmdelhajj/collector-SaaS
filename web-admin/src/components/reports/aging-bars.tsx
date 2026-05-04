@@ -3,7 +3,11 @@
 import { cn } from "@/lib/utils";
 import type { AgingReport } from "@/lib/reports";
 
-const BUCKETS: { key: keyof AgingReport["buckets"]; label: string; color: string }[] = [
+const BUCKETS: {
+  key: keyof AgingReport["buckets"];
+  label: string;
+  color: string;
+}[] = [
   { key: "current", label: "Current", color: "bg-emerald-500" },
   { key: "1_30", label: "1–30 d", color: "bg-amber-500" },
   { key: "31_60", label: "31–60 d", color: "bg-orange-500" },
@@ -20,10 +24,7 @@ function formatMoney(v: number) {
 }
 
 export function AgingBars({ report }: { report: AgingReport }) {
-  const max = Math.max(
-    1,
-    ...BUCKETS.map((b) => report.buckets[b.key]),
-  );
+  const max = Math.max(1, ...BUCKETS.map((b) => report.buckets[b.key]));
 
   return (
     <div className="space-y-3">

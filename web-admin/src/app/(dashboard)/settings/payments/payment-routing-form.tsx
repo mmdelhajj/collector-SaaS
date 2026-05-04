@@ -93,9 +93,7 @@ export function PaymentRoutingForm({ initial }: { initial: PaymentSettings }) {
     });
   }
 
-  const handoverCount = Object.entries(routing).filter(
-    ([, v]) => v,
-  ).length;
+  const handoverCount = Object.entries(routing).filter(([, v]) => v).length;
 
   return (
     <div className="space-y-5">
@@ -105,16 +103,14 @@ export function PaymentRoutingForm({ initial }: { initial: PaymentSettings }) {
           {handoverCount === 0 ? (
             <>
               No methods need a handover. Collectors will never see the
-              &ldquo;Hand over cash&rdquo; banner — every payment is assumed
-              to land directly in the company wallet.
+              &ldquo;Hand over cash&rdquo; banner — every payment is assumed to
+              land directly in the company wallet.
             </>
           ) : (
             <>
-              <span className="font-mono text-foreground">
-                {handoverCount}
-              </span>{" "}
-              method{handoverCount === 1 ? "" : "s"} require a handover from
-              the collector at end of day.
+              <span className="font-mono text-foreground">{handoverCount}</span>{" "}
+              method{handoverCount === 1 ? "" : "s"} require a handover from the
+              collector at end of day.
             </>
           )}
         </p>

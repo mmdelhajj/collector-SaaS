@@ -38,7 +38,11 @@ export function DataPagination({
     <div className="flex items-center justify-between border-t px-4 py-3">
       <p className="text-xs text-muted-foreground">
         {total === 0 ? (
-          unit ? `No ${unit}` : "No results"
+          unit ? (
+            `No ${unit}`
+          ) : (
+            "No results"
+          )
         ) : (
           <>
             Showing <span className="font-medium text-foreground">{from}</span>–

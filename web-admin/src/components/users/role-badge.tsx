@@ -2,8 +2,7 @@ import { cn } from "@/lib/utils";
 import { ROLE_LABELS, type TenantRole } from "@/lib/users-types";
 
 const STYLES: Record<TenantRole, string> = {
-  tenant_owner:
-    "bg-primary/10 text-primary ring-primary/30",
+  tenant_owner: "bg-primary/10 text-primary ring-primary/30",
   tenant_admin:
     "bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-950/40 dark:text-violet-400",
   manager:

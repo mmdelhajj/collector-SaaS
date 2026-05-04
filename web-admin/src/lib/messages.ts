@@ -7,7 +7,11 @@ import type {
   MessageStatus,
 } from "@/lib/messages-types";
 
-export type { MessageChannel, MessageLog, MessageStatus } from "@/lib/messages-types";
+export type {
+  MessageChannel,
+  MessageLog,
+  MessageStatus,
+} from "@/lib/messages-types";
 export { MESSAGE_CHANNELS, MESSAGE_STATUSES } from "@/lib/messages-types";
 
 export type MessagesListParams = {

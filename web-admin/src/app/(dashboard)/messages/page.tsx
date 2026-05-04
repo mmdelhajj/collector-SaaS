@@ -39,7 +39,8 @@ const CHANNEL_STYLES: Record<MessageChannel, string> = {
   whatsapp:
     "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-400",
   sms: "bg-orange-50 text-orange-700 ring-orange-600/20 dark:bg-orange-950/40 dark:text-orange-400",
-  email: "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-400",
+  email:
+    "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-950/40 dark:text-blue-400",
 };
 
 function formatDateTime(iso: string | null) {
@@ -122,8 +123,7 @@ export default async function MessagesPage({
               <TableRow>
                 <TableCell colSpan={7} className="h-32 text-center">
                   <span className="text-sm text-muted-foreground">
-                    No messages yet. Record a payment to trigger a receipt
-                    send.
+                    No messages yet. Record a payment to trigger a receipt send.
                   </span>
                 </TableCell>
               </TableRow>
@@ -173,7 +173,9 @@ export default async function MessagesPage({
                       <span
                         className={cn(
                           "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset capitalize",
-                          m.status === "sent" || m.status === "delivered" || m.status === "read"
+                          m.status === "sent" ||
+                            m.status === "delivered" ||
+                            m.status === "read"
                             ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-400"
                             : m.status === "queued"
                               ? "bg-amber-50 text-amber-700 ring-amber-600/20"
@@ -243,8 +245,8 @@ function NoTenantContext({ email }: { email: string }) {
             </h1>
             <p className="mt-1.5 text-pretty text-sm text-muted-foreground">
               Sign in as a tenant admin (e.g.{" "}
-              <span className="font-mono text-foreground">{email}</span> needs
-              a tenant) to view messages.
+              <span className="font-mono text-foreground">{email}</span> needs a
+              tenant) to view messages.
             </p>
             <div className="mt-6">
               <Link href="/login" className={buttonVariants({ size: "sm" })}>

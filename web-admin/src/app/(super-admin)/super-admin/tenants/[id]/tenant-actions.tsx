@@ -45,7 +45,8 @@ export function TenantActions({
   const [isPending, startTransition] = useTransition();
 
   function suspend() {
-    if (!confirm(`Suspend ${name}? Users lose access until reactivated.`)) return;
+    if (!confirm(`Suspend ${name}? Users lose access until reactivated.`))
+      return;
     startTransition(async () => {
       const res = await suspendTenantAction(id);
       if (res.ok) toast.success("Suspended");
@@ -62,7 +63,11 @@ export function TenantActions({
   }
 
   function activate() {
-    if (!confirm(`Mark ${name} as paying (active)? Use only after they've paid you.`))
+    if (
+      !confirm(
+        `Mark ${name} as paying (active)? Use only after they've paid you.`,
+      )
+    )
       return;
     startTransition(async () => {
       const res = await updateTenantAction(id, { status: "active" });
@@ -249,8 +254,8 @@ function ExtendTrialButton({ id }: { id: string }) {
         <SheetHeader>
           <SheetTitle>Extend trial</SheetTitle>
           <SheetDescription>
-            Push trial-ends-at forward by N days from its current value (or
-            from today if already expired).
+            Push trial-ends-at forward by N days from its current value (or from
+            today if already expired).
           </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4 pt-2">

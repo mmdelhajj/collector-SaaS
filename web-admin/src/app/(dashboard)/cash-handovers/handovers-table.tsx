@@ -73,7 +73,8 @@ export function HandoversTable({ rows }: { rows: CashHandover[] }) {
                     </div>
                   )}
                 <div className="mt-0.5 text-[10px] font-normal text-muted-foreground">
-                  {h.payments?.length ?? 0} payment{(h.payments?.length ?? 0) === 1 ? "" : "s"}
+                  {h.payments?.length ?? 0} payment
+                  {(h.payments?.length ?? 0) === 1 ? "" : "s"}
                 </div>
               </td>
               <td className="px-4 py-3 text-muted-foreground">

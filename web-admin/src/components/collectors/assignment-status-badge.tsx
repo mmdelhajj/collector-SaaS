@@ -30,7 +30,11 @@ const LABELS: Record<AssignmentStatus, string> = {
   reassigned: "Reassigned",
 };
 
-export function AssignmentStatusBadge({ status }: { status: AssignmentStatus }) {
+export function AssignmentStatusBadge({
+  status,
+}: {
+  status: AssignmentStatus;
+}) {
   return (
     <span
       className={cn(

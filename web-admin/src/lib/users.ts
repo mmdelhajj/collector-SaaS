@@ -74,11 +74,17 @@ export async function updateUser(
 }
 
 export async function listCollectors(): Promise<TenantUser[]> {
-  const res = await listUsers({ perPage: 100, role: "collector", isActive: true });
+  const res = await listUsers({
+    perPage: 100,
+    role: "collector",
+    isActive: true,
+  });
   return res.data;
 }
 
-export async function deactivateUser(id: number): Promise<{ data: TenantUser }> {
+export async function deactivateUser(
+  id: number,
+): Promise<{ data: TenantUser }> {
   return apiFetch<{ data: TenantUser }>(`/api/v1/users/${id}`, {
     method: "DELETE",
   });

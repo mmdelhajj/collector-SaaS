@@ -54,10 +54,12 @@ export async function getPlatformOverview(): Promise<PlatformOverview> {
   return res.data;
 }
 
-export async function listAllTenants(params: {
-  search?: string;
-  status?: string;
-} = {}): Promise<{ tenants: TenantRow[]; total: number }> {
+export async function listAllTenants(
+  params: {
+    search?: string;
+    status?: string;
+  } = {},
+): Promise<{ tenants: TenantRow[]; total: number }> {
   const qs = new URLSearchParams();
   if (params.search) qs.set("search", params.search);
   if (params.status) qs.set("status", params.status);
@@ -245,7 +247,9 @@ export type Plan = {
   updated_at: string | null;
 };
 
-export type PlanWritePayload = Partial<Omit<Plan, "id" | "tenants_count" | "created_at" | "updated_at">>;
+export type PlanWritePayload = Partial<
+  Omit<Plan, "id" | "tenants_count" | "created_at" | "updated_at">
+>;
 
 export async function listPlans(): Promise<Plan[]> {
   const res = await apiFetch<{ data: Plan[] }>("/api/v1/super-admin/plans");

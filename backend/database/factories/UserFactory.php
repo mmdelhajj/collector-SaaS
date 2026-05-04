@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Tenant;
+use App\Models\User;
+use Database\Seeders\RolesSeeder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -62,8 +65,8 @@ class UserFactory extends Factory
     {
         return $this->afterCreating(function ($user) use ($roleName): void {
             if ($user->tenant_id) {
-                (new \Database\Seeders\RolesSeeder)->seedForTenant((string) $user->tenant_id);
-                app(\Spatie\Permission\PermissionRegistrar::class)
+                (new RolesSeeder)->seedForTenant((string) $user->tenant_id);
+                app(PermissionRegistrar::class)
                     ->setPermissionsTeamId($user->tenant_id);
             }
             $user->assignRole($roleName);

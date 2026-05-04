@@ -19,7 +19,11 @@ const STATUS_TABS: Array<{ key: TicketStatus | "all"; label: string }> = [
 export default async function TicketsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; status?: TicketStatus; search?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    status?: TicketStatus;
+    search?: string;
+  }>;
 }) {
   const params = await searchParams;
   const page = params.page ? Number(params.page) : 1;
@@ -29,7 +33,7 @@ export default async function TicketsPage({
     page,
     perPage: 25,
     search: params.search,
-    status: status === ("all" as TicketStatus) ? undefined : status ?? "open",
+    status: status === ("all" as TicketStatus) ? undefined : (status ?? "open"),
   });
 
   return (

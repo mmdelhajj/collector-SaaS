@@ -136,7 +136,10 @@ export default async function CustomersPage({
               list.data.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-mono text-xs text-muted-foreground">
-                    <Link href={`/customers/${c.id}`} className="hover:text-foreground hover:underline">
+                    <Link
+                      href={`/customers/${c.id}`}
+                      className="hover:text-foreground hover:underline"
+                    >
                       {c.code}
                     </Link>
                   </TableCell>
@@ -267,8 +270,8 @@ function NoTenantContext({ email }: { email: string }) {
                     <span className="font-medium text-foreground">
                       Wait for the tenant switcher.
                     </span>{" "}
-                    A workspace selector for super-admins is on the roadmap —
-                    it sets <code className="font-mono text-xs">X-Tenant-ID</code>{" "}
+                    A workspace selector for super-admins is on the roadmap — it
+                    sets <code className="font-mono text-xs">X-Tenant-ID</code>{" "}
                     on every API call.
                   </span>
                 </li>
@@ -276,10 +279,7 @@ function NoTenantContext({ email }: { email: string }) {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <Link
-                href="/login"
-                className={buttonVariants({ size: "sm" })}
-              >
+              <Link href="/login" className={buttonVariants({ size: "sm" })}>
                 Sign in as a tenant admin
               </Link>
               <Link

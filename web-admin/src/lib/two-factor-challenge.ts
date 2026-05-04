@@ -53,7 +53,10 @@ function getKey(): Buffer {
     .digest();
 }
 
-export async function setChallenge(input: { email: string; password: string }): Promise<void> {
+export async function setChallenge(input: {
+  email: string;
+  password: string;
+}): Promise<void> {
   const payload: Challenge = {
     email: input.email,
     password: input.password,

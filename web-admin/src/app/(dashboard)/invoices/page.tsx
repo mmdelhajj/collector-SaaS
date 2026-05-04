@@ -21,7 +21,13 @@ type SearchParams = Promise<{
 
 const PER_PAGE = 25;
 const VALID_STATUSES: readonly string[] = [
-  "draft", "open", "paid", "partial", "overdue", "cancelled", "void",
+  "draft",
+  "open",
+  "paid",
+  "partial",
+  "overdue",
+  "cancelled",
+  "void",
 ];
 
 function formatMoney(value: number, currency = "USD") {
@@ -176,8 +182,8 @@ function NoTenantContext({ email }: { email: string }) {
             </h1>
             <p className="mt-1.5 text-pretty text-sm text-muted-foreground">
               Sign in as a tenant admin (e.g.{" "}
-              <span className="font-mono text-foreground">{email}</span> needs
-              a tenant) to view invoices.
+              <span className="font-mono text-foreground">{email}</span> needs a
+              tenant) to view invoices.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <Link href="/login" className={buttonVariants({ size: "sm" })}>

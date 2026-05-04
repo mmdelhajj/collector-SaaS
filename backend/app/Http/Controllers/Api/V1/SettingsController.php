@@ -12,6 +12,7 @@ use App\Support\Audit;
 use App\Support\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Validation\Rule;
 
 class SettingsController extends Controller
@@ -129,7 +130,7 @@ class SettingsController extends Controller
                 if ($value === null || $value === '') {
                     $data[$section][$field] = null;
                 } else {
-                    $data[$section][$field] = \Illuminate\Support\Facades\Crypt::encryptString((string) $value);
+                    $data[$section][$field] = Crypt::encryptString((string) $value);
                 }
                 $changedSecrets[] = $dotted;
             }
@@ -144,7 +145,7 @@ class SettingsController extends Controller
         // Audit *which keys* changed but not their values — both the new
         // value and the old plaintext stay out of audit_logs.changes.
         if ($changedSecrets) {
-            \App\Support\Audit::record(
+            Audit::record(
                 'tenant.integration_secrets_updated',
                 $tenant,
                 ['keys' => $changedSecrets],
@@ -158,14 +159,14 @@ class SettingsController extends Controller
      * Decrypt one of the encrypted subkeys for a runtime caller (driver
      * factory, gateway client). Returns null if missing or decryption fails.
      */
-    public static function readIntegrationSecret(\App\Models\Tenant $tenant, string $section, string $field): ?string
+    public static function readIntegrationSecret(Tenant $tenant, string $section, string $field): ?string
     {
         $cipher = $tenant->settings[$section][$field] ?? null;
         if (! is_string($cipher) || $cipher === '') {
             return null;
         }
         try {
-            return \Illuminate\Support\Facades\Crypt::decryptString($cipher);
+            return Crypt::decryptString($cipher);
         } catch (\Throwable) {
             // Legacy plaintext value pre-encryption — return as-is so the
             // call doesn't break. The next save() will re-encrypt.

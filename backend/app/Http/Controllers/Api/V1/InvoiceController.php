@@ -10,6 +10,8 @@ use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Services\Billing\InvoiceGenerator;
+use App\Support\Audit;
+use App\Support\UniqueRetry;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -88,7 +90,7 @@ class InvoiceController extends Controller
         $items = $data['items'];
         unset($data['items']);
 
-        $invoice = \App\Support\UniqueRetry::run(fn () => DB::transaction(function () use ($data, $items) {
+        $invoice = UniqueRetry::run(fn () => DB::transaction(function () use ($data, $items) {
             $subtotal = 0.0;
             $tax = 0.0;
 
@@ -160,7 +162,7 @@ class InvoiceController extends Controller
         $label = $invoice->number;
         $invoice->delete();
 
-        \App\Support\Audit::record('invoice.cancelled', $invoice, null, $label);
+        Audit::record('invoice.cancelled', $invoice, null, $label);
 
         return response()->json(null, 204);
     }

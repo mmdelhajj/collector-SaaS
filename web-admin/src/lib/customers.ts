@@ -6,7 +6,11 @@ import type {
   Paginated,
 } from "@/lib/customers-types";
 
-export type { Customer, CustomerStatus, Paginated } from "@/lib/customers-types";
+export type {
+  Customer,
+  CustomerStatus,
+  Paginated,
+} from "@/lib/customers-types";
 export { CUSTOMER_STATUSES } from "@/lib/customers-types";
 
 export type CustomerListParams = {

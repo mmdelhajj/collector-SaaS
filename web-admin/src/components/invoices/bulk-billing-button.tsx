@@ -69,7 +69,9 @@ export function BulkBillingButton() {
               Creates an invoice if one doesn&rsquo;t exist for the current
               period
             </li>
-            <li>Status: <span className="font-mono">open</span>, due in 15 days</li>
+            <li>
+              Status: <span className="font-mono">open</span>, due in 15 days
+            </li>
             <li>Skips subscriptions already billed this period</li>
           </ul>
         </div>

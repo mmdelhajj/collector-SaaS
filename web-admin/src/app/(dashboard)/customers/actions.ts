@@ -72,10 +72,17 @@ export async function createCustomerAction(
     };
   } catch (err) {
     if (err instanceof ApiError) {
-      const body = err.body as { errors?: Record<string, string[]>; message?: string };
+      const body = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
       if (err.status === 422 && body?.errors)
-        return { error: body.message ?? "Validation failed.", fieldErrors: body.errors };
-      if (err.status === 401) return { error: "Session expired. Please sign in again." };
+        return {
+          error: body.message ?? "Validation failed.",
+          fieldErrors: body.errors,
+        };
+      if (err.status === 401)
+        return { error: "Session expired. Please sign in again." };
     }
     return { error: "Could not create customer. Please try again." };
   }
@@ -113,11 +120,18 @@ export async function updateCustomerAction(
     };
   } catch (err) {
     if (err instanceof ApiError) {
-      const body = err.body as { errors?: Record<string, string[]>; message?: string };
+      const body = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
       if (err.status === 422 && body?.errors)
-        return { error: body.message ?? "Validation failed.", fieldErrors: body.errors };
+        return {
+          error: body.message ?? "Validation failed.",
+          fieldErrors: body.errors,
+        };
       if (err.status === 404) return { error: "Customer not found." };
-      if (err.status === 401) return { error: "Session expired. Please sign in again." };
+      if (err.status === 401)
+        return { error: "Session expired. Please sign in again." };
     }
     return { error: "Could not save changes. Please try again." };
   }

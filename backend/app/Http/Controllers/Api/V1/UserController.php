@@ -9,6 +9,7 @@ use App\Http\Requests\User\InviteUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -112,7 +113,7 @@ class UserController extends Controller
 
         if ($role !== null && $role !== $oldRole) {
             $user->syncRoles([$role]);
-            \App\Support\Audit::record(
+            Audit::record(
                 'user.role_changed',
                 $user,
                 ['old' => $oldRole, 'new' => $role],
@@ -121,7 +122,7 @@ class UserController extends Controller
         }
 
         if (array_key_exists('is_active', $data) && (bool) $data['is_active'] !== (bool) $oldActive) {
-            \App\Support\Audit::record(
+            Audit::record(
                 $data['is_active'] ? 'user.reactivated' : 'user.deactivated',
                 $user,
                 null,
@@ -194,7 +195,7 @@ class UserController extends Controller
         // Revoke every issued token so any active sessions are kicked.
         $user->tokens()->delete();
 
-        \App\Support\Audit::record('user.password_reset', $user, null, $user->name);
+        Audit::record('user.password_reset', $user, null, $user->name);
 
         return response()->json([
             'data' => new UserResource($user->fresh('roles')),

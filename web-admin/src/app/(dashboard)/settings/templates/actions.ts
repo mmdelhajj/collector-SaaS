@@ -31,8 +31,14 @@ export async function updateTemplateAction(
     return { ok: true };
   } catch (err) {
     if (err instanceof ApiError) {
-      const b = err.body as { errors?: Record<string, string[]>; message?: string };
-      return { error: b?.message ?? "Could not save template.", fieldErrors: b?.errors };
+      const b = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
+      return {
+        error: b?.message ?? "Could not save template.",
+        fieldErrors: b?.errors,
+      };
     }
     return { error: "Could not save template." };
   }
@@ -47,8 +53,14 @@ export async function createTemplateAction(
     return { ok: true };
   } catch (err) {
     if (err instanceof ApiError) {
-      const b = err.body as { errors?: Record<string, string[]>; message?: string };
-      return { error: b?.message ?? "Could not create template.", fieldErrors: b?.errors };
+      const b = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
+      return {
+        error: b?.message ?? "Could not create template.",
+        fieldErrors: b?.errors,
+      };
     }
     return { error: "Could not create template." };
   }

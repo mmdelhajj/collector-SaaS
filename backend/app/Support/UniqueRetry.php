@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use Illuminate\Database\UniqueConstraintViolationException;
+use LogicException;
 
 /**
  * Helper for inserts that race on a uniquely-indexed column generated from
@@ -19,24 +20,27 @@ final class UniqueRetry
 {
     /**
      * @template T
+     *
      * @param  callable(): T  $cb
      * @return T
      */
     public static function run(callable $cb, int $tries = 5): mixed
     {
-        $attempt = 0;
-        beginning:
-        try {
-            return $cb();
-        } catch (UniqueConstraintViolationException $e) {
-            $attempt++;
-            if ($attempt >= $tries) {
-                throw $e;
+        for ($attempt = 1; $attempt <= $tries; $attempt++) {
+            try {
+                return $cb();
+            } catch (UniqueConstraintViolationException $e) {
+                if ($attempt >= $tries) {
+                    throw $e;
+                }
+                // Tiny random backoff so two writers don't keep colliding in
+                // lockstep. Microseconds — barely perceptible.
+                usleep(random_int(1_000, 10_000));
             }
-            // Tiny random backoff so two writers don't keep colliding in
-            // lockstep. Microseconds — barely perceptible.
-            usleep(random_int(1_000, 10_000));
-            goto beginning;
         }
+
+        // Unreachable — the loop above always either returns or throws.
+        // PHPStan requires a terminator on every path through the function.
+        throw new LogicException('UniqueRetry::run reached unreachable state');
     }
 }

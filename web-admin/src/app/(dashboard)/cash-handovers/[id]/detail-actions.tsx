@@ -207,8 +207,8 @@ function ResolveButton({
         <SheetHeader>
           <SheetTitle>Resolve dispute</SheetTitle>
           <SheetDescription>
-            Document what happened. The handover then flips to confirmed and
-            the resolution is appended to the audit trail.
+            Document what happened. The handover then flips to confirmed and the
+            resolution is appended to the audit trail.
           </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4 pt-2">

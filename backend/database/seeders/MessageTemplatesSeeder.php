@@ -27,13 +27,13 @@ class MessageTemplatesSeeder
                 'key' => 'payment_received',
                 'channel' => 'sms',
                 'locale' => 'en',
-                'body' => "{{tenant_name}}: payment of {{amount}} {{currency}} received for invoice {{invoice_number}}. Receipt: {{receipt_url}}",
+                'body' => '{{tenant_name}}: payment of {{amount}} {{currency}} received for invoice {{invoice_number}}. Receipt: {{receipt_url}}',
             ],
             [
                 'key' => 'payment_received',
                 'channel' => 'sms',
                 'locale' => 'ar',
-                'body' => "{{tenant_name}}: تم استلام {{amount}} {{currency}} للفاتورة {{invoice_number}}. الإيصال: {{receipt_url}}",
+                'body' => '{{tenant_name}}: تم استلام {{amount}} {{currency}} للفاتورة {{invoice_number}}. الإيصال: {{receipt_url}}',
             ],
             [
                 'key' => 'payment_received',

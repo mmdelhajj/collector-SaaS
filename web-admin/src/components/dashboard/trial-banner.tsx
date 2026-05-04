@@ -4,10 +4,7 @@ import type { TenantInfo } from "@/lib/auth";
 
 export function TrialBanner({ tenant }: { tenant: TenantInfo }) {
   // Don't render for paid/active subscriptions or if tenant info missing.
-  if (
-    !tenant.trial_ends_at ||
-    !["trial"].includes(tenant.status)
-  ) {
+  if (!tenant.trial_ends_at || !["trial"].includes(tenant.status)) {
     return null;
   }
 
@@ -24,8 +21,8 @@ export function TrialBanner({ tenant }: { tenant: TenantInfo }) {
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2">
           <p className="flex items-center gap-2 font-medium text-rose-900 dark:text-rose-300">
             <Clock className="size-4" />
-            Your trial has ended. Your workspace is read-only until you
-            choose a plan.
+            Your trial has ended. Your workspace is read-only until you choose a
+            plan.
           </p>
           <Link
             href="/settings/billing"

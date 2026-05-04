@@ -24,13 +24,14 @@ class RefreshExchangeRatesJob implements ShouldQueue
     use Queueable;
 
     private const API_URL = 'https://open.er-api.com/v6/latest/USD';
+
     private const TIMEOUT_SECONDS = 15;
 
     /**
      * @param  string|null  $singleTenantId  if set, only that tenant is
-     *   processed (used by the per-tenant "Refresh now" button). The
-     *   single-tenant path ignores exchange_rate_source so a manual admin
-     *   can pull a one-off rate without flipping to auto first.
+     *                                       processed (used by the per-tenant "Refresh now" button). The
+     *                                       single-tenant path ignores exchange_rate_source so a manual admin
+     *                                       can pull a one-off rate without flipping to auto first.
      */
     public function __construct(
         public ?string $singleTenantId = null,
@@ -48,6 +49,7 @@ class RefreshExchangeRatesJob implements ShouldQueue
         if (! $response->successful()) {
             $msg = "FX API request failed: HTTP {$response->status()}";
             Log::warning($msg);
+
             return ['updated' => 0, 'skipped' => 0, 'errors' => [$msg]];
         }
 
@@ -55,6 +57,7 @@ class RefreshExchangeRatesJob implements ShouldQueue
         if (! is_array($body) || ($body['result'] ?? '') !== 'success') {
             $msg = 'FX API returned non-success body';
             Log::warning($msg, ['body' => $body]);
+
             return ['updated' => 0, 'skipped' => 0, 'errors' => [$msg]];
         }
 
@@ -62,6 +65,7 @@ class RefreshExchangeRatesJob implements ShouldQueue
         if (! is_array($rates) || ! isset($rates['USD'])) {
             $msg = 'FX API rates payload malformed';
             Log::warning($msg);
+
             return ['updated' => 0, 'skipped' => 0, 'errors' => [$msg]];
         }
 
@@ -81,6 +85,7 @@ class RefreshExchangeRatesJob implements ShouldQueue
             $secondary = $tenant->currency_secondary;
             if (! $primary || ! $secondary) {
                 $skipped++;
+
                 continue;
             }
 
@@ -93,6 +98,7 @@ class RefreshExchangeRatesJob implements ShouldQueue
             if ($usdToPrimary === null || $usdToSecondary === null) {
                 $errors[] = "Tenant {$tenant->id} ({$tenant->name}): currency pair {$primary}/{$secondary} unsupported by API";
                 $skipped++;
+
                 continue;
             }
 
@@ -102,6 +108,7 @@ class RefreshExchangeRatesJob implements ShouldQueue
             if ($oldRate !== null && abs($oldRate - $newRate) < 0.00005) {
                 // No meaningful change at our 4-decimal precision.
                 $skipped++;
+
                 continue;
             }
 

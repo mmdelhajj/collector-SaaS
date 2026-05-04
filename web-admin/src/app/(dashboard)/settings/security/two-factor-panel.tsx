@@ -101,12 +101,10 @@ export function TwoFactorPanel({
             <ShieldCheck className="size-4" />
           </span>
           <div className="flex-1">
-            <h2 className="text-sm font-semibold">
-              Authenticator app (TOTP)
-            </h2>
+            <h2 className="text-sm font-semibold">Authenticator app (TOTP)</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Use Google Authenticator, Authy, 1Password, or any TOTP app.
-              Codes change every 30 seconds.
+              Use Google Authenticator, Authy, 1Password, or any TOTP app. Codes
+              change every 30 seconds.
             </p>
           </div>
           {stage === "active" && (
@@ -227,8 +225,8 @@ export function TwoFactorPanel({
                         Save these recovery codes
                       </p>
                       <p className="mt-1 text-amber-800 dark:text-amber-300/90">
-                        Each can be used once if you lose your authenticator.
-                        We won&rsquo;t show them again.
+                        Each can be used once if you lose your authenticator. We
+                        won&rsquo;t show them again.
                       </p>
                     </div>
                   </div>
@@ -276,8 +274,8 @@ export function TwoFactorPanel({
                   </p>
                   <p className="text-xs text-muted-foreground">
                     Enter your account password OR a current 6-digit code from
-                    your authenticator. A stolen session token alone cannot
-                    turn 2FA off.
+                    your authenticator. A stolen session token alone cannot turn
+                    2FA off.
                   </p>
                   <div className="space-y-2">
                     <Label htmlFor="disable-pw" className="text-xs">

@@ -81,9 +81,7 @@ export function OutstandingPanel({
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="flex items-center gap-2 text-sm font-semibold">
-            {isUrgent && (
-              <AlertTriangle className="size-4 text-rose-600" />
-            )}
+            {isUrgent && <AlertTriangle className="size-4 text-rose-600" />}
             Outstanding balance
           </h2>
           <p className="mt-1 font-mono text-3xl font-semibold tabular-nums">
@@ -125,7 +123,7 @@ export function OutstandingPanel({
               "rounded-lg border p-3",
               b.count === 0
                 ? "border-border bg-muted/20 text-muted-foreground"
-                : BUCKET_TONES[b.label] ?? "",
+                : (BUCKET_TONES[b.label] ?? ""),
             )}
           >
             <p className="text-[10px] font-semibold uppercase tracking-wider">
@@ -210,9 +208,8 @@ function SendToCollectorButton({
           <SheetTitle>Send to collector</SheetTitle>
           <SheetDescription>
             Bundle all <b>{allInvoiceIds.length}</b> unpaid invoice
-            {allInvoiceIds.length === 1 ? "" : "s"} for{" "}
-            <b>{customerName}</b> ({FORMAT_MONEY(totalAmount)}) onto a
-            collector&rsquo;s route.
+            {allInvoiceIds.length === 1 ? "" : "s"} for <b>{customerName}</b> (
+            {FORMAT_MONEY(totalAmount)}) onto a collector&rsquo;s route.
           </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 pb-4 pt-2">

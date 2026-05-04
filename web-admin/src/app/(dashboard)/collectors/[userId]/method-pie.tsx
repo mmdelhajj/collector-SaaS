@@ -88,7 +88,8 @@ export function MethodPie({
             iconSize={8}
             wrapperStyle={{ fontSize: 11 }}
             formatter={(value, entry) => {
-              const v = (entry.payload as { value: number } | undefined)?.value ?? 0;
+              const v =
+                (entry.payload as { value: number } | undefined)?.value ?? 0;
               const pct = total > 0 ? Math.round((v / total) * 100) : 0;
               return `${value} ${pct}%`;
             }}

@@ -80,8 +80,8 @@ export function SessionsSheet({ radiusUserId, username }: SessionsSheetProps) {
         <SheetHeader>
           <SheetTitle>Sessions for {username}</SheetTitle>
           <SheetDescription>
-            Last 50 sessions reported to your FreeRADIUS server. The newest
-            row is at the top.
+            Last 50 sessions reported to your FreeRADIUS server. The newest row
+            is at the top.
           </SheetDescription>
         </SheetHeader>
 
@@ -134,12 +134,22 @@ export function SessionsSheet({ radiusUserId, username }: SessionsSheetProps) {
                           </span>
                         </div>
                         <div className="mt-1.5 grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
-                          <Field label="Duration" value={formatDuration(s.duration_seconds)} />
+                          <Field
+                            label="Duration"
+                            value={formatDuration(s.duration_seconds)}
+                          />
                           <Field label="Down" value={formatBytes(s.bytes_in)} />
                           <Field label="Up" value={formatBytes(s.bytes_out)} />
-                          <Field label="Cause" value={s.terminate_cause ?? "—"} />
+                          <Field
+                            label="Cause"
+                            value={s.terminate_cause ?? "—"}
+                          />
                           <Field label="NAS IP" value={s.nas_ip ?? "—"} mono />
-                          <Field label="Framed IP" value={s.framed_ip ?? "—"} mono />
+                          <Field
+                            label="Framed IP"
+                            value={s.framed_ip ?? "—"}
+                            mono
+                          />
                           <Field
                             label="Session ID"
                             value={s.session_id}

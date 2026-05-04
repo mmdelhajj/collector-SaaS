@@ -25,7 +25,7 @@ class AuditLogController extends Controller
 
         if (is_array($filters = $request->input('filter'))) {
             if (! empty($filters['action'])) {
-                $query->where('action', 'like', $filters['action'] . '%');
+                $query->where('action', 'like', $filters['action'].'%');
             }
             if (! empty($filters['user_id'])) {
                 $query->where('user_id', $filters['user_id']);

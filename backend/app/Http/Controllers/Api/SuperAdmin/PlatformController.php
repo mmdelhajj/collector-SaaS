@@ -12,8 +12,17 @@ use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\Audit;
+use App\Support\Rbac;
+use App\Support\TenantContext;
+use Database\Seeders\MessageTemplatesSeeder;
+use Database\Seeders\RolesSeeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\PermissionRegistrar;
 
 class PlatformController extends Controller
 {
@@ -171,11 +180,11 @@ class PlatformController extends Controller
             'company_name' => ['required', 'string', 'max:120'],
             'owner_name' => ['required', 'string', 'max:120'],
             'owner_email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'plan' => ['required', \Illuminate\Validation\Rule::in(['starter', 'growth', 'pro'])],
-            'billing_period' => ['sometimes', \Illuminate\Validation\Rule::in(['monthly', 'annual'])],
+            'plan' => ['required', Rule::in(['starter', 'growth', 'pro'])],
+            'billing_period' => ['sometimes', Rule::in(['monthly', 'annual'])],
             'trial_days' => ['sometimes', 'integer', 'min:0', 'max:365'],
-            'status' => ['sometimes', \Illuminate\Validation\Rule::in(['trial', 'active'])],
-            'locale' => ['sometimes', \Illuminate\Validation\Rule::in(['en', 'ar', 'fr'])],
+            'status' => ['sometimes', Rule::in(['trial', 'active'])],
+            'locale' => ['sometimes', Rule::in(['en', 'ar', 'fr'])],
             'timezone' => ['sometimes', 'string', 'max:64'],
             'currency_primary' => ['sometimes', 'string', 'size:3'],
         ]);
@@ -183,10 +192,10 @@ class PlatformController extends Controller
         $plan = Plan::query()->where('code', $data['plan'])->firstOrFail();
         $trialDays = $data['trial_days'] ?? 14;
         $status = $data['status'] ?? ($trialDays > 0 ? 'trial' : 'active');
-        $generatedPassword = \Illuminate\Support\Str::password(16);
+        $generatedPassword = Str::password(16);
 
-        $result = \Illuminate\Support\Facades\DB::transaction(function () use ($data, $plan, $trialDays, $status, $generatedPassword) {
-            $slug = \Illuminate\Support\Str::slug($data['company_name']) . '-' . \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(4));
+        $result = DB::transaction(function () use ($data, $plan, $trialDays, $status, $generatedPassword) {
+            $slug = Str::slug($data['company_name']).'-'.Str::lower(Str::random(4));
             $tenant = Tenant::query()->create([
                 'name' => $data['company_name'],
                 'slug' => $slug,
@@ -206,22 +215,25 @@ class PlatformController extends Controller
                 'email' => $data['owner_email'],
                 'locale' => $data['locale'] ?? 'en',
                 'timezone' => $data['timezone'] ?? 'Asia/Beirut',
-                'password' => \Illuminate\Support\Facades\Hash::make($generatedPassword),
+                'password' => Hash::make($generatedPassword),
                 'is_active' => true,
             ]);
 
-            (new \Database\Seeders\RolesSeeder)->seedForTenant($tenant->id);
-            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
-            $user->assignRole(\App\Support\Rbac::ROLE_TENANT_OWNER);
+            (new RolesSeeder)->seedForTenant($tenant->id);
+            app(PermissionRegistrar::class)->setPermissionsTeamId($tenant->id);
+            $user->assignRole(Rbac::ROLE_TENANT_OWNER);
 
-            $context = app(\App\Support\TenantContext::class);
+            $context = app(TenantContext::class);
             $previous = $context->get();
             $context->set($tenant);
             try {
-                (new \Database\Seeders\MessageTemplatesSeeder)->seedForTenant($tenant->id);
+                (new MessageTemplatesSeeder)->seedForTenant($tenant->id);
             } finally {
-                if ($previous) $context->set($previous);
-                else $context->clear();
+                if ($previous) {
+                    $context->set($previous);
+                } else {
+                    $context->clear();
+                }
             }
 
             return [$tenant, $user];
@@ -229,7 +241,7 @@ class PlatformController extends Controller
 
         [$tenant, $user] = $result;
 
-        $context = app(\App\Support\TenantContext::class);
+        $context = app(TenantContext::class);
         $previous = $context->get();
         $context->set($tenant);
         try {
@@ -238,8 +250,11 @@ class PlatformController extends Controller
                 'created_by_super_admin' => true,
             ], $tenant->name);
         } finally {
-            if ($previous) $context->set($previous);
-            else $context->clear();
+            if ($previous) {
+                $context->set($previous);
+            } else {
+                $context->clear();
+            }
         }
 
         return response()->json([
@@ -266,22 +281,28 @@ class PlatformController extends Controller
         $tenant = Tenant::query()->findOrFail($id);
 
         $data = $request->validate([
-            'plan' => ['sometimes', \Illuminate\Validation\Rule::in(['starter', 'growth', 'pro'])],
-            'billing_period' => ['sometimes', \Illuminate\Validation\Rule::in(['monthly', 'annual'])],
-            'status' => ['sometimes', \Illuminate\Validation\Rule::in(['trial', 'active', 'suspended'])],
+            'plan' => ['sometimes', Rule::in(['starter', 'growth', 'pro'])],
+            'billing_period' => ['sometimes', Rule::in(['monthly', 'annual'])],
+            'status' => ['sometimes', Rule::in(['trial', 'active', 'suspended'])],
             'extend_trial_days' => ['sometimes', 'integer', 'min:1', 'max:365'],
             'name' => ['sometimes', 'string', 'max:120'],
         ]);
 
         $update = [];
-        if (isset($data['name'])) $update['name'] = $data['name'];
+        if (isset($data['name'])) {
+            $update['name'] = $data['name'];
+        }
         if (isset($data['plan'])) {
             $plan = Plan::query()->where('code', $data['plan'])->firstOrFail();
             $update['plan'] = $plan->code;
             $update['plan_id'] = $plan->id;
         }
-        if (isset($data['billing_period'])) $update['billing_period'] = $data['billing_period'];
-        if (isset($data['status'])) $update['status'] = $data['status'];
+        if (isset($data['billing_period'])) {
+            $update['billing_period'] = $data['billing_period'];
+        }
+        if (isset($data['status'])) {
+            $update['status'] = $data['status'];
+        }
         if (isset($data['extend_trial_days'])) {
             $base = $tenant->trial_ends_at && $tenant->trial_ends_at->isFuture()
                 ? $tenant->trial_ends_at
@@ -291,14 +312,17 @@ class PlatformController extends Controller
 
         $tenant->update($update);
 
-        $context = app(\App\Support\TenantContext::class);
+        $context = app(TenantContext::class);
         $previous = $context->get();
         $context->set($tenant);
         try {
             Audit::record('platform.tenant_updated', $tenant, $data, $tenant->name);
         } finally {
-            if ($previous) $context->set($previous);
-            else $context->clear();
+            if ($previous) {
+                $context->set($previous);
+            } else {
+                $context->clear();
+            }
         }
 
         return response()->json(['data' => $tenant->fresh()]);
@@ -339,7 +363,7 @@ class PlatformController extends Controller
      */
     private function auditWithTenant(Tenant $tenant, string $action, ?array $changes): void
     {
-        $context = app(\App\Support\TenantContext::class);
+        $context = app(TenantContext::class);
         $previous = $context->get();
         $context->set($tenant);
         try {

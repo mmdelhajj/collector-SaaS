@@ -7,10 +7,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CashHandoverResource;
 use App\Models\CashHandover;
-use Illuminate\Http\JsonResponse;
+use App\Support\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Validation\Rule;
 
 class CashHandoverController extends Controller
 {
@@ -71,7 +70,7 @@ class CashHandoverController extends Controller
             'confirmed_at' => now(),
         ]);
 
-        \App\Support\Audit::record(
+        Audit::record(
             'handover.confirmed',
             $handover,
             ['amount' => (string) $handover->amount],
@@ -109,7 +108,7 @@ class CashHandoverController extends Controller
             'dispute_reason' => $request->input('reason'),
         ]);
 
-        \App\Support\Audit::record(
+        Audit::record(
             'handover.disputed',
             $handover,
             [
@@ -150,7 +149,7 @@ class CashHandoverController extends Controller
             'confirmed_at' => now(),
             'dispute_reason' => trim(
                 ($handover->dispute_reason ?? '').
-                "\n\n[Resolved by {$request->user()->name} at ".now()->toIso8601String()."]: ".
+                "\n\n[Resolved by {$request->user()->name} at ".now()->toIso8601String().']: '.
                 $request->input('resolution'),
             ),
         ];
@@ -159,7 +158,7 @@ class CashHandoverController extends Controller
         }
         $handover->update($update);
 
-        \App\Support\Audit::record(
+        Audit::record(
             'handover.resolved',
             $handover,
             [

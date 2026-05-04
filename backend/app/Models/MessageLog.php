@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use Database\Factories\MessageLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class MessageLog extends Model
 {
-    /** @use HasFactory<\Database\Factories\MessageLogFactory> */
+    /** @use HasFactory<MessageLogFactory> */
     use BelongsToTenant, HasFactory;
 
     protected $table = 'messages_log';

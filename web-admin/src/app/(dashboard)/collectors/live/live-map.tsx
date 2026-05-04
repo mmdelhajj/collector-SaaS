@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  MapContainer,
-  Marker,
-  Polygon,
-  Popup,
-  TileLayer,
-} from "react-leaflet";
+import { MapContainer, Marker, Polygon, Popup, TileLayer } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Banknote, Clock, Wifi, WifiOff } from "lucide-react";
@@ -152,9 +146,7 @@ export function LiveMap({ zones }: { zones: CollectorZone[] }) {
               >
                 <Popup>
                   <div className="space-y-1 text-xs">
-                    <p className="text-sm font-semibold">
-                      {c.collector.name}
-                    </p>
+                    <p className="text-sm font-semibold">{c.collector.name}</p>
                     <p className="flex items-center gap-1 text-muted-foreground">
                       <Clock className="size-3" />
                       {timeAgo(c.last_ping_at)}

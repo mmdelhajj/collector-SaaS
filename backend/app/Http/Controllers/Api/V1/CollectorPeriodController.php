@@ -14,7 +14,6 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Per-collector drill-down. One endpoint covers today / week / month / year
@@ -296,7 +295,7 @@ class CollectorPeriodController extends Controller
                 $cleared = $invoiceTotal !== null && $balanceLeft !== null && $balanceLeft <= 0;
 
                 return [
-                    'id' => 'p-' . $p->id,
+                    'id' => 'p-'.$p->id,
                     'kind' => 'payment',
                     'when' => $p->collected_at?->toIso8601String(),
                     'amount' => (float) $p->amount,
@@ -335,7 +334,7 @@ class CollectorPeriodController extends Controller
             ->limit(50)
             ->get()
             ->map(fn (CollectorAssignment $a) => [
-                'id' => 'f-' . $a->id,
+                'id' => 'f-'.$a->id,
                 'kind' => 'failure',
                 'when' => $a->updated_at?->toIso8601String(),
                 'failure_reason' => $a->failure_reason,
@@ -364,7 +363,7 @@ class CollectorPeriodController extends Controller
             ->limit(20)
             ->get()
             ->map(fn (CashHandover $h) => [
-                'id' => 'h-' . $h->id,
+                'id' => 'h-'.$h->id,
                 'kind' => 'handover',
                 'when' => ($h->confirmed_at ?? $h->disputed_at ?? $h->handed_over_at)?->toIso8601String(),
                 'handover_id' => $h->id,
@@ -391,7 +390,7 @@ class CollectorPeriodController extends Controller
             ->limit(30)
             ->get()
             ->map(fn (AuditLog $a) => [
-                'id' => 'a-' . $a->id,
+                'id' => 'a-'.$a->id,
                 'kind' => 'audit',
                 'when' => $a->created_at?->toIso8601String(),
                 'action' => $a->action,

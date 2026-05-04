@@ -25,8 +25,8 @@ export default async function NewTenantPage() {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Manually provision a new workspace and the first owner user.
-          You&rsquo;ll get a one-time password to share with them via a
-          secure channel.
+          You&rsquo;ll get a one-time password to share with them via a secure
+          channel.
         </p>
       </div>
 

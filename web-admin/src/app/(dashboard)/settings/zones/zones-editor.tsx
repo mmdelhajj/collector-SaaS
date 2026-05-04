@@ -2,14 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import {
-  Loader2,
-  MapPin,
-  Plus,
-  Save,
-  Trash2,
-  Undo2,
-} from "lucide-react";
+import { Loader2, MapPin, Plus, Save, Trash2, Undo2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,7 +68,10 @@ export function ZonesEditor({
   }, [zones]);
 
   const selectedZone = useMemo(
-    () => (typeof selectedId === "number" ? zones.find((z) => z.id === selectedId) ?? null : null),
+    () =>
+      typeof selectedId === "number"
+        ? (zones.find((z) => z.id === selectedId) ?? null)
+        : null,
     [zones, selectedId],
   );
 
@@ -152,7 +148,9 @@ export function ZonesEditor({
                     color: draft.color,
                     polygon: draft.polygon,
                     default_collector:
-                      collectors.find((c) => c.id === draft.default_collector_id) ?? null,
+                      collectors.find(
+                        (c) => c.id === draft.default_collector_id,
+                      ) ?? null,
                   }
                 : z,
             ),
@@ -187,7 +185,11 @@ export function ZonesEditor({
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
       <aside className="space-y-2">
-        <Button type="button" onClick={startNew} className="w-full justify-start">
+        <Button
+          type="button"
+          onClick={startNew}
+          className="w-full justify-start"
+        >
           <Plus className="size-4" />
           New zone
         </Button>
@@ -228,7 +230,9 @@ export function ZonesEditor({
             <Input
               id="z-name"
               value={draft.name}
-              onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, name: e.target.value }))
+              }
               placeholder="Tripoli North"
             />
           </div>
@@ -244,7 +248,9 @@ export function ZonesEditor({
                 }
                 className="h-9 w-14 cursor-pointer rounded-md border bg-transparent"
               />
-              <code className="text-xs text-muted-foreground">{draft.color}</code>
+              <code className="text-xs text-muted-foreground">
+                {draft.color}
+              </code>
             </div>
           </div>
           <div className="space-y-1.5">
@@ -255,7 +261,9 @@ export function ZonesEditor({
               onChange={(e) =>
                 setDraft((d) => ({
                   ...d,
-                  default_collector_id: e.target.value ? Number(e.target.value) : null,
+                  default_collector_id: e.target.value
+                    ? Number(e.target.value)
+                    : null,
                 }))
               }
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"

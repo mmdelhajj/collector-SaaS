@@ -24,7 +24,11 @@ export async function updateWorkspaceAction(
       formData.get("currency_secondary")?.toString().trim() || null,
     exchange_rate: exchangeRaw ? Number(exchangeRaw) : null,
     timezone: formData.get("timezone")?.toString() || undefined,
-    locale: formData.get("locale")?.toString() as "ar" | "en" | "fr" | undefined,
+    locale: formData.get("locale")?.toString() as
+      | "ar"
+      | "en"
+      | "fr"
+      | undefined,
   };
 
   try {
@@ -34,7 +38,10 @@ export async function updateWorkspaceAction(
     return { ok: true };
   } catch (err) {
     if (err instanceof ApiError) {
-      const body = err.body as { errors?: Record<string, string[]>; message?: string };
+      const body = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
       return {
         error: body?.message ?? "Could not save workspace settings.",
         fieldErrors: body?.errors,

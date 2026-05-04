@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Support\Rbac;
 use App\Support\TenantContext;
 use Database\Seeders\RolesSeeder;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
@@ -108,7 +109,7 @@ it('cross-tenant: cannot read another tenants radius user', function () {
 });
 
 it('encrypts the radius password at rest', function () {
-    $raw = (string) \Illuminate\Support\Facades\DB::table('radius_users')
+    $raw = (string) DB::table('radius_users')
         ->where('id', $this->radiusUser->id)
         ->value('password');
 

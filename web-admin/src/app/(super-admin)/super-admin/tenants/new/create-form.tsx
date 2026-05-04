@@ -114,7 +114,9 @@ export function CreateTenantForm({ plans }: { plans: PublicPlan[] }) {
           </Button>
           <Button
             type="button"
-            onClick={() => router.push(`/super-admin/tenants/${result.data.id}`)}
+            onClick={() =>
+              router.push(`/super-admin/tenants/${result.data.id}`)
+            }
           >
             Open tenant
           </Button>
@@ -208,9 +210,7 @@ export function CreateTenantForm({ plans }: { plans: PublicPlan[] }) {
           <SelectField
             label="Billing period"
             value={form.billing_period}
-            onChange={(v) =>
-              set("billing_period", v as "monthly" | "annual")
-            }
+            onChange={(v) => set("billing_period", v as "monthly" | "annual")}
             options={[
               { value: "monthly", label: "Monthly" },
               { value: "annual", label: "Annual" },

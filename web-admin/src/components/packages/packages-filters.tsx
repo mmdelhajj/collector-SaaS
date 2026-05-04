@@ -26,7 +26,10 @@ export function PackagesFilters() {
 
   useEffect(() => {
     if (search === currentSearch) return;
-    const t = setTimeout(() => push({ search: search || null, page: null }), 350);
+    const t = setTimeout(
+      () => push({ search: search || null, page: null }),
+      350,
+    );
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);

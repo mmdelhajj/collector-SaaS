@@ -82,8 +82,8 @@ export default async function MarketingHome() {
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-muted-foreground">
               Customers, invoices, door-to-door cash collection, WhatsApp
-              receipts, RADIUS auto-suspend — all in one workspace. Replace
-              your Excel + WhatsApp groups in an afternoon.
+              receipts, RADIUS auto-suspend — all in one workspace. Replace your
+              Excel + WhatsApp groups in an afternoon.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
@@ -144,9 +144,7 @@ export default async function MarketingHome() {
                   <h3 className="mt-4 font-semibold tracking-tight">
                     {f.title}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {f.body}
-                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
                 </div>
               );
             })}
@@ -198,7 +196,8 @@ export default async function MarketingHome() {
                         ${p.price_monthly}
                       </span>
                       <span className="text-sm text-muted-foreground">
-                        {" "}/month
+                        {" "}
+                        /month
                       </span>
                     </p>
                     {p.price_annual && (
@@ -236,7 +235,10 @@ export default async function MarketingHome() {
                         }
                       />
                       <PlanLine ok={p.features.radius} text="RADIUS gateway" />
-                      <PlanLine ok={p.features.whatsapp} text="WhatsApp receipts" />
+                      <PlanLine
+                        ok={p.features.whatsapp}
+                        text="WhatsApp receipts"
+                      />
                       <PlanLine ok={p.features.sms} text="SMS fallback" />
                       <PlanLine
                         ok={p.features.priority_support}

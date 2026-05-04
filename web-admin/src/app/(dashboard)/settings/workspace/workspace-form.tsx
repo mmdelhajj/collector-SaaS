@@ -12,10 +12,7 @@ import {
   TIMEZONES,
   type WorkspaceSettings,
 } from "@/lib/settings-types";
-import {
-  updateWorkspaceAction,
-  type WorkspaceFormState,
-} from "./actions";
+import { updateWorkspaceAction, type WorkspaceFormState } from "./actions";
 
 export function WorkspaceForm({ initial }: { initial: WorkspaceSettings }) {
   const [state, formAction, isPending] = useActionState<
@@ -48,8 +45,17 @@ export function WorkspaceForm({ initial }: { initial: WorkspaceSettings }) {
         </div>
       )}
 
-      <Section title="Branding" description="How your workspace appears to staff and customers.">
-        <Field label="Workspace name" name="name" defaultValue={initial.name} required errors={fe.name} />
+      <Section
+        title="Branding"
+        description="How your workspace appears to staff and customers."
+      >
+        <Field
+          label="Workspace name"
+          name="name"
+          defaultValue={initial.name}
+          required
+          errors={fe.name}
+        />
         <Field
           label="Logo URL"
           name="logo_url"
@@ -78,8 +84,18 @@ export function WorkspaceForm({ initial }: { initial: WorkspaceSettings }) {
         </div>
       </Section>
 
-      <Section title="Currency" description="Primary currency is used for all invoices. Secondary is shown alongside.">
-        <SelectField label="Primary currency" name="currency_primary" defaultValue={initial.currency_primary} options={CURRENCIES} required errors={fe.currency_primary} />
+      <Section
+        title="Currency"
+        description="Primary currency is used for all invoices. Secondary is shown alongside."
+      >
+        <SelectField
+          label="Primary currency"
+          name="currency_primary"
+          defaultValue={initial.currency_primary}
+          options={CURRENCIES}
+          required
+          errors={fe.currency_primary}
+        />
         <SelectField
           label="Secondary currency"
           name="currency_secondary"
@@ -98,8 +114,18 @@ export function WorkspaceForm({ initial }: { initial: WorkspaceSettings }) {
         />
       </Section>
 
-      <Section title="Locale" description="Default language and timezone for new staff and dated reports.">
-        <SelectField label="Locale" name="locale" defaultValue={initial.locale} options={LOCALES} required errors={fe.locale} />
+      <Section
+        title="Locale"
+        description="Default language and timezone for new staff and dated reports."
+      >
+        <SelectField
+          label="Locale"
+          name="locale"
+          defaultValue={initial.locale}
+          options={LOCALES}
+          required
+          errors={fe.locale}
+        />
         <SelectField
           label="Timezone"
           name="timezone"

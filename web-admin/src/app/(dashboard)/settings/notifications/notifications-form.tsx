@@ -48,7 +48,11 @@ export function NotificationsForm({
         </div>
       )}
 
-      <Section icon={Bell} title="Channels" description="Where automated messages are sent.">
+      <Section
+        icon={Bell}
+        title="Channels"
+        description="Where automated messages are sent."
+      >
         <Toggle
           name="whatsapp_enabled"
           label="WhatsApp"
@@ -72,7 +76,11 @@ export function NotificationsForm({
         />
       </Section>
 
-      <Section icon={Bell} title="Triggers" description="When to send messages automatically.">
+      <Section
+        icon={Bell}
+        title="Triggers"
+        description="When to send messages automatically."
+      >
         <Toggle
           name="send_invoice_on_create"
           label="Send invoice on creation"

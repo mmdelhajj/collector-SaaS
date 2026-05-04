@@ -14,7 +14,10 @@ type Result<T = unknown> = { ok?: boolean; error?: string; data?: T };
 
 function describe(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
-    const b = err.body as { message?: string; errors?: Record<string, string[]> };
+    const b = err.body as {
+      message?: string;
+      errors?: Record<string, string[]>;
+    };
     if (b?.errors) {
       // Surface the first per-field error so the user gets an actionable
       // message even when the generic `message` is "Validation failed".

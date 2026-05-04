@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\CashHandover;
+use App\Models\CollectorAssignment;
+use App\Models\CollectorRoute;
 use App\Models\Customer;
 use App\Models\CustomerSubscription;
 use App\Models\Invoice;
+use App\Models\NasDevice;
 use App\Models\Package;
 use App\Models\Payment;
+use App\Models\RadiusUser;
 use App\Models\ServiceCategory;
 use App\Models\Tenant;
 use App\Models\User;
@@ -200,25 +205,25 @@ class DatabaseSeeder extends Seeder
         }
 
         // Seed a NAS device per tenant + radius_users for every active subscription.
-        \App\Models\NasDevice::query()->updateOrCreate(
+        NasDevice::query()->updateOrCreate(
             ['tenant_id' => $tenant->id, 'ip_address' => '10.0.0.1'],
             [
                 'name' => 'Core NAS',
-                'secret' => 'shared-secret-'.\Illuminate\Support\Str::random(8),
+                'secret' => 'shared-secret-'.Str::random(8),
                 'type' => 'mikrotik',
                 'is_active' => true,
                 'last_seen_at' => now(),
             ],
         );
 
-        \App\Models\CustomerSubscription::query()
+        CustomerSubscription::query()
             ->where('tenant_id', $tenant->id)
             ->whereDoesntHave('customer.subscriptions', fn ($q) => $q->whereNotNull('id'))
             ->with('customer', 'package')
             ->get();
 
-        foreach (\App\Models\CustomerSubscription::query()->where('tenant_id', $tenant->id)->with('package')->get() as $sub) {
-            \App\Models\RadiusUser::query()->updateOrCreate(
+        foreach (CustomerSubscription::query()->where('tenant_id', $tenant->id)->with('package')->get() as $sub) {
+            RadiusUser::query()->updateOrCreate(
                 [
                     'tenant_id' => $tenant->id,
                     'username' => 'pppoe-'.$sub->customer_id,
@@ -226,7 +231,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'customer_id' => $sub->customer_id,
                     'subscription_id' => $sub->id,
-                    'password' => \Illuminate\Support\Str::random(12),
+                    'password' => Str::random(12),
                     'radius_group' => $sub->package->radius_group_name ?? 'default',
                     'status' => $sub->status === 'suspended' ? 'suspended' : 'active',
                     'data_used_mb_current_period' => fake()->randomFloat(2, 0, 50_000),
@@ -301,7 +306,7 @@ class DatabaseSeeder extends Seeder
                 ->get();
 
             foreach ($openInvoices as $idx => $inv) {
-                \App\Models\CollectorAssignment::query()->create([
+                CollectorAssignment::query()->create([
                     'tenant_id' => $tenant->id,
                     'collector_user_id' => $collector->id,
                     'invoice_id' => $inv->id,
@@ -315,7 +320,7 @@ class DatabaseSeeder extends Seeder
             }
 
             // Seed today's collector route + a pending cash handover.
-            $route = \App\Models\CollectorRoute::query()->updateOrCreate(
+            $route = CollectorRoute::query()->updateOrCreate(
                 [
                     'tenant_id' => $tenant->id,
                     'collector_user_id' => $collector->id,
@@ -329,12 +334,12 @@ class DatabaseSeeder extends Seeder
                 ],
             );
 
-            $todayCollected = (float) \App\Models\Payment::query()
+            $todayCollected = (float) Payment::query()
                 ->where('collected_by_user_id', $collector->id)
                 ->where('status', 'completed')
                 ->sum('amount');
 
-            \App\Models\CashHandover::query()->create([
+            CashHandover::query()->create([
                 'tenant_id' => $tenant->id,
                 'from_user_id' => $collector->id,
                 'to_user_id' => null,
@@ -347,7 +352,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             // A second one already confirmed, for the history view.
-            \App\Models\CashHandover::query()->create([
+            CashHandover::query()->create([
                 'tenant_id' => $tenant->id,
                 'from_user_id' => $collector->id,
                 'to_user_id' => $manager?->id,
@@ -362,9 +367,9 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedFullPayment(\App\Models\Invoice $invoice, string $tenantId, ?int $collectorId): void
+    private function seedFullPayment(Invoice $invoice, string $tenantId, ?int $collectorId): void
     {
-        $payment = \App\Models\Payment::query()->create([
+        $payment = Payment::query()->create([
             'tenant_id' => $tenantId,
             'customer_id' => $invoice->customer_id,
             'invoice_id' => $invoice->id,
@@ -383,10 +388,10 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    private function seedPartialPayment(\App\Models\Invoice $invoice, string $tenantId, ?int $collectorId): void
+    private function seedPartialPayment(Invoice $invoice, string $tenantId, ?int $collectorId): void
     {
         $half = round((float) $invoice->total / 2, 2);
-        \App\Models\Payment::query()->create([
+        Payment::query()->create([
             'tenant_id' => $tenantId,
             'customer_id' => $invoice->customer_id,
             'invoice_id' => $invoice->id,

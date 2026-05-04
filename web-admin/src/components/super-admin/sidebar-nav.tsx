@@ -23,8 +23,7 @@ export function SuperAdminNav() {
           const Icon = item.icon;
           const isActive =
             pathname === item.href ||
-            (item.href !== "/super-admin" &&
-              pathname.startsWith(item.href));
+            (item.href !== "/super-admin" && pathname.startsWith(item.href));
           return (
             <li key={item.href}>
               <Link

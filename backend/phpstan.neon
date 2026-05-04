@@ -1,0 +1,17 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - database
+        - routes
+    # Level 0 — finds basic things like undefined classes/methods/calls and
+    # misuse of basic types. Higher levels are more pedantic about generics
+    # and PHPDoc strictness, which the codebase isn't ready for yet. Bump
+    # gradually as separate cleanup PRs.
+    level: 0
+    excludePaths:
+        - vendor/*
+        - storage/*
+        - bootstrap/cache/*

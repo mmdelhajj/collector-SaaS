@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\RadiusUserResource;
 use App\Models\RadiusUser;
 use App\Services\Radius\CoaService;
+use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -64,7 +65,7 @@ class RadiusUserController extends Controller
         $user->update(['status' => 'suspended']);
         $coa->suspend($user);
 
-        \App\Support\Audit::record('radius.suspended', $user, null, $user->username);
+        Audit::record('radius.suspended', $user, null, $user->username);
 
         return new RadiusUserResource($user->fresh()->load('customer'));
     }
@@ -79,7 +80,7 @@ class RadiusUserController extends Controller
         // Force a reauth so the NAS picks up the new policy.
         $coa->disconnect($user);
 
-        \App\Support\Audit::record('radius.reactivated', $user, null, $user->username);
+        Audit::record('radius.reactivated', $user, null, $user->username);
 
         return new RadiusUserResource($user->fresh()->load('customer'));
     }
@@ -98,7 +99,7 @@ class RadiusUserController extends Controller
         $user->update(['radius_group' => $newGroup]);
         $coa->changeRadiusGroup($user, $newGroup);
 
-        \App\Support\Audit::record(
+        Audit::record(
             'radius.speed_changed',
             $user,
             ['old' => $oldGroup, 'new' => $newGroup],

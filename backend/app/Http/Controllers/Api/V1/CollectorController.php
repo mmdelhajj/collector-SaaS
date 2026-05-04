@@ -14,10 +14,13 @@ use App\Models\CashHandover;
 use App\Models\CollectorAssignment;
 use App\Models\CollectorRoute;
 use App\Models\Payment;
-use Illuminate\Support\Facades\DB;
+use App\Models\Tenant;
+use App\Support\Audit;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Self-service endpoints for the authenticated collector.
@@ -59,7 +62,7 @@ class CollectorController extends Controller
         $thisWeek = now()->startOfWeek();
         $thisMonth = now()->startOfMonth();
 
-        $assignmentCounts = function (\Carbon\Carbon $since) use ($userId) {
+        $assignmentCounts = function (Carbon $since) use ($userId) {
             return CollectorAssignment::query()
                 ->where('collector_user_id', $userId)
                 ->where('assigned_at', '>=', $since)
@@ -69,7 +72,7 @@ class CollectorController extends Controller
                 ->all();
         };
 
-        $collected = function (\Carbon\Carbon $since) use ($userId) {
+        $collected = function (Carbon $since) use ($userId) {
             return (float) Payment::query()
                 ->where('collected_by_user_id', $userId)
                 ->where('status', 'completed')
@@ -270,7 +273,7 @@ class CollectorController extends Controller
      *
      * @return list<string>
      */
-    private function handoverMethods(\App\Models\Tenant $tenant): array
+    private function handoverMethods(Tenant $tenant): array
     {
         $override = $tenant->settings['payments']['handover_methods'] ?? null;
         if (is_array($override) && count($override) > 0) {
@@ -358,7 +361,7 @@ class CollectorController extends Controller
 
             // Sweep every unbundled payment for the tenant's configured
             // handover methods so the supervisor can audit the bundle.
-            \App\Models\Payment::query()
+            Payment::query()
                 ->where('collected_by_user_id', $userId)
                 ->where('status', 'completed')
                 ->whereIn('method', $methods)
@@ -368,7 +371,7 @@ class CollectorController extends Controller
             return $h;
         });
 
-        \App\Support\Audit::record(
+        Audit::record(
             'handover.submitted',
             $handover,
             ['amount' => (string) $handover->amount, 'currency' => $handover->currency],

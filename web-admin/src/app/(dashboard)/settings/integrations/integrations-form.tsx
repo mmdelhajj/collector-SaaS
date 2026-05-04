@@ -21,7 +21,11 @@ import {
   type IntegrationsFormState,
 } from "./actions";
 
-export function IntegrationsForm({ initial }: { initial: IntegrationsSettings }) {
+export function IntegrationsForm({
+  initial,
+}: {
+  initial: IntegrationsSettings;
+}) {
   const [state, formAction, isPending] = useActionState<
     IntegrationsFormState | undefined,
     FormData
@@ -47,7 +51,11 @@ export function IntegrationsForm({ initial }: { initial: IntegrationsSettings })
         </div>
       )}
 
-      <Section icon={MessageSquare} title="WhatsApp" description="Used for receipts, reminders, and overdue notices.">
+      <Section
+        icon={MessageSquare}
+        title="WhatsApp"
+        description="Used for receipts, reminders, and overdue notices."
+      >
         <SelectField
           label="Provider"
           name="whatsapp_provider"
@@ -78,7 +86,11 @@ export function IntegrationsForm({ initial }: { initial: IntegrationsSettings })
         />
       </Section>
 
-      <Section icon={Phone} title="SMS" description="Fallback channel when the customer has no WhatsApp.">
+      <Section
+        icon={Phone}
+        title="SMS"
+        description="Fallback channel when the customer has no WhatsApp."
+      >
         <SelectField
           label="Provider"
           name="sms_provider"
@@ -88,7 +100,11 @@ export function IntegrationsForm({ initial }: { initial: IntegrationsSettings })
             { value: "local", label: "Local Lebanese gateway" },
           ]}
         />
-        <Field label="Account SID" name="sms_sid" defaultValue={initial.sms.sid} />
+        <Field
+          label="Account SID"
+          name="sms_sid"
+          defaultValue={initial.sms.sid}
+        />
         <SecretField
           label="Auth token"
           name="sms_token"
@@ -102,14 +118,20 @@ export function IntegrationsForm({ initial }: { initial: IntegrationsSettings })
         />
       </Section>
 
-      <Section icon={Radio} title="RADIUS gateway" description="Shared secret + IP allowlist for FreeRADIUS rlm_rest.">
+      <Section
+        icon={Radio}
+        title="RADIUS gateway"
+        description="Shared secret + IP allowlist for FreeRADIUS rlm_rest."
+      >
         <SecretField
           label="Shared secret"
           name="radius_shared_secret"
           isSet={initial.radius.shared_secret_set}
         />
         <div className="space-y-1.5">
-          <Label htmlFor="radius_allowed_ips">Allowed IPs (one per line, or commas)</Label>
+          <Label htmlFor="radius_allowed_ips">
+            Allowed IPs (one per line, or commas)
+          </Label>
           <Textarea
             id="radius_allowed_ips"
             name="radius_allowed_ips"
@@ -225,7 +247,9 @@ function SecretField({
         name={name}
         type="password"
         autoComplete="new-password"
-        placeholder={isSet ? "•••••••• (leave blank to keep)" : "Paste new value"}
+        placeholder={
+          isSet ? "•••••••• (leave blank to keep)" : "Paste new value"
+        }
       />
     </div>
   );

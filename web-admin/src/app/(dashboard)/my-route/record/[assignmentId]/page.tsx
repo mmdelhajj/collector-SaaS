@@ -14,12 +14,7 @@ export default async function RecordPaymentPage({
 }: {
   params: Promise<{ assignmentId: string }>;
 }) {
-  await requireRole([
-    "collector",
-    "tenant_owner",
-    "tenant_admin",
-    "manager",
-  ]);
+  await requireRole(["collector", "tenant_owner", "tenant_admin", "manager"]);
 
   const { assignmentId } = await params;
   const assignments = await listMyAssignments();

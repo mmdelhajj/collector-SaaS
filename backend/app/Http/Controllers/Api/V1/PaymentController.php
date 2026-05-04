@@ -10,6 +10,7 @@ use App\Http\Resources\PaymentResource;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Services\Billing\PaymentRecorder;
+use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -109,7 +110,7 @@ class PaymentController extends Controller
         $payment = $recorder->record($attributes);
         $payment->load(['customer', 'invoice', 'collector']);
 
-        \App\Support\Audit::record(
+        Audit::record(
             'payment.created',
             $payment,
             ['amount' => (string) $payment->amount, 'currency' => $payment->currency, 'method' => $payment->method],
@@ -149,7 +150,7 @@ class PaymentController extends Controller
         $payment = $recorder->refund($payment);
         $payment->load(['customer', 'invoice', 'collector']);
 
-        \App\Support\Audit::record(
+        Audit::record(
             'payment.refunded',
             $payment,
             $original,

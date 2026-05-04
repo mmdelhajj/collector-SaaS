@@ -46,7 +46,11 @@ export default async function PackagesPage({
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const search = sp.search?.trim() || undefined;
   const isActive =
-    sp.active === "active" ? true : sp.active === "inactive" ? false : undefined;
+    sp.active === "active"
+      ? true
+      : sp.active === "inactive"
+        ? false
+        : undefined;
 
   let list: Awaited<ReturnType<typeof listPackages>>;
   try {

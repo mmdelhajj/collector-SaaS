@@ -39,7 +39,9 @@ export function DeletePlanButton({
       size="sm"
       onClick={handle}
       disabled={isPending || blocked}
-      title={blocked ? `${tenantsCount} tenants still on this plan` : "Delete plan"}
+      title={
+        blocked ? `${tenantsCount} tenants still on this plan` : "Delete plan"
+      }
       className="gap-1.5 text-rose-700 hover:bg-rose-50 hover:text-rose-800 disabled:opacity-40"
     >
       {isPending ? (

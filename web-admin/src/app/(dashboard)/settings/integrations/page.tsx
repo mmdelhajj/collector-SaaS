@@ -19,10 +19,12 @@ export default async function IntegrationsSettingsPage() {
           <ArrowLeft className="size-3" />
           Settings
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Integrations</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+          Integrations
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          WhatsApp, SMS, and RADIUS gateway credentials. Secrets are write-only —
-          we never display them back.
+          WhatsApp, SMS, and RADIUS gateway credentials. Secrets are write-only
+          — we never display them back.
         </p>
       </div>
 

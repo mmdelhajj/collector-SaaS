@@ -3,7 +3,9 @@ import { logoutAction } from "@/app/(dashboard)/actions";
 import type { TenantRole } from "@/lib/users-types";
 import { ROLE_LABELS } from "@/lib/users-types";
 
-const ROLE_GUIDANCE: Partial<Record<TenantRole, { title: string; body: string }>> = {
+const ROLE_GUIDANCE: Partial<
+  Record<TenantRole, { title: string; body: string }>
+> = {
   collector: {
     title: "Collectors use the mobile app",
     body: "Your role is set up for door-to-door collection on the field. Install the ISP Collector app on your phone and sign in there with the same credentials.",

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use Database\Factories\PackageFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Package extends Model
 {
-    /** @use HasFactory<\Database\Factories\PackageFactory> */
+    /** @use HasFactory<PackageFactory> */
     use BelongsToTenant, HasFactory, SoftDeletes;
 
     public const BILLING_TYPES = ['recurring', 'prepaid', 'postpaid', 'usage_based'];

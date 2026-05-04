@@ -10,6 +10,7 @@ use App\Models\MessageLog;
 use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Reads each tenant's notification preferences and dispatches reminder /
@@ -95,7 +96,7 @@ class SendDueRemindersCommand extends Command
     }
 
     /**
-     * @param  callable(\Illuminate\Database\Eloquent\Builder): \Illuminate\Database\Eloquent\Builder  $filter
+     * @param  callable(Builder): Builder  $filter
      */
     private function dispatchFor(string $tenantId, callable $filter, string $templateKey): int
     {

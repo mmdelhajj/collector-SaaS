@@ -23,8 +23,8 @@ export default async function NotificationsSettingsPage() {
           Notifications
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Channels we use to talk to your customers, and when reminder /
-          overdue messages get sent automatically.
+          Channels we use to talk to your customers, and when reminder / overdue
+          messages get sent automatically.
         </p>
       </div>
 

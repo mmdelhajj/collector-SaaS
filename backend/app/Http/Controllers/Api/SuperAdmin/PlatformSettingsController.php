@@ -10,6 +10,7 @@ use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class PlatformSettingsController extends Controller
 {
@@ -56,7 +57,7 @@ class PlatformSettingsController extends Controller
             'port' => ['required', 'integer', 'between:1,65535'],
             'username' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'max:255'],
-            'encryption' => ['nullable', \Illuminate\Validation\Rule::in(['tls', 'ssl', 'none'])],
+            'encryption' => ['nullable', Rule::in(['tls', 'ssl', 'none'])],
             'from_address' => ['required', 'email', 'max:255'],
             'from_name' => ['required', 'string', 'max:120'],
         ]);
@@ -105,7 +106,7 @@ class PlatformSettingsController extends Controller
     {
         $data = $request->validate([
             'default_trial_days' => ['required', 'integer', 'min:0', 'max:365'],
-            'default_signup_plan' => ['required', \Illuminate\Validation\Rule::in(['starter', 'growth', 'pro'])],
+            'default_signup_plan' => ['required', Rule::in(['starter', 'growth', 'pro'])],
             'allow_public_signup' => ['required', 'boolean'],
         ]);
 

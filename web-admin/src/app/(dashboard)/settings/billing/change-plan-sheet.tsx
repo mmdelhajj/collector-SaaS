@@ -74,9 +74,8 @@ export function ChangePlanSheet({
         <SheetHeader>
           <SheetTitle>Change subscription plan</SheetTitle>
           <SheetDescription>
-            Pick a new plan or switch billing period. Changes apply
-            immediately; payment reconciliation happens with your next
-            invoice.
+            Pick a new plan or switch billing period. Changes apply immediately;
+            payment reconciliation happens with your next invoice.
           </SheetDescription>
         </SheetHeader>
 

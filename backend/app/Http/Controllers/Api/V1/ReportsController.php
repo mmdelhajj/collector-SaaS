@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\CollectorAssignment;
 use App\Models\AuditLog;
+use App\Models\CollectorAssignment;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Package;
 use App\Models\Payment;
-use App\Models\ServiceCategory;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -87,7 +88,9 @@ class ReportsController extends Controller
 
         $collectorsLive = $userIds->map(function ($userId) use ($users, $collectorStats, $todayCollections) {
             $u = $users->get($userId);
-            if (! $u) return null;
+            if (! $u) {
+                return null;
+            }
             $statuses = $collectorStats->get($userId, collect())->pluck('n', 'status');
             $total = (int) $statuses->sum();
             $done = (int) ($statuses->get('completed') ?? 0);
@@ -154,7 +157,7 @@ class ReportsController extends Controller
 
         $iso = trim((string) file_get_contents($heartbeat));
         try {
-            $when = \Carbon\Carbon::parse($iso);
+            $when = Carbon::parse($iso);
         } catch (\Throwable) {
             return ['last_success_at' => null, 'age_hours' => null, 'status' => 'unknown'];
         }
@@ -277,7 +280,7 @@ class ReportsController extends Controller
         // Sum invoice_items by package.service_category_id, then resolve names.
         // Driven from invoice_items (which is BelongsToTenant) so the global
         // scope picks up tenant filtering automatically.
-        $byCategory = \App\Models\InvoiceItem::query()
+        $byCategory = InvoiceItem::query()
             ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
             ->leftJoin('packages', 'packages.id', '=', 'invoice_items.package_id')
             ->leftJoin('service_categories', 'service_categories.id', '=', 'packages.service_category_id')

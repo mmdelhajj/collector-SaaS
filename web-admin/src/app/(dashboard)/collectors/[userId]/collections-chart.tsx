@@ -37,10 +37,17 @@ export function CollectionsChart({
         }),
       }));
     }
-    const byMonth = new Map<string, { date: string; amount: number; count: number }>();
+    const byMonth = new Map<
+      string,
+      { date: string; amount: number; count: number }
+    >();
     for (const d of series) {
       const monthKey = d.date.slice(0, 7); // YYYY-MM
-      const cur = byMonth.get(monthKey) ?? { date: monthKey + "-01", amount: 0, count: 0 };
+      const cur = byMonth.get(monthKey) ?? {
+        date: monthKey + "-01",
+        amount: 0,
+        count: 0,
+      };
       cur.amount += d.amount;
       cur.count += d.count;
       byMonth.set(monthKey, cur);
@@ -84,7 +91,9 @@ export function CollectionsChart({
           />
           <YAxis
             tick={{ fontSize: 10 }}
-            tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+            tickFormatter={(v) =>
+              `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`
+            }
             width={50}
           />
           <Tooltip

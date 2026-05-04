@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\Invoice
+ * @mixin Invoice
  */
 class InvoiceResource extends JsonResource
 {
@@ -81,10 +82,17 @@ class InvoiceResource extends JsonResource
             return null;
         }
         foreach ($this->items as $item) {
-            if (! $item->relationLoaded('package') || ! $item->package) continue;
-            if (! $item->package->relationLoaded('serviceCategory')) continue;
+            if (! $item->relationLoaded('package') || ! $item->package) {
+                continue;
+            }
+            if (! $item->package->relationLoaded('serviceCategory')) {
+                continue;
+            }
             $cat = $item->package->serviceCategory;
-            if (! $cat) continue;
+            if (! $cat) {
+                continue;
+            }
+
             return ['id' => $cat->id, 'name' => $cat->name];
         }
 

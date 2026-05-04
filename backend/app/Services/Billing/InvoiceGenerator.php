@@ -7,6 +7,7 @@ namespace App\Services\Billing;
 use App\Models\CustomerSubscription;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
+use App\Support\UniqueRetry;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +40,7 @@ class InvoiceGenerator
         $package = $subscription->package;
         $price = (float) ($subscription->price_override ?? $package->price);
 
-        return \App\Support\UniqueRetry::run(fn () => DB::transaction(function () use (
+        return UniqueRetry::run(fn () => DB::transaction(function () use (
             $subscription, $package, $price, $issued, $periodStart, $periodEnd, $netDays
         ) {
             $invoice = Invoice::query()->create([
@@ -107,6 +108,7 @@ class InvoiceGenerator
         foreach ($subs as $sub) {
             if (! $sub->package) {
                 $skipped++;
+
                 continue;
             }
             // Check existence BEFORE delegating, since generateForSubscription
@@ -119,6 +121,7 @@ class InvoiceGenerator
 
             if ($exists) {
                 $skipped++;
+
                 continue;
             }
 

@@ -11,12 +11,19 @@ namespace App\Support;
 final class Rbac
 {
     public const ROLE_TENANT_OWNER = 'tenant_owner';
+
     public const ROLE_TENANT_ADMIN = 'tenant_admin';
+
     public const ROLE_MANAGER = 'manager';
+
     public const ROLE_ACCOUNTANT = 'accountant';
+
     public const ROLE_SUPPORT = 'support';
+
     public const ROLE_TECHNICIAN = 'technician';
+
     public const ROLE_COLLECTOR = 'collector';
+
     public const ROLE_CUSTOMER = 'customer';
 
     public const ROLE_DESCRIPTIONS = [

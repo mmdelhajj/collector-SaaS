@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Support\Notifications\Drivers\TwilioSmsDriver;
-use App\Support\Notifications\Drivers\WhatsApp360DialogDriver;
 use App\Support\Notifications\MessageGateway;
 use Illuminate\Support\Facades\Http;
 

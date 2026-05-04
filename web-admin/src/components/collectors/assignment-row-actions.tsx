@@ -17,38 +17,36 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateAssignmentStatusAction } from "@/app/(dashboard)/collectors/actions";
-import type {
-  AssignmentStatus,
-  FailureReason,
-} from "@/lib/collectors-types";
+import type { AssignmentStatus, FailureReason } from "@/lib/collectors-types";
 
-const FAILURE_REASONS: { value: FailureReason; label: string; hint: string }[] = [
-  {
-    value: "customer_not_home",
-    label: "Customer not home",
-    hint: "Nobody answered. Try again later.",
-  },
-  {
-    value: "refused",
-    label: "Refused to pay",
-    hint: "Customer is home but refuses to settle the invoice.",
-  },
-  {
-    value: "partial_payment",
-    label: "Partial payment only",
-    hint: "Customer paid less than the full balance.",
-  },
-  {
-    value: "dispute",
-    label: "Dispute / billing issue",
-    hint: "Customer contests the invoice — escalate to support.",
-  },
-  {
-    value: "other",
-    label: "Other",
-    hint: "Any reason not covered above — please describe below.",
-  },
-];
+const FAILURE_REASONS: { value: FailureReason; label: string; hint: string }[] =
+  [
+    {
+      value: "customer_not_home",
+      label: "Customer not home",
+      hint: "Nobody answered. Try again later.",
+    },
+    {
+      value: "refused",
+      label: "Refused to pay",
+      hint: "Customer is home but refuses to settle the invoice.",
+    },
+    {
+      value: "partial_payment",
+      label: "Partial payment only",
+      hint: "Customer paid less than the full balance.",
+    },
+    {
+      value: "dispute",
+      label: "Dispute / billing issue",
+      hint: "Customer contests the invoice — escalate to support.",
+    },
+    {
+      value: "other",
+      label: "Other",
+      hint: "Any reason not covered above — please describe below.",
+    },
+  ];
 
 export function AssignmentRowActions({
   id,
@@ -175,8 +173,8 @@ function FailDialog({
         <DialogHeader>
           <DialogTitle>Why did this collection fail?</DialogTitle>
           <DialogDescription>
-            Pick the closest reason. Saved on the assignment and surfaced in
-            the collector-performance report.
+            Pick the closest reason. Saved on the assignment and surfaced in the
+            collector-performance report.
           </DialogDescription>
         </DialogHeader>
 
@@ -230,7 +228,9 @@ function FailDialog({
                 <span className="ms-0.5 text-destructive">*</span>
               </>
             ) : (
-              <>Notes <span className="text-muted-foreground">(optional)</span></>
+              <>
+                Notes <span className="text-muted-foreground">(optional)</span>
+              </>
             )}
           </Label>
           <Textarea

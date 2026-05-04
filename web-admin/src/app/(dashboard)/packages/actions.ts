@@ -3,11 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ApiError } from "@/lib/api";
-import {
-  createPackage,
-  BILLING_PERIODS,
-  BILLING_TYPES,
-} from "@/lib/packages";
+import { createPackage, BILLING_PERIODS, BILLING_TYPES } from "@/lib/packages";
 
 const schema = z.object({
   name: z.string().min(1).max(120),

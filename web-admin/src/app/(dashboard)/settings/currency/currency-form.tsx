@@ -140,8 +140,9 @@ export function CurrencyForm({ initial }: { initial: Initial }) {
               Exchange rate
             </Label>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              How many <span className="font-mono font-semibold">{secondary}</span>{" "}
-              equal 1 <span className="font-mono font-semibold">{primary}</span>?
+              How many{" "}
+              <span className="font-mono font-semibold">{secondary}</span> equal
+              1 <span className="font-mono font-semibold">{primary}</span>?
             </p>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="font-mono text-sm">1 {primary} =</span>
@@ -228,7 +229,9 @@ function SourcePick({
       }`}
     >
       <div className="flex items-center gap-1.5">
-        <Icon className={`size-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
+        <Icon
+          className={`size-4 ${active ? "text-primary" : "text-muted-foreground"}`}
+        />
         <p className="text-sm font-semibold">{title}</p>
       </div>
       <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>

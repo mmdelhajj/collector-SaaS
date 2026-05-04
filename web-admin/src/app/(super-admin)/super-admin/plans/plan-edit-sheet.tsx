@@ -58,7 +58,9 @@ export function PlanEditSheet({
   const [code, setCode] = useState(initial.code);
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description ?? "");
-  const [priceMonthly, setPriceMonthly] = useState(String(initial.price_monthly));
+  const [priceMonthly, setPriceMonthly] = useState(
+    String(initial.price_monthly),
+  );
   const [priceAnnual, setPriceAnnual] = useState(
     initial.price_annual !== null ? String(initial.price_annual) : "",
   );
@@ -118,7 +120,9 @@ export function PlanEditSheet({
       <SheetTrigger render={trigger as React.ReactElement} />
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>{mode === "edit" ? `Edit ${initial.name}` : "Create plan"}</SheetTitle>
+          <SheetTitle>
+            {mode === "edit" ? `Edit ${initial.name}` : "Create plan"}
+          </SheetTitle>
           <SheetDescription>
             {mode === "edit"
               ? "Changes apply to all tenants on this plan immediately."
@@ -238,7 +242,11 @@ export function PlanEditSheet({
               checked={featWhatsapp}
               onChange={setFeatWhatsapp}
             />
-            <Toggle label="SMS messaging" checked={featSms} onChange={setFeatSms} />
+            <Toggle
+              label="SMS messaging"
+              checked={featSms}
+              onChange={setFeatSms}
+            />
             <Toggle
               label="Priority support"
               checked={featPriority}

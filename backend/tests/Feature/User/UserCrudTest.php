@@ -26,7 +26,9 @@ afterEach(function () {
 
 it('lists tenant users with their roles', function () {
     $extra = User::factory()->forTenant($this->tenant)->count(2)->create();
-    foreach ($extra as $u) $u->assignRole(Rbac::ROLE_MANAGER);
+    foreach ($extra as $u) {
+        $u->assignRole(Rbac::ROLE_MANAGER);
+    }
 
     $this->actingAs($this->owner, 'sanctum')
         ->getJson('/api/v1/users')

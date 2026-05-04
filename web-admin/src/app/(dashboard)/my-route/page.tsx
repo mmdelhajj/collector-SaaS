@@ -108,10 +108,7 @@ export default async function MyRoutePage() {
           icon={Receipt}
           iconClass="text-emerald-600"
         >
-          <PaymentsList
-            rows={payments.rows}
-            totals={payments.totals}
-          />
+          <PaymentsList rows={payments.rows} totals={payments.totals} />
         </Section>
       )}
 
@@ -220,10 +217,15 @@ function Stops({
       {rows.map((a) => {
         const cust = a.invoice?.customer;
         return (
-          <div key={a.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:gap-4">
+          <div
+            key={a.id}
+            className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:gap-4"
+          >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold">{cust?.full_name ?? "Customer"}</span>
+                <span className="font-semibold">
+                  {cust?.full_name ?? "Customer"}
+                </span>
                 {cust?.code && (
                   <span className="font-mono text-[11px] text-muted-foreground">
                     {cust.code}
@@ -240,14 +242,17 @@ function Stops({
               </div>
               {cust?.address_line && (
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {cust.city ? `${cust.city} · ` : ""}{cust.address_line}
+                  {cust.city ? `${cust.city} · ` : ""}
+                  {cust.address_line}
                 </p>
               )}
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                <ServiceCategoryBadge name={a.invoice?.service_category?.name} />
+                <ServiceCategoryBadge
+                  name={a.invoice?.service_category?.name}
+                />
                 <span className="font-mono tabular-nums">
-                  <Banknote className="me-1 inline size-3 text-emerald-600" />
-                  ${(a.invoice?.balance_due ?? 0).toFixed(2)}
+                  <Banknote className="me-1 inline size-3 text-emerald-600" />$
+                  {(a.invoice?.balance_due ?? 0).toFixed(2)}
                 </span>
                 {a.invoice?.due_at && (
                   <span className="text-muted-foreground">
@@ -348,7 +353,7 @@ function PaymentsList({
             ${totals.all.toFixed(2)}
           </p>
           <p className="text-[10px] text-muted-foreground">
-            {rows.length} payment{rows.length === 1 ? "" : "s"} from {" "}
+            {rows.length} payment{rows.length === 1 ? "" : "s"} from{" "}
             {new Set(rows.map((r) => r.customer?.id).filter(Boolean)).size}{" "}
             customer{rows.length === 1 ? "" : "s"}
           </p>
@@ -358,10 +363,7 @@ function PaymentsList({
       {/* Per-payment list with routing badge */}
       <div className="overflow-hidden rounded-xl border bg-card divide-y">
         {rows.map((p) => (
-          <div
-            key={p.id}
-            className="flex items-center gap-3 p-3 sm:p-4"
-          >
+          <div key={p.id} className="flex items-center gap-3 p-3 sm:p-4">
             <span
               className={`flex size-9 shrink-0 items-center justify-center rounded-full ring-1 ring-inset ${
                 p.routing === "in_hand"

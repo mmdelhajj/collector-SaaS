@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use Database\Factories\CashHandoverFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CashHandover extends Model
 {
-    /** @use HasFactory<\Database\Factories\CashHandoverFactory> */
+    /** @use HasFactory<CashHandoverFactory> */
     use BelongsToTenant, HasFactory;
 
     public const STATUSES = ['pending', 'confirmed', 'disputed'];

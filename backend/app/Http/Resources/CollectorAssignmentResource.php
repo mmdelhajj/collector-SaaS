@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\CollectorAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin \App\Models\CollectorAssignment
+ * @mixin CollectorAssignment
  */
 class CollectorAssignmentResource extends JsonResource
 {
@@ -76,13 +77,18 @@ class CollectorAssignmentResource extends JsonResource
             return null;
         }
         foreach ($this->invoice->items as $item) {
-            if (! $item->relationLoaded('package') || ! $item->package) continue;
-            if (! $item->package->relationLoaded('serviceCategory')) continue;
+            if (! $item->relationLoaded('package') || ! $item->package) {
+                continue;
+            }
+            if (! $item->package->relationLoaded('serviceCategory')) {
+                continue;
+            }
             $cat = $item->package->serviceCategory;
             if ($cat) {
                 return ['id' => $cat->id, 'name' => $cat->name];
             }
         }
+
         return null;
     }
 }

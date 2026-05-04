@@ -1,12 +1,17 @@
 <?php
 
 use App\Http\Controllers\Api\Radius\RadiusGatewayController;
+use App\Http\Controllers\Api\SuperAdmin\PlansController;
+use App\Http\Controllers\Api\SuperAdmin\PlatformController;
+use App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController;
 use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BillingController;
 use App\Http\Controllers\Api\V1\CashHandoverController;
 use App\Http\Controllers\Api\V1\CollectorAssignmentController;
 use App\Http\Controllers\Api\V1\CollectorController;
 use App\Http\Controllers\Api\V1\CollectorLiveController;
+use App\Http\Controllers\Api\V1\CollectorPeriodController;
 use App\Http\Controllers\Api\V1\CollectorZoneController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\InvoiceController;
@@ -18,6 +23,7 @@ use App\Http\Controllers\Api\V1\RadiusUserController;
 use App\Http\Controllers\Api\V1\ReportsController;
 use App\Http\Controllers\Api\V1\RoleController;
 use App\Http\Controllers\Api\V1\SettingsController;
+use App\Http\Controllers\Api\V1\SignupController;
 use App\Http\Controllers\Api\V1\TicketController;
 use App\Http\Controllers\Api\V1\TwoFactorController;
 use App\Http\Controllers\Api\V1\UserController;
@@ -41,35 +47,35 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
 
     // Public self-service signup — no auth required.
-    Route::get('plans', [\App\Http\Controllers\Api\V1\SignupController::class, 'plans'])->name('plans.index');
-    Route::post('signup', [\App\Http\Controllers\Api\V1\SignupController::class, 'signup'])->name('signup');
+    Route::get('plans', [SignupController::class, 'plans'])->name('plans.index');
+    Route::post('signup', [SignupController::class, 'signup'])->name('signup');
 
     // ─── Super-admin (platform-wide, no tenant scope) ──────────────────
     Route::middleware(['auth:sanctum', 'super-admin'])
         ->prefix('super-admin')
         ->name('super-admin.')
         ->group(function () {
-            Route::get('overview', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'overview'])->name('overview');
-            Route::get('tenants', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'tenants'])->name('tenants');
-            Route::post('tenants', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'createTenant'])->name('tenants.create');
-            Route::get('tenants/{id}', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'tenantDetail'])->name('tenants.show');
-            Route::patch('tenants/{id}', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'updateTenant'])->name('tenants.update');
-            Route::post('tenants/{id}/suspend', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'suspend'])->name('tenants.suspend');
-            Route::post('tenants/{id}/reactivate', [\App\Http\Controllers\Api\SuperAdmin\PlatformController::class, 'reactivate'])->name('tenants.reactivate');
+            Route::get('overview', [PlatformController::class, 'overview'])->name('overview');
+            Route::get('tenants', [PlatformController::class, 'tenants'])->name('tenants');
+            Route::post('tenants', [PlatformController::class, 'createTenant'])->name('tenants.create');
+            Route::get('tenants/{id}', [PlatformController::class, 'tenantDetail'])->name('tenants.show');
+            Route::patch('tenants/{id}', [PlatformController::class, 'updateTenant'])->name('tenants.update');
+            Route::post('tenants/{id}/suspend', [PlatformController::class, 'suspend'])->name('tenants.suspend');
+            Route::post('tenants/{id}/reactivate', [PlatformController::class, 'reactivate'])->name('tenants.reactivate');
 
             // Platform-level settings.
-            Route::get('settings', [\App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController::class, 'index'])->name('settings');
-            Route::patch('settings/smtp', [\App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController::class, 'updateSmtp'])->name('settings.smtp');
-            Route::patch('settings/branding', [\App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController::class, 'updateBranding'])->name('settings.branding');
-            Route::patch('settings/defaults', [\App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController::class, 'updateDefaults'])->name('settings.defaults');
-            Route::post('settings/smtp/test', [\App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController::class, 'testSmtp'])->name('settings.smtp.test');
+            Route::get('settings', [PlatformSettingsController::class, 'index'])->name('settings');
+            Route::patch('settings/smtp', [PlatformSettingsController::class, 'updateSmtp'])->name('settings.smtp');
+            Route::patch('settings/branding', [PlatformSettingsController::class, 'updateBranding'])->name('settings.branding');
+            Route::patch('settings/defaults', [PlatformSettingsController::class, 'updateDefaults'])->name('settings.defaults');
+            Route::post('settings/smtp/test', [PlatformSettingsController::class, 'testSmtp'])->name('settings.smtp.test');
 
             // Subscription plans (price tiers tenants pay).
-            Route::get('plans', [\App\Http\Controllers\Api\SuperAdmin\PlansController::class, 'index'])->name('plans');
-            Route::post('plans', [\App\Http\Controllers\Api\SuperAdmin\PlansController::class, 'store'])->name('plans.create');
-            Route::get('plans/{id}', [\App\Http\Controllers\Api\SuperAdmin\PlansController::class, 'show'])->name('plans.show');
-            Route::patch('plans/{id}', [\App\Http\Controllers\Api\SuperAdmin\PlansController::class, 'update'])->name('plans.update');
-            Route::delete('plans/{id}', [\App\Http\Controllers\Api\SuperAdmin\PlansController::class, 'destroy'])->name('plans.delete');
+            Route::get('plans', [PlansController::class, 'index'])->name('plans');
+            Route::post('plans', [PlansController::class, 'store'])->name('plans.create');
+            Route::get('plans/{id}', [PlansController::class, 'show'])->name('plans.show');
+            Route::patch('plans/{id}', [PlansController::class, 'update'])->name('plans.update');
+            Route::delete('plans/{id}', [PlansController::class, 'destroy'])->name('plans.delete');
         });
 
     // Authenticated routes — Bearer token via Sanctum.
@@ -155,7 +161,7 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
                 ->name('collector-live.index');
 
             // Per-collector drill-down (today / yesterday / week / month / year).
-            Route::get('collectors/{userId}/period', [\App\Http\Controllers\Api\V1\CollectorPeriodController::class, 'show'])
+            Route::get('collectors/{userId}/period', [CollectorPeriodController::class, 'show'])
                 ->whereNumber('userId')
                 ->name('collectors.period');
 
@@ -200,9 +206,9 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
             Route::post('settings/currency/refresh', [SettingsController::class, 'refreshExchangeRate'])->name('settings.currency.refresh');
 
             // Subscription/billing — tenant view of their plan + usage.
-            Route::get('billing/subscription', [\App\Http\Controllers\Api\V1\BillingController::class, 'subscription'])->name('billing.subscription');
-            Route::get('billing/available-plans', [\App\Http\Controllers\Api\V1\BillingController::class, 'availablePlans'])->name('billing.available-plans');
-            Route::post('billing/change-plan', [\App\Http\Controllers\Api\V1\BillingController::class, 'changePlan'])->name('billing.change-plan');
+            Route::get('billing/subscription', [BillingController::class, 'subscription'])->name('billing.subscription');
+            Route::get('billing/available-plans', [BillingController::class, 'availablePlans'])->name('billing.available-plans');
+            Route::post('billing/change-plan', [BillingController::class, 'changePlan'])->name('billing.change-plan');
 
             Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 

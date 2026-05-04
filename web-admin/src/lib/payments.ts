@@ -1,7 +1,11 @@
 import "server-only";
 import { apiFetch } from "@/lib/api";
 import type { Paginated } from "@/lib/customers-types";
-import type { Payment, PaymentMethod, PaymentStatus } from "@/lib/payments-types";
+import type {
+  Payment,
+  PaymentMethod,
+  PaymentStatus,
+} from "@/lib/payments-types";
 
 export type {
   Payment,

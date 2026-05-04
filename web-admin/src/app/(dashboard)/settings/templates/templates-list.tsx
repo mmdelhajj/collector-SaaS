@@ -40,7 +40,10 @@ type Group = {
   rows: MessageTemplate[];
 };
 
-const CHANNEL_ICONS: Record<TemplateChannel, React.ComponentType<{ className?: string }>> = {
+const CHANNEL_ICONS: Record<
+  TemplateChannel,
+  React.ComponentType<{ className?: string }>
+> = {
   whatsapp: MessageCircle,
   sms: Smartphone,
   email: Mail,
@@ -181,9 +184,10 @@ function EditTemplateSheet({ template }: { template: MessageTemplate }) {
           {template.channel.toUpperCase()} · {LOCALE_LABEL[template.locale]}
         </SheetTitle>
         <SheetDescription>
-          Use <code>{"{{tenant_name}}"}</code>, <code>{"{{customer_name}}"}</code>,{" "}
-          <code>{"{{amount}}"}</code>, <code>{"{{currency}}"}</code>,{" "}
-          <code>{"{{invoice_number}}"}</code>, <code>{"{{receipt_url}}"}</code>.
+          Use <code>{"{{tenant_name}}"}</code>,{" "}
+          <code>{"{{customer_name}}"}</code>, <code>{"{{amount}}"}</code>,{" "}
+          <code>{"{{currency}}"}</code>, <code>{"{{invoice_number}}"}</code>,{" "}
+          <code>{"{{receipt_url}}"}</code>.
         </SheetDescription>
       </SheetHeader>
 

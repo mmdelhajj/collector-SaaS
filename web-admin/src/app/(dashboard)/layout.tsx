@@ -36,9 +36,7 @@ export default async function DashboardLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         {tenant && <TrialBanner tenant={tenant} />}
         <Topbar user={user} />
-        <main className="flex-1 overflow-y-auto bg-background">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
       </div>
     </div>
   );

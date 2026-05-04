@@ -2,12 +2,14 @@ import "server-only";
 import { apiFetch } from "@/lib/api";
 import type { AuditPage } from "@/lib/audit-types";
 
-export async function listAudit(params: {
-  page?: number;
-  perPage?: number;
-  search?: string;
-  action?: string;
-} = {}): Promise<AuditPage> {
+export async function listAudit(
+  params: {
+    page?: number;
+    perPage?: number;
+    search?: string;
+    action?: string;
+  } = {},
+): Promise<AuditPage> {
   const qs = new URLSearchParams();
   if (params.page) qs.set("page", String(params.page));
   if (params.perPage) qs.set("per_page", String(params.perPage));

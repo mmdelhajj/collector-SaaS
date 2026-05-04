@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import {
-  AlertCircle,
-  Banknote,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { AlertCircle, Banknote, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -134,8 +129,8 @@ export function HandoverSheet({
         <SheetHeader>
           <SheetTitle>Hand over cash</SheetTitle>
           <SheetDescription>
-            Submit the bundled cash to a supervisor. They&rsquo;ll count it
-            and confirm or flag a discrepancy.
+            Submit the bundled cash to a supervisor. They&rsquo;ll count it and
+            confirm or flag a discrepancy.
           </SheetDescription>
         </SheetHeader>
 
@@ -205,8 +200,8 @@ export function HandoverSheet({
                   <span className="font-semibold tabular-nums">
                     ${Math.abs(diff).toFixed(2)}
                   </span>
-                  . The supervisor will see this mismatch and may flag it —
-                  add a note below to explain.
+                  . The supervisor will see this mismatch and may flag it — add
+                  a note below to explain.
                 </span>
               </div>
             )}
@@ -231,11 +226,15 @@ export function HandoverSheet({
 
           <details className="rounded-lg border bg-card">
             <summary className="cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground">
-              Show {pending.count} payment{pending.count === 1 ? "" : "s"} in this bundle
+              Show {pending.count} payment{pending.count === 1 ? "" : "s"} in
+              this bundle
             </summary>
             <ul className="max-h-[280px] divide-y overflow-y-auto px-3 pb-3 text-xs">
               {pending.payments.map((p) => (
-                <li key={p.id} className="flex items-center justify-between py-1.5">
+                <li
+                  key={p.id}
+                  className="flex items-center justify-between py-1.5"
+                >
                   <div className="min-w-0">
                     <p className="truncate">
                       {p.customer?.full_name ?? "—"}

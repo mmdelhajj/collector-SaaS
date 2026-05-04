@@ -4,10 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import {
-  CUSTOMER_STATUSES,
-  type CustomerStatus,
-} from "@/lib/customers-types";
+import { CUSTOMER_STATUSES, type CustomerStatus } from "@/lib/customers-types";
 import { cn } from "@/lib/utils";
 
 type StatusFilter = CustomerStatus | "all";

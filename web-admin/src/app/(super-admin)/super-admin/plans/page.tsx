@@ -35,8 +35,8 @@ export default async function PlansPage() {
             Plans &amp; pricing
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Subscription tiers tenants can sign up for. Edit prices, limits,
-            and features here — public ones show on the signup page.
+            Subscription tiers tenants can sign up for. Edit prices, limits, and
+            features here — public ones show on the signup page.
           </p>
         </div>
         <PlanEditSheet
@@ -101,7 +101,10 @@ function PlanCard({ plan }: { plan: Plan }) {
         </div>
         {plan.price_annual !== null && (
           <p className="mt-1 text-xs text-muted-foreground">
-            or <span className="font-semibold text-foreground">{FORMAT_MONEY(plan.price_annual)}</span>{" "}
+            or{" "}
+            <span className="font-semibold text-foreground">
+              {FORMAT_MONEY(plan.price_annual)}
+            </span>{" "}
             / year
             {plan.price_annual < plan.price_monthly * 12 && (
               <span className="ms-1 text-emerald-700">
@@ -132,8 +135,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">
           <Building2 className="size-3.5" />
-          {plan.tenants_count}{" "}
-          {plan.tenants_count === 1 ? "tenant" : "tenants"}
+          {plan.tenants_count} {plan.tenants_count === 1 ? "tenant" : "tenants"}
         </span>
         <span className="inline-flex items-center gap-1 text-[11px]">
           <CreditCard className="size-3" />

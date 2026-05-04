@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use Database\Factories\NasDeviceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class NasDevice extends Model
 {
-    /** @use HasFactory<\Database\Factories\NasDeviceFactory> */
+    /** @use HasFactory<NasDeviceFactory> */
     use BelongsToTenant, HasFactory;
 
     public const TYPES = ['mikrotik', 'cisco', 'huawei', 'other'];

@@ -169,9 +169,7 @@ export default async function CollectorActivity({
         <Kpi
           label="Success rate"
           value={
-            data.kpis.success_rate != null
-              ? `${data.kpis.success_rate}%`
-              : "—"
+            data.kpis.success_rate != null ? `${data.kpis.success_rate}%` : "—"
           }
           icon={CheckCircle2}
           tone={

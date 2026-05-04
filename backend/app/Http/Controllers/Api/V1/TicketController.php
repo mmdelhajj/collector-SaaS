@@ -125,6 +125,6 @@ class TicketController extends Controller
             ? ((int) substr($last, strlen($prefix))) + 1
             : 1;
 
-        return $prefix . str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
     }
 }

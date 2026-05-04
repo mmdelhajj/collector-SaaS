@@ -44,8 +44,8 @@ export function BrandingForm({ initial }: { initial: BrandingInitial }) {
         <div>
           <h2 className="text-base font-semibold">Platform branding</h2>
           <p className="text-xs text-muted-foreground">
-            Public-facing name + logo for the marketing site, signup emails,
-            and the login page.
+            Public-facing name + logo for the marketing site, signup emails, and
+            the login page.
           </p>
         </div>
       </header>

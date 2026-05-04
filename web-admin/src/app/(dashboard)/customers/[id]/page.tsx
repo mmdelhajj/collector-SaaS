@@ -392,7 +392,9 @@ export default async function CustomerDetailPage({
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground/60">—</span>
+                        <span className="text-xs text-muted-foreground/60">
+                          —
+                        </span>
                       )}
                     </TableCell>
                   </TableRow>

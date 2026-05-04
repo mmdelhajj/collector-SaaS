@@ -117,7 +117,11 @@ function timeAgo(iso: string | null): string {
   return `${d}d ago`;
 }
 
-function activityDetail(action: string, label: string | null, changes: Record<string, unknown> | null): string {
+function activityDetail(
+  action: string,
+  label: string | null,
+  changes: Record<string, unknown> | null,
+): string {
   if (action === "payment.created" && changes) {
     const amount = changes.amount;
     const method = changes.method;
@@ -128,8 +132,12 @@ function activityDetail(action: string, label: string | null, changes: Record<st
     return `${label ?? ""} → ${changes.new ?? ""} (was ${changes.old ?? "?"})`;
   }
   if (action === "tenant.currency_changed" && changes) {
-    const o = changes.old as { primary?: string; secondary?: string | null } | undefined;
-    const n = changes.new as { primary?: string; secondary?: string | null } | undefined;
+    const o = changes.old as
+      | { primary?: string; secondary?: string | null }
+      | undefined;
+    const n = changes.new as
+      | { primary?: string; secondary?: string | null }
+      | undefined;
     const oldPair = `${o?.primary ?? "?"}/${o?.secondary ?? "—"}`;
     const newPair = `${n?.primary ?? "?"}/${n?.secondary ?? "—"}`;
     return `${oldPair} → ${newPair}`;
@@ -239,56 +247,56 @@ export default async function DashboardPage() {
                     href={`/collectors/${c.id}?range=today`}
                     className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/30"
                   >
-                  <Avatar className="size-9 border">
-                    <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                      {c.name
-                        .split(" ")
-                        .slice(0, 2)
-                        .map((p) => p[0])
-                        .join("")
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-semibold">
-                        {c.name}
-                      </p>
-                      <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${
-                          c.status === "done"
-                            ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20"
+                    <Avatar className="size-9 border">
+                      <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                        {c.name
+                          .split(" ")
+                          .slice(0, 2)
+                          .map((p) => p[0])
+                          .join("")
+                          .toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-sm font-semibold">
+                          {c.name}
+                        </p>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${
+                            c.status === "done"
+                              ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20"
+                              : c.status === "on-route"
+                                ? "bg-amber-50 text-amber-700 ring-amber-600/20"
+                                : "bg-zinc-100 text-zinc-600 ring-zinc-600/20"
+                          }`}
+                        >
+                          {c.status === "done"
+                            ? "Done"
                             : c.status === "on-route"
-                              ? "bg-amber-50 text-amber-700 ring-amber-600/20"
-                              : "bg-zinc-100 text-zinc-600 ring-zinc-600/20"
-                        }`}
-                      >
-                        {c.status === "done"
-                          ? "Done"
-                          : c.status === "on-route"
-                            ? "On route"
-                            : "Not started"}
-                      </span>
-                    </div>
-                    <div className="mt-1 flex items-center gap-2">
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-full bg-primary transition-all"
-                          style={{ width: `${c.progress}%` }}
-                        />
+                              ? "On route"
+                              : "Not started"}
+                        </span>
                       </div>
-                      <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                        {c.completed}/{c.total}
-                      </span>
+                      <div className="mt-1 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-full bg-primary transition-all"
+                            style={{ width: `${c.progress}%` }}
+                          />
+                        </div>
+                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                          {c.completed}/{c.total}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        <Banknote className="me-1 inline size-3 text-emerald-600" />
+                        <span className="font-mono tabular-nums">
+                          {FORMAT_MONEY(c.collected_today)}
+                        </span>{" "}
+                        collected
+                      </p>
                     </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      <Banknote className="me-1 inline size-3 text-emerald-600" />
-                      <span className="font-mono tabular-nums">
-                        {FORMAT_MONEY(c.collected_today)}
-                      </span>{" "}
-                      collected
-                    </p>
-                  </div>
                   </Link>
                 </li>
               ))}
@@ -310,18 +318,17 @@ export default async function DashboardPage() {
           </header>
           {report.recent_activity.length === 0 ? (
             <div className="px-5 py-8 text-center text-xs text-muted-foreground">
-              Nothing yet. Audit entries appear here as soon as someone
-              records a payment, changes a role, or suspends a service.
+              Nothing yet. Audit entries appear here as soon as someone records
+              a payment, changes a role, or suspends a service.
             </div>
           ) : (
             <ul className="divide-y">
               {report.recent_activity.map((a) => {
-                const meta =
-                  ACTION_META[a.action] ?? {
-                    icon: CheckCircle2,
-                    color: "text-zinc-500",
-                    label: a.action,
-                  };
+                const meta = ACTION_META[a.action] ?? {
+                  icon: CheckCircle2,
+                  color: "text-zinc-500",
+                  label: a.action,
+                };
                 const Icon = meta.icon;
                 return (
                   <li key={a.id} className="flex items-start gap-3 px-5 py-3">
@@ -329,7 +336,11 @@ export default async function DashboardPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium">{meta.label}</p>
                       {(() => {
-                        const det = activityDetail(a.action, a.subject_label, a.changes);
+                        const det = activityDetail(
+                          a.action,
+                          a.subject_label,
+                          a.changes,
+                        );
                         return det ? (
                           <p className="truncate text-xs text-muted-foreground">
                             {det}
@@ -438,9 +449,12 @@ function BackupChip({
         : `${Math.round(ageH / 24)}d ago`;
 
   const styles = {
-    healthy: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-400",
-    stale: "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-400",
-    failing: "bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-950/40 dark:text-rose-400",
+    healthy:
+      "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-400",
+    stale:
+      "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-400",
+    failing:
+      "bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-950/40 dark:text-rose-400",
     unknown: "bg-zinc-100 text-zinc-700 ring-zinc-600/20",
   } as const;
 

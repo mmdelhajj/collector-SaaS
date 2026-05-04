@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  CheckCircle2,
-  Loader2,
-  PlayCircle,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Loader2, PlayCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -177,9 +172,15 @@ function TicketRowActions({ ticket }: { ticket: Ticket }) {
           )}
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <Detail label="Customer" value={ticket.customer?.full_name ?? "—"} />
+            <Detail
+              label="Customer"
+              value={ticket.customer?.full_name ?? "—"}
+            />
             <Detail label="Code" value={ticket.customer?.code ?? "—"} />
-            <Detail label="Phone" value={ticket.customer?.phone_primary ?? "—"} />
+            <Detail
+              label="Phone"
+              value={ticket.customer?.phone_primary ?? "—"}
+            />
             <Detail label="City" value={ticket.customer?.city ?? "—"} />
             <Detail
               label="Address"

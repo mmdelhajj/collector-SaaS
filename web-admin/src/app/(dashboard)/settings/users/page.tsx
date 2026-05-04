@@ -90,7 +90,9 @@ export default async function UsersPage({
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Users & roles</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Users & roles
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Invite teammates, change their role, and deactivate departed staff.
             Permissions are bound to roles — see the role grid in the spec.
@@ -118,7 +120,9 @@ export default async function UsersPage({
               <TableHead>User</TableHead>
               <TableHead className="hidden md:table-cell">Phone</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead className="hidden lg:table-cell">Last sign-in</TableHead>
+              <TableHead className="hidden lg:table-cell">
+                Last sign-in
+              </TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[60px] text-right"></TableHead>
             </TableRow>

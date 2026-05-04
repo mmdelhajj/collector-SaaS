@@ -1,7 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\NotificationsServiceProvider;
+use App\Providers\PlatformMailServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\NotificationsServiceProvider::class,
-    App\Providers\PlatformMailServiceProvider::class,
+    AppServiceProvider::class,
+    NotificationsServiceProvider::class,
+    PlatformMailServiceProvider::class,
 ];

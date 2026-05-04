@@ -96,22 +96,30 @@ export default async function CollectorsPage({
   // Group by collector for the top section.
   const byCollector = new Map<
     number,
-    { id: number; name: string; total: number; pending: number; in_progress: number; completed: number; failed: number; collected: number }
+    {
+      id: number;
+      name: string;
+      total: number;
+      pending: number;
+      in_progress: number;
+      completed: number;
+      failed: number;
+      collected: number;
+    }
   >();
   for (const a of list.data) {
     if (!a.collector) continue;
     const id = a.collector.id;
-    const cur =
-      byCollector.get(id) ?? {
-        id,
-        name: a.collector.name,
-        total: 0,
-        pending: 0,
-        in_progress: 0,
-        completed: 0,
-        failed: 0,
-        collected: 0,
-      };
+    const cur = byCollector.get(id) ?? {
+      id,
+      name: a.collector.name,
+      total: 0,
+      pending: 0,
+      in_progress: 0,
+      completed: 0,
+      failed: 0,
+      collected: 0,
+    };
     cur.total++;
     if (a.status === "pending") cur.pending++;
     if (a.status === "in_progress") cur.in_progress++;
@@ -159,8 +167,15 @@ export default async function CollectorsPage({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryCard label="Today's assignments" value={totals.assignments.toString()} />
-        <SummaryCard label="Completed" value={totals.completed.toString()} accent />
+        <SummaryCard
+          label="Today's assignments"
+          value={totals.assignments.toString()}
+        />
+        <SummaryCard
+          label="Completed"
+          value={totals.completed.toString()}
+          accent
+        />
         <SummaryCard label="On route" value={totals.in_progress.toString()} />
         <SummaryCard
           label="Collected today"
@@ -226,9 +241,7 @@ export default async function CollectorsPage({
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from(byCollector.values()).map((c) => {
               const progress =
-                c.total > 0
-                  ? Math.round((c.completed / c.total) * 100)
-                  : 0;
+                c.total > 0 ? Math.round((c.completed / c.total) * 100) : 0;
               return (
                 <Link
                   key={c.id}
@@ -244,7 +257,8 @@ export default async function CollectorsPage({
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{c.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {c.completed}/{c.total} done · {formatMoney(c.collected)}
+                        {c.completed}/{c.total} done ·{" "}
+                        {formatMoney(c.collected)}
                       </p>
                     </div>
                   </div>
@@ -256,7 +270,9 @@ export default async function CollectorsPage({
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
                     {c.pending > 0 && <span>{c.pending} pending</span>}
-                    {c.in_progress > 0 && <span>· {c.in_progress} on route</span>}
+                    {c.in_progress > 0 && (
+                      <span>· {c.in_progress} on route</span>
+                    )}
                     {c.failed > 0 && <span>· {c.failed} failed</span>}
                   </div>
                 </Link>
@@ -268,18 +284,20 @@ export default async function CollectorsPage({
 
       <div className="flex flex-wrap items-center gap-1.5">
         <FilterChip href="/collectors" label="All" active={!status} />
-        {(["pending", "in_progress", "completed", "failed"] as const).map((s) => (
-          <FilterChip
-            key={s}
-            href={`/collectors?status=${s}`}
-            label={
-              s === "in_progress"
-                ? "On route"
-                : s.charAt(0).toUpperCase() + s.slice(1)
-            }
-            active={status === s}
-          />
-        ))}
+        {(["pending", "in_progress", "completed", "failed"] as const).map(
+          (s) => (
+            <FilterChip
+              key={s}
+              href={`/collectors?status=${s}`}
+              label={
+                s === "in_progress"
+                  ? "On route"
+                  : s.charAt(0).toUpperCase() + s.slice(1)
+              }
+              active={status === s}
+            />
+          ),
+        )}
       </div>
 
       <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
@@ -306,8 +324,8 @@ export default async function CollectorsPage({
                       No assignments for today.
                     </span>
                     <span>
-                      Use the bulk-assign API to hand out invoices, or wait
-                      for the manager to assign them.
+                      Use the bulk-assign API to hand out invoices, or wait for
+                      the manager to assign them.
                     </span>
                   </div>
                 </TableCell>
@@ -368,10 +386,7 @@ export default async function CollectorsPage({
                     <AssignmentStatusBadge status={a.status} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <AssignmentRowActions
-                      id={a.id}
-                      currentStatus={a.status}
-                    />
+                    <AssignmentRowActions id={a.id} currentStatus={a.status} />
                   </TableCell>
                 </TableRow>
               ))
@@ -456,8 +471,8 @@ function NoTenantContext({ email }: { email: string }) {
             </h1>
             <p className="mt-1.5 text-pretty text-sm text-muted-foreground">
               Sign in as a tenant admin (e.g.{" "}
-              <span className="font-mono text-foreground">{email}</span> needs
-              a tenant) to view collectors.
+              <span className="font-mono text-foreground">{email}</span> needs a
+              tenant) to view collectors.
             </p>
             <div className="mt-6">
               <Link href="/login" className={buttonVariants({ size: "sm" })}>

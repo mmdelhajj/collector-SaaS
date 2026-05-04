@@ -43,7 +43,9 @@ export async function confirmAction(code: string): Promise<ConfirmResult> {
   }
 }
 
-export async function disableAction(formData: FormData): Promise<{ ok: boolean; error?: string }> {
+export async function disableAction(
+  formData: FormData,
+): Promise<{ ok: boolean; error?: string }> {
   const password = (formData.get("password") as string | null) ?? "";
   const code = (formData.get("code") as string | null) ?? "";
   try {

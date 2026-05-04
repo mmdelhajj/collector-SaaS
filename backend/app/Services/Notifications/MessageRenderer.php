@@ -85,7 +85,7 @@ class MessageRenderer
     {
         return match ([$key, $channel]) {
             ['payment_received', 'whatsapp'] => "Hello {{customer_name}}, we received your payment of {{amount}} {{currency}} for invoice {{invoice_number}}. Receipt: {{receipt_url}}\n\nThank you!\n— {{tenant_name}}",
-            ['payment_received', 'sms'] => "{{tenant_name}}: payment of {{amount}} {{currency}} received for invoice {{invoice_number}}. Receipt: {{receipt_url}}",
+            ['payment_received', 'sms'] => '{{tenant_name}}: payment of {{amount}} {{currency}} received for invoice {{invoice_number}}. Receipt: {{receipt_url}}',
             ['payment_received', 'email'] => "Hi {{customer_name}},\n\nWe received your payment of {{amount}} {{currency}} for invoice {{invoice_number}}.\nDownload your receipt here: {{receipt_url}}\n\nThank you,\n{{tenant_name}}",
             default => 'Notification from {{tenant_name}}',
         };

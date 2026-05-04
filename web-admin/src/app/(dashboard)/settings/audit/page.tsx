@@ -16,9 +16,7 @@ const ACTION_STYLES: Record<string, string> = {
 
 function styleFor(action: string): string {
   const prefix = action.split(".")[0];
-  return (
-    ACTION_STYLES[prefix] ?? "bg-zinc-100 text-zinc-700 ring-zinc-600/20"
-  );
+  return ACTION_STYLES[prefix] ?? "bg-zinc-100 text-zinc-700 ring-zinc-600/20";
 }
 
 export default async function AuditPage({
@@ -49,8 +47,8 @@ export default async function AuditPage({
           Audit log
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Every meaningful action — payments, role changes, customer
-          deletions, RADIUS suspends — with who did it, when, and from where.
+          Every meaningful action — payments, role changes, customer deletions,
+          RADIUS suspends — with who did it, when, and from where.
         </p>
       </div>
 

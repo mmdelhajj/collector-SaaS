@@ -19,7 +19,9 @@ export default async function WorkspaceSettingsPage() {
           <ArrowLeft className="size-3" />
           Settings
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Workspace</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+          Workspace
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Branding, currency, timezone, and locale for your tenant.
         </p>

@@ -52,6 +52,7 @@ class TwilioSmsDriver implements MessageGateway
             }
 
             $sid = $response->json('sid');
+
             // Twilio bills per-segment; price comes back on the message resource
             // a moment later, not on this synchronous response.
             return SendResult::ok(

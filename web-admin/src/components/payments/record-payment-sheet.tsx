@@ -22,10 +22,7 @@ import {
   recordPaymentAction,
   type RecordPaymentState,
 } from "@/app/(dashboard)/payments/actions";
-import {
-  PAYMENT_METHODS,
-  PAYMENT_METHOD_LABELS,
-} from "@/lib/payments-types";
+import { PAYMENT_METHODS, PAYMENT_METHOD_LABELS } from "@/lib/payments-types";
 
 export function RecordPaymentSheet() {
   const router = useRouter();

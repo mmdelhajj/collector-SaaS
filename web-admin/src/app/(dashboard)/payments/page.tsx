@@ -31,7 +31,14 @@ type SearchParams = Promise<{
 
 const PER_PAGE = 25;
 const VALID_METHODS: readonly string[] = [
-  "cash", "card", "bank_transfer", "whish", "omt", "areeba", "stripe", "other",
+  "cash",
+  "card",
+  "bank_transfer",
+  "whish",
+  "omt",
+  "areeba",
+  "stripe",
+  "other",
 ];
 
 function formatMoney(value: number, currency = "USD") {
@@ -147,8 +154,8 @@ export default async function PaymentsPage({
                       No payments match your filters.
                     </span>
                     <span>
-                      Click &ldquo;Record payment&rdquo; to add one manually,
-                      or wait for a collector to mark an invoice paid.
+                      Click &ldquo;Record payment&rdquo; to add one manually, or
+                      wait for a collector to mark an invoice paid.
                     </span>
                   </div>
                 </TableCell>
@@ -207,7 +214,12 @@ export default async function PaymentsPage({
                     {p.notes || p.reference_number ? (
                       <div
                         className="max-w-[260px] cursor-help text-xs"
-                        title={[p.reference_number ? `Ref: ${p.reference_number}` : "", p.notes ?? ""]
+                        title={[
+                          p.reference_number
+                            ? `Ref: ${p.reference_number}`
+                            : "",
+                          p.notes ?? "",
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
                       >
@@ -223,7 +235,9 @@ export default async function PaymentsPage({
                         )}
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground/60">—</span>
+                      <span className="text-xs text-muted-foreground/60">
+                        —
+                      </span>
                     )}
                   </TableCell>
                 </TableRow>
@@ -287,8 +301,8 @@ function NoTenantContext({ email }: { email: string }) {
             </h1>
             <p className="mt-1.5 text-pretty text-sm text-muted-foreground">
               Sign in as a tenant admin (e.g.{" "}
-              <span className="font-mono text-foreground">{email}</span> needs
-              a tenant) to view payments.
+              <span className="font-mono text-foreground">{email}</span> needs a
+              tenant) to view payments.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <Link href="/login" className={buttonVariants({ size: "sm" })}>

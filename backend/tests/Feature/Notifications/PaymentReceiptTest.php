@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendPaymentReceiptJob;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\MessageLog;
@@ -13,6 +14,7 @@ use App\Support\TenantContext;
 use Database\Seeders\MessageTemplatesSeeder;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\URL;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
@@ -146,7 +148,7 @@ it('queues the receipt job rather than running it inline (production behaviour)'
             'method' => 'cash',
         ])->assertCreated();
 
-    Queue::assertPushed(\App\Jobs\SendPaymentReceiptJob::class);
+    Queue::assertPushed(SendPaymentReceiptJob::class);
 });
 
 it('public receipt page renders without auth', function () {
@@ -167,7 +169,7 @@ it('public receipt page renders without auth', function () {
     $this->get("/receipts/{$payment->id}")
         ->assertStatus(403);
 
-    $signed = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+    $signed = URL::temporarySignedRoute(
         'receipts.public',
         now()->addDays(30),
         ['paymentId' => $payment->id],
@@ -189,7 +191,7 @@ it('rejects expired receipt links', function () {
         'customer_id' => $customer->id,
     ]);
 
-    $expired = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+    $expired = URL::temporarySignedRoute(
         'receipts.public',
         now()->subMinute(), // already expired
         ['paymentId' => $payment->id],

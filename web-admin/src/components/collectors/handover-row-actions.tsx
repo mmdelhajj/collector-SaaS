@@ -117,8 +117,8 @@ function DisputeDialog({
           <DialogTitle>Dispute this handover?</DialogTitle>
           <DialogDescription>
             <span className="font-mono">${amount.toFixed(2)}</span> from{" "}
-            {collectorName}. Your reason will be saved on the record and
-            shared with the collector.
+            {collectorName}. Your reason will be saved on the record and shared
+            with the collector.
           </DialogDescription>
         </DialogHeader>
 

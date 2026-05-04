@@ -75,7 +75,10 @@ export default async function TenantDetailPage({
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card label="Plan" value={`${tenant.plan} (${tenant.billing_period})`} />
+        <Card
+          label="Plan"
+          value={`${tenant.plan} (${tenant.billing_period})`}
+        />
         <Card
           label="MRR"
           value={
@@ -136,9 +139,7 @@ export default async function TenantDetailPage({
             {tenant.users.map((u) => (
               <tr key={u.id} className="hover:bg-muted/20">
                 <td className="px-5 py-2.5 font-medium">{u.name}</td>
-                <td className="px-5 py-2.5 text-muted-foreground">
-                  {u.email}
-                </td>
+                <td className="px-5 py-2.5 text-muted-foreground">{u.email}</td>
                 <td className="px-5 py-2.5">
                   <div className="flex flex-wrap gap-1">
                     {u.roles.map((r) => (

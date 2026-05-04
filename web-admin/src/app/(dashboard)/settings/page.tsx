@@ -65,7 +65,8 @@ const CARDS: Card[] = [
   },
   {
     title: "Payment routing",
-    description: "Which methods pass through the collector vs go direct to your wallet.",
+    description:
+      "Which methods pass through the collector vs go direct to your wallet.",
     icon: CircleDollarSign,
     href: "/settings/payments",
     ready: true,
@@ -93,7 +94,8 @@ const CARDS: Card[] = [
   },
   {
     title: "Audit log",
-    description: "Every payment, role change, and admin action — with timestamps.",
+    description:
+      "Every payment, role change, and admin action — with timestamps.",
     icon: FileClock,
     href: "/settings/audit",
     ready: true,

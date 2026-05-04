@@ -123,10 +123,7 @@ export default async function TenantsPage({
               </tr>
             ) : (
               tenants.map((t) => (
-                <tr
-                  key={t.id}
-                  className="hover:bg-muted/30 cursor-pointer"
-                >
+                <tr key={t.id} className="hover:bg-muted/30 cursor-pointer">
                   <td className="px-4 py-3">
                     <Link
                       href={`/super-admin/tenants/${t.id}`}
@@ -154,10 +151,13 @@ export default async function TenantsPage({
                     {t.status === "trial" && t.trial_ends_at && (
                       <div className="mt-0.5 text-[10px] text-muted-foreground">
                         ends{" "}
-                        {new Date(t.trial_ends_at).toLocaleDateString(undefined, {
-                          day: "2-digit",
-                          month: "short",
-                        })}
+                        {new Date(t.trial_ends_at).toLocaleDateString(
+                          undefined,
+                          {
+                            day: "2-digit",
+                            month: "short",
+                          },
+                        )}
                       </div>
                     )}
                   </td>

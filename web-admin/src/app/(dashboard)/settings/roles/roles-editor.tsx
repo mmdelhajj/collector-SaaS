@@ -82,7 +82,9 @@ export function RolesEditor({
           ...prev,
           [role.name]: new Set(perms),
         }));
-        toast.success(`${ROLE_LABELS[role.name as keyof typeof ROLE_LABELS] ?? role.name} saved`);
+        toast.success(
+          `${ROLE_LABELS[role.name as keyof typeof ROLE_LABELS] ?? role.name} saved`,
+        );
       } else {
         toast.error(res.error ?? "Could not save");
       }
@@ -106,8 +108,8 @@ export function RolesEditor({
             unsaved {dirtyRoles.length === 1 ? "role change" : "role changes"}
           </div>
           <div className="text-xs text-amber-700 dark:text-amber-400">
-            Click <span className="font-semibold">Save</span> on each role
-            below to apply.
+            Click <span className="font-semibold">Save</span> on each role below
+            to apply.
           </div>
         </div>
       )}
@@ -202,8 +204,7 @@ export function RolesEditor({
                       {initial.roles.map((r) => {
                         const set = draft[r.name] ?? new Set();
                         const has = set.has(p.key);
-                        const dirty =
-                          original[r.name]?.has(p.key) !== has;
+                        const dirty = original[r.name]?.has(p.key) !== has;
                         return (
                           <td
                             key={r.name}

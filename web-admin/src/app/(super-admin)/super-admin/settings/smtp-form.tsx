@@ -90,7 +90,12 @@ export function SmtpForm({ initial }: { initial: SmtpInitial }) {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Host" value={host} onChange={setHost} placeholder="smtp.gmail.com" />
+        <Field
+          label="Host"
+          value={host}
+          onChange={setHost}
+          placeholder="smtp.gmail.com"
+        />
         <Field
           label="Port"
           type="number"
@@ -189,8 +194,8 @@ export function SmtpForm({ initial }: { initial: SmtpInitial }) {
           </div>
         )}
         <p className="mt-2 text-[10px] text-muted-foreground">
-          Save your settings first, then send a test. The test uses the
-          values currently saved in the database.
+          Save your settings first, then send a test. The test uses the values
+          currently saved in the database.
         </p>
       </div>
     </section>
@@ -255,7 +260,9 @@ function SecretField({
         autoComplete="new-password"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={isSet ? "•••••••• (leave blank to keep)" : "Paste new value"}
+        placeholder={
+          isSet ? "•••••••• (leave blank to keep)" : "Paste new value"
+        }
       />
     </div>
   );

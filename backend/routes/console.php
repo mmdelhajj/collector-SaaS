@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\RefreshExchangeRatesJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -22,7 +23,7 @@ Schedule::command('invoices:send-due-reminders')
 // Pull fresh USD-anchored rates from open.er-api.com and update every
 // tenant on `exchange_rate_source = 'auto'`. Single API call per day,
 // cheap, free.
-Schedule::job(new \App\Jobs\RefreshExchangeRatesJob())
+Schedule::job(new RefreshExchangeRatesJob)
     ->dailyAt('06:00')
     ->withoutOverlapping()
     ->onOneServer();

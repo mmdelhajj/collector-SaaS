@@ -54,7 +54,8 @@ export async function GET(
   const cd = upstream.headers.get("Content-Disposition");
   if (cd) headers.set("Content-Disposition", cd);
   // Force inline preview when possible (most browsers will render the PDF in-tab).
-  if (!cd) headers.set("Content-Disposition", `inline; filename="invoice-${id}.pdf"`);
+  if (!cd)
+    headers.set("Content-Disposition", `inline; filename="invoice-${id}.pdf"`);
 
   return new Response(upstream.body, {
     status: 200,

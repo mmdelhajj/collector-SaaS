@@ -15,7 +15,10 @@ const NOT_AUTHORIZED: Result = { error: "Not authorized." };
 
 function describe(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
-    const b = err.body as { message?: string; errors?: Record<string, string[]> };
+    const b = err.body as {
+      message?: string;
+      errors?: Record<string, string[]>;
+    };
     if (b?.errors) {
       const first = Object.values(b.errors)[0]?.[0];
       if (first) return first;

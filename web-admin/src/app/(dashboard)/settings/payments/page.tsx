@@ -24,8 +24,9 @@ export default async function PaymentSettingsPage() {
           Payment routing
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          For each payment method, tell us if the money <b>passes through the
-          collector</b> (they need to hand it over at end of day) or
+          For each payment method, tell us if the money{" "}
+          <b>passes through the collector</b> (they need to hand it over at end
+          of day) or
           <b> goes directly to the company</b> (no handover needed). Card,
           Stripe, and bank transfers should always be set to direct.
         </p>

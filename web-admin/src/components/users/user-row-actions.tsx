@@ -244,9 +244,7 @@ export function UserRowActions({
                       type="button"
                       onClick={() => setShowCustomPassword((s) => !s)}
                       className="absolute end-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      aria-label={
-                        showCustomPassword ? "Hide" : "Show"
-                      }
+                      aria-label={showCustomPassword ? "Hide" : "Show"}
                     >
                       {showCustomPassword ? (
                         <EyeOff className="size-4" />
@@ -325,9 +323,7 @@ export function UserRowActions({
           <Button
             type="button"
             onClick={saveRole}
-            disabled={
-              isPending || !pickedRole || pickedRole === currentRole
-            }
+            disabled={isPending || !pickedRole || pickedRole === currentRole}
           >
             {isPending ? (
               <>

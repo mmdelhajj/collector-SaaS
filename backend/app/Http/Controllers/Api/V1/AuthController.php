@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\User\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -20,13 +21,14 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use PragmaRX\Google2FA\Google2FA;
 use Spatie\Permission\PermissionRegistrar;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AuthController extends Controller
 {
     private const MAX_ATTEMPTS = 5;
+
     private const DECAY_SECONDS = 900; // 15 min lockout
 
     public function login(LoginRequest $request): JsonResponse
@@ -109,7 +111,7 @@ class AuthController extends Controller
             app(PermissionRegistrar::class)->setPermissionsTeamId($user->tenant_id);
         }
         $user->load('roles');
-        $tenant = $user->tenant_id ? \App\Models\Tenant::query()->find($user->tenant_id) : null;
+        $tenant = $user->tenant_id ? Tenant::query()->find($user->tenant_id) : null;
 
         return response()->json([
             'user' => new UserResource($user),
@@ -159,6 +161,7 @@ class AuthController extends Controller
     }
 
     private const AVATAR_DISK = 'avatars';
+
     private const AVATAR_MAX_KB = 2048;
 
     /**

@@ -207,7 +207,10 @@ export default async function HandoverDetail({
                 </tr>
               ))}
               <tr className="bg-muted/30">
-                <td colSpan={4} className="px-5 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <td
+                  colSpan={4}
+                  className="px-5 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
                   System total
                 </td>
                 <td className="px-5 py-2 text-right font-mono tabular-nums text-sm font-semibold">
@@ -260,7 +263,9 @@ function ReconCard({
       >
         {value}
       </p>
-      {hint && <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && (
+        <p className="mt-0.5 text-[11px] text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }

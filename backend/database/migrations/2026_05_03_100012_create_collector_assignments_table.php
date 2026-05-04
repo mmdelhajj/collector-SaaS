@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -57,7 +58,7 @@ return new class extends Migration
         // Postgres partial unique index: only one PENDING/IN_PROGRESS assignment
         // per invoice at a time. Reassignment first marks the old row as
         // 'reassigned' before inserting the new one.
-        \Illuminate\Support\Facades\DB::statement(
+        DB::statement(
             "CREATE UNIQUE INDEX collector_assignments_active_invoice_unique
              ON collector_assignments (tenant_id, invoice_id)
              WHERE status IN ('pending', 'in_progress') AND deleted_at IS NULL"

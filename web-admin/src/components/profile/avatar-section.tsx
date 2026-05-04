@@ -24,16 +24,15 @@ export function AvatarSection({
   const [hasAvatar, setHasAvatar] = useState(initialHasAvatar);
   // Cache buster used in the <img src> — changes after every upload/remove
   // so the browser refetches even when the path stays /api/avatar/me.
-  const [version, setVersion] = useState<string>(
-    initialVersion ?? "0",
-  );
+  const [version, setVersion] = useState<string>(initialVersion ?? "0");
 
-  const initials = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("") || "U";
+  const initials =
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase() ?? "")
+      .join("") || "U";
 
   function pickFile() {
     inputRef.current?.click();

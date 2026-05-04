@@ -153,7 +153,7 @@ function PaymentCard({ entry: e }: { entry: PaymentEntry }) {
               sublabel={
                 e.invoice?.status === "paid"
                   ? "fully paid"
-                  : e.invoice?.status ?? ""
+                  : (e.invoice?.status ?? "")
               }
             />
           ) : (
@@ -380,12 +380,11 @@ const AUDIT_META: Record<
 };
 
 function AuditCard({ entry: e }: { entry: AuditEntry }) {
-  const meta =
-    AUDIT_META[e.action] ?? {
-      icon: CheckCircle2,
-      color: "text-zinc-500",
-      label: e.action,
-    };
+  const meta = AUDIT_META[e.action] ?? {
+    icon: CheckCircle2,
+    color: "text-zinc-500",
+    label: e.action,
+  };
   const Icon = meta.icon;
   return (
     <div className="flex items-start gap-3 px-5 py-3">

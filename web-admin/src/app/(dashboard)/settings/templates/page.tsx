@@ -27,14 +27,23 @@ export default async function TemplatesPage() {
           <ArrowLeft className="size-3" />
           Settings
         </Link>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Message templates</h1>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+          Message templates
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           WhatsApp, SMS, and email content per locale. Use{" "}
           <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
             {"{{variables}}"}
           </code>{" "}
-          like <code className="rounded bg-muted px-1 py-0.5 text-[11px]">{"{{customer_name}}"}</code>,{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-[11px]">{"{{amount}}"}</code>.
+          like{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+            {"{{customer_name}}"}
+          </code>
+          ,{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+            {"{{amount}}"}
+          </code>
+          .
         </p>
       </div>
 

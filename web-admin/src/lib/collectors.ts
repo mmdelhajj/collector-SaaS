@@ -12,10 +12,7 @@ export type {
   CollectorAssignment,
   FailureReason,
 } from "@/lib/collectors-types";
-export {
-  ASSIGNMENT_STATUSES,
-  FAILURE_REASONS,
-} from "@/lib/collectors-types";
+export { ASSIGNMENT_STATUSES, FAILURE_REASONS } from "@/lib/collectors-types";
 
 export type AssignmentListParams = {
   page?: number;

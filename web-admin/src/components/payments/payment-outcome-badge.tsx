@@ -8,7 +8,13 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Outcome = "cleared" | "partial" | "unallocated" | "refunded" | "pending" | "failed";
+type Outcome =
+  | "cleared"
+  | "partial"
+  | "unallocated"
+  | "refunded"
+  | "pending"
+  | "failed";
 
 const META: Record<
   Outcome,

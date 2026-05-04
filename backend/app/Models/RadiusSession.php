@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Concerns\BelongsToTenant;
+use Database\Factories\RadiusSessionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RadiusSession extends Model
 {
-    /** @use HasFactory<\Database\Factories\RadiusSessionFactory> */
+    /** @use HasFactory<RadiusSessionFactory> */
     use BelongsToTenant, HasFactory;
 
     protected $fillable = [

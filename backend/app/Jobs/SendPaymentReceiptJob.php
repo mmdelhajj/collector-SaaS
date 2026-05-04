@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Models\Customer;
 use App\Models\MessageLog;
 use App\Models\Payment;
 use App\Models\Tenant;
@@ -17,6 +18,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use Throwable;
 
 /**
@@ -85,7 +87,7 @@ class SendPaymentReceiptJob implements ShouldQueue
 
     private function dispatchReceipt(
         Payment $payment,
-        \App\Models\Customer $customer,
+        Customer $customer,
         Tenant $tenant,
         MessageGateway $gateway,
         MessageRenderer $renderer,
@@ -98,7 +100,7 @@ class SendPaymentReceiptJob implements ShouldQueue
             'amount' => number_format((float) $payment->amount, 2),
             'currency' => $payment->currency,
             'invoice_number' => $payment->invoice?->number ?? '—',
-            'receipt_url' => \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'receipt_url' => URL::temporarySignedRoute(
                 'receipts.public',
                 now()->addDays((int) ($tenant->settings['receipt_link_ttl_days'] ?? 30)),
                 ['paymentId' => $payment->id],
@@ -164,7 +166,7 @@ class SendPaymentReceiptJob implements ShouldQueue
     /**
      * @return list<array{0: string, 1: string}>
      */
-    private function resolveChannels(\App\Models\Customer $customer): array
+    private function resolveChannels(Customer $customer): array
     {
         $channels = [];
         if ($customer->whatsapp_phone) {

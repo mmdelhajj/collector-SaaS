@@ -43,7 +43,10 @@ export function RecordPaymentForm({
   const fe = state?.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="space-y-5 rounded-xl border bg-card p-5">
+    <form
+      action={formAction}
+      className="space-y-5 rounded-xl border bg-card p-5"
+    >
       <input type="hidden" name="customer_id" value={customerId} />
       <input type="hidden" name="invoice_id" value={invoiceId} />
       <input type="hidden" name="assignment_id" value={assignmentId} />

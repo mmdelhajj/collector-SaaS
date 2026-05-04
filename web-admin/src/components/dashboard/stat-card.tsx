@@ -9,7 +9,13 @@ type StatCardProps = {
   icon: LucideIcon;
 };
 
-export function StatCard({ label, value, delta, hint, icon: Icon }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  delta,
+  hint,
+  icon: Icon,
+}: StatCardProps) {
   return (
     <div className="rounded-xl border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
       <div className="flex items-start justify-between gap-4">

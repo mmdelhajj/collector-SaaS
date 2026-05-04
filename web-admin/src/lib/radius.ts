@@ -28,10 +28,9 @@ export async function listRadiusUsers(
 export async function suspendRadiusUser(
   id: number,
 ): Promise<{ data: RadiusUser }> {
-  return apiFetch<{ data: RadiusUser }>(
-    `/api/v1/radius-users/${id}/suspend`,
-    { method: "POST" },
-  );
+  return apiFetch<{ data: RadiusUser }>(`/api/v1/radius-users/${id}/suspend`, {
+    method: "POST",
+  });
 }
 
 export async function reactivateRadiusUser(

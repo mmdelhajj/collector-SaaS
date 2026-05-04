@@ -189,7 +189,9 @@ export async function requireRole(allowed: TenantRole[]): Promise<CurrentUser> {
  * endpoint with a valid cookie of the wrong role, Laravel rejected but the
  * action surface itself leaked which actions exist + exact backend errors.
  */
-export async function actionRequireRole(allowed: TenantRole[]): Promise<CurrentUser | null> {
+export async function actionRequireRole(
+  allowed: TenantRole[],
+): Promise<CurrentUser | null> {
   const user = await getCurrentUser();
   if (!user) return null;
   if (!user.roles.some((r) => allowed.includes(r))) return null;

@@ -3,11 +3,7 @@ import { apiFetch } from "@/lib/api";
 import type { Paginated } from "@/lib/customers-types";
 import type { Package, BillingType, BillingPeriod } from "@/lib/packages-types";
 
-export type {
-  Package,
-  BillingType,
-  BillingPeriod,
-} from "@/lib/packages-types";
+export type { Package, BillingType, BillingPeriod } from "@/lib/packages-types";
 export { BILLING_TYPES, BILLING_PERIODS } from "@/lib/packages-types";
 
 export type PackageListParams = {

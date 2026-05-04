@@ -17,8 +17,7 @@ export default async function SignupPage({
 }) {
   const sp = await searchParams;
   const plans = await listPublicPlans().catch(() => []);
-  const initialPlan =
-    plans.find((p) => p.code === sp.plan)?.code ?? "growth";
+  const initialPlan = plans.find((p) => p.code === sp.plan)?.code ?? "growth";
 
   return (
     <div className="relative z-10 w-full max-w-[480px]">
@@ -41,7 +40,10 @@ export default async function SignupPage({
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link
+          href="/login"
+          className="font-medium text-primary hover:underline"
+        >
           Sign in
         </Link>
       </p>

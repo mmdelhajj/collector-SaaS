@@ -62,8 +62,6 @@ export async function resolveHandover(
   );
 }
 
-export async function getHandover(
-  id: number,
-): Promise<{ data: CashHandover }> {
+export async function getHandover(id: number): Promise<{ data: CashHandover }> {
   return apiFetch<{ data: CashHandover }>(`/api/v1/cash-handovers/${id}`);
 }

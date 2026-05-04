@@ -47,8 +47,8 @@ export default async function CurrencyPage() {
             <h2 className="text-base font-semibold">Rate change history</h2>
           </header>
           <p className="text-xs text-muted-foreground">
-            Last 10 changes. Past invoices keep the rate that was in effect
-            when they were issued.
+            Last 10 changes. Past invoices keep the rate that was in effect when
+            they were issued.
           </p>
 
           {data.history.length === 0 ? (
@@ -73,10 +73,14 @@ export default async function CurrencyPage() {
                         <LocalDateTime iso={h.created_at} />
                       </td>
                       <td className="py-2 pe-4 text-right font-mono tabular-nums">
-                        {h.old_rate !== null ? h.old_rate.toLocaleString() : "—"}
+                        {h.old_rate !== null
+                          ? h.old_rate.toLocaleString()
+                          : "—"}
                       </td>
                       <td className="py-2 pe-4 text-right font-mono tabular-nums font-semibold">
-                        {h.new_rate !== null ? h.new_rate.toLocaleString() : "—"}
+                        {h.new_rate !== null
+                          ? h.new_rate.toLocaleString()
+                          : "—"}
                       </td>
                       <td className="py-2 text-xs">
                         {h.user ? h.user.name : "—"}

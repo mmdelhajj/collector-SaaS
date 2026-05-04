@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\CollectorAssignment;
 use App\Models\Customer;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\ServiceCategory;
@@ -150,7 +151,7 @@ it('GET /reports/revenue groups invoice totals by service category', function ()
         'subtotal' => 50, 'total' => 50, 'paid_amount' => 0, 'status' => 'open',
         'issued_at' => now(), // Match the report's default `since` window.
     ]);
-    \App\Models\InvoiceItem::query()->create([
+    InvoiceItem::query()->create([
         'invoice_id' => $invoice->id,
         'package_id' => $package->id,
         'description' => 'Monthly internet',

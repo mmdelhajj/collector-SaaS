@@ -221,11 +221,8 @@ function SuccessPanel({
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           Share with the user via WhatsApp, Signal, or another secure channel —
-          <span className="font-medium text-foreground">
-            {" "}
-            never email it
-          </span>
-          . They should change it after first sign-in.
+          <span className="font-medium text-foreground"> never email it</span>.
+          They should change it after first sign-in.
         </p>
       </div>
 

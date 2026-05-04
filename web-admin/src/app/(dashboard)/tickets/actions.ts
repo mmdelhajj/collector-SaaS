@@ -25,7 +25,10 @@ export async function createTicketAction(
     return { ok: true, ticketId: res.data.id };
   } catch (err) {
     if (err instanceof ApiError) {
-      const b = err.body as { errors?: Record<string, string[]>; message?: string };
+      const b = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
       return {
         error: b?.message ?? "Could not create ticket.",
         fieldErrors: b?.errors,
@@ -45,7 +48,10 @@ export async function updateTicketAction(
     return { ok: true, ticketId: id };
   } catch (err) {
     if (err instanceof ApiError) {
-      const b = err.body as { errors?: Record<string, string[]>; message?: string };
+      const b = err.body as {
+        errors?: Record<string, string[]>;
+        message?: string;
+      };
       return {
         error: b?.message ?? "Could not update ticket.",
         fieldErrors: b?.errors,

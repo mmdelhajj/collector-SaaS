@@ -118,7 +118,9 @@ export default async function RadiusPage({
         />
         <SummaryCard
           label="Suspended"
-          value={list.data.filter((u) => u.status === "suspended").length.toString()}
+          value={list.data
+            .filter((u) => u.status === "suspended")
+            .length.toString()}
           icon={Radio}
           hint="on this page"
         />
@@ -300,8 +302,8 @@ function NoTenantContext({ email }: { email: string }) {
             </h1>
             <p className="mt-1.5 text-pretty text-sm text-muted-foreground">
               Sign in as a tenant admin (e.g.{" "}
-              <span className="font-mono text-foreground">{email}</span> needs
-              a tenant) to view RADIUS users.
+              <span className="font-mono text-foreground">{email}</span> needs a
+              tenant) to view RADIUS users.
             </p>
             <div className="mt-6">
               <Link href="/login" className={buttonVariants({ size: "sm" })}>

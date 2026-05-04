@@ -9,6 +9,9 @@ use App\Http\Requests\Customer\StoreCustomerRequest;
 use App\Http\Requests\Customer\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
+use App\Models\Invoice;
+use App\Support\Audit;
+use App\Support\UniqueRetry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -67,7 +70,7 @@ class CustomerController extends Controller
     {
         abort_unless($request->user()?->can('customers.create'), 403);
 
-        $customer = \App\Support\UniqueRetry::run(fn () => Customer::query()->create(
+        $customer = UniqueRetry::run(fn () => Customer::query()->create(
             [...$request->validated(), 'created_by' => $request->user()?->id]
         ));
 
@@ -100,7 +103,7 @@ class CustomerController extends Controller
         $label = $customer->full_name ?? $customer->code;
         $customer->delete();
 
-        \App\Support\Audit::record('customer.deleted', $customer, null, $label);
+        Audit::record('customer.deleted', $customer, null, $label);
 
         return response()->json(null, 204);
     }
@@ -115,7 +118,7 @@ class CustomerController extends Controller
         abort_unless($request->user()?->can('customers.view'), 403);
         $customer = Customer::query()->findOrFail($id);
 
-        $invoices = \App\Models\Invoice::query()
+        $invoices = Invoice::query()
             ->where('customer_id', $customer->id)
             ->whereIn('status', ['open', 'partial', 'overdue'])
             ->where('balance_due', '>', 0)

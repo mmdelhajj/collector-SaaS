@@ -24,7 +24,12 @@ export type InviteState = {
   ok?: boolean;
   error?: string;
   fieldErrors?: Record<string, string[]>;
-  result?: { id: number; name: string; email: string; temporaryPassword: string };
+  result?: {
+    id: number;
+    name: string;
+    email: string;
+    temporaryPassword: string;
+  };
 };
 
 export async function inviteUserAction(
