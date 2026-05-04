@@ -21,6 +21,8 @@ class CustomerController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        abort_unless($request->user()?->can('customers.view'), 403);
+
         $perPage = (int) min(max((int) $request->integer('per_page', 25), 1), 100);
 
         $query = Customer::query();
@@ -63,6 +65,8 @@ class CustomerController extends Controller
 
     public function store(StoreCustomerRequest $request): JsonResponse
     {
+        abort_unless($request->user()?->can('customers.create'), 403);
+
         $customer = \App\Support\UniqueRetry::run(fn () => Customer::query()->create(
             [...$request->validated(), 'created_by' => $request->user()?->id]
         ));
@@ -72,8 +76,9 @@ class CustomerController extends Controller
             ->setStatusCode(201);
     }
 
-    public function show(string $id): CustomerResource
+    public function show(Request $request, string $id): CustomerResource
     {
+        abort_unless($request->user()?->can('customers.view'), 403);
         $customer = Customer::query()->findOrFail($id);
 
         return new CustomerResource($customer);
@@ -81,14 +86,16 @@ class CustomerController extends Controller
 
     public function update(UpdateCustomerRequest $request, string $id): CustomerResource
     {
+        abort_unless($request->user()?->can('customers.edit'), 403);
         $customer = Customer::query()->findOrFail($id);
         $customer->update($request->validated());
 
         return new CustomerResource($customer->fresh());
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
+        abort_unless($request->user()?->can('customers.delete'), 403);
         $customer = Customer::query()->findOrFail($id);
         $label = $customer->full_name ?? $customer->code;
         $customer->delete();
@@ -103,8 +110,9 @@ class CustomerController extends Controller
      * as /reports/aging but scoped to a single customer so the customer page
      * can show a "Total outstanding $X" panel with one-click bulk-assign.
      */
-    public function outstanding(string $id): JsonResponse
+    public function outstanding(Request $request, string $id): JsonResponse
     {
+        abort_unless($request->user()?->can('customers.view'), 403);
         $customer = Customer::query()->findOrFail($id);
 
         $invoices = \App\Models\Invoice::query()

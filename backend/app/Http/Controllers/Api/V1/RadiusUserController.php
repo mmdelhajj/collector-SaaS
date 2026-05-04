@@ -16,6 +16,8 @@ class RadiusUserController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        abort_unless($request->user()?->can('radius.manage'), 403);
+
         $perPage = (int) min(max((int) $request->integer('per_page', 25), 1), 100);
 
         $query = RadiusUser::query()->with('customer');
@@ -44,8 +46,10 @@ class RadiusUserController extends Controller
         return RadiusUserResource::collection($query->paginate($perPage)->withQueryString());
     }
 
-    public function show(int $id): RadiusUserResource
+    public function show(int $id, Request $request): RadiusUserResource
     {
+        abort_unless($request->user()?->can('radius.manage'), 403);
+
         $user = RadiusUser::query()->with('customer')->findOrFail($id);
 
         return new RadiusUserResource($user);
@@ -89,14 +93,25 @@ class RadiusUserController extends Controller
             'radius_group' => ['required', 'string', 'max:64'],
         ]);
         $user = RadiusUser::query()->findOrFail($id);
-        $user->update(['radius_group' => $request->input('radius_group')]);
-        $coa->changeRadiusGroup($user, $request->input('radius_group'));
+        $oldGroup = $user->radius_group;
+        $newGroup = $request->input('radius_group');
+        $user->update(['radius_group' => $newGroup]);
+        $coa->changeRadiusGroup($user, $newGroup);
+
+        \App\Support\Audit::record(
+            'radius.speed_changed',
+            $user,
+            ['old' => $oldGroup, 'new' => $newGroup],
+            $user->username,
+        );
 
         return new RadiusUserResource($user->fresh()->load('customer'));
     }
 
-    public function sessions(int $id): JsonResponse
+    public function sessions(int $id, Request $request): JsonResponse
     {
+        abort_unless($request->user()?->can('radius.manage'), 403);
+
         $user = RadiusUser::query()->findOrFail($id);
         $sessions = $user->sessions()
             ->orderByDesc('started_at')

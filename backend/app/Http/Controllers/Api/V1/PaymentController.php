@@ -22,6 +22,8 @@ class PaymentController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        abort_unless($request->user()?->can('payments.view'), 403);
+
         $perPage = (int) min(max((int) $request->integer('per_page', 25), 1), 100);
 
         $query = Payment::query()->with(['customer', 'invoice', 'collector']);
@@ -66,6 +68,8 @@ class PaymentController extends Controller
 
     public function store(StorePaymentRequest $request, PaymentRecorder $recorder): JsonResponse
     {
+        abort_unless($request->user()?->can('payments.record'), 403);
+
         $data = $request->validated();
 
         // Defence: if an invoice is provided, ensure it belongs to the same customer.
@@ -101,8 +105,10 @@ class PaymentController extends Controller
             ->setStatusCode(201);
     }
 
-    public function show(string $id): PaymentResource
+    public function show(Request $request, string $id): PaymentResource
     {
+        abort_unless($request->user()?->can('payments.view'), 403);
+
         $payment = Payment::query()
             ->with(['customer', 'invoice', 'collector'])
             ->findOrFail($id);
@@ -112,17 +118,27 @@ class PaymentController extends Controller
 
     public function refund(Request $request, string $id, PaymentRecorder $recorder): PaymentResource
     {
-        if (! $request->user()->can('payments.refund')) {
-            abort(403);
-        }
+        abort_unless($request->user()?->can('payments.refund'), 403);
 
         $payment = Payment::query()->findOrFail($id);
         if ($payment->status !== 'completed') {
             abort(409, 'Only completed payments can be refunded.');
         }
 
+        $original = [
+            'amount' => (string) $payment->amount,
+            'currency' => $payment->currency,
+            'method' => $payment->method,
+        ];
         $payment = $recorder->refund($payment);
         $payment->load(['customer', 'invoice', 'collector']);
+
+        \App\Support\Audit::record(
+            'payment.refunded',
+            $payment,
+            $original,
+            $payment->reference_number ?? "Payment #{$payment->id}",
+        );
 
         return new PaymentResource($payment);
     }

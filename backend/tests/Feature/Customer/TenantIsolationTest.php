@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\Customer;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Rbac;
 use App\Support\TenantContext;
 
 /*
@@ -18,8 +19,10 @@ use App\Support\TenantContext;
 beforeEach(function () {
     $this->tenantA = Tenant::factory()->create(['name' => 'Tenant A']);
     $this->tenantB = Tenant::factory()->create(['name' => 'Tenant B']);
-    $this->userA = User::factory()->forTenant($this->tenantA)->create();
-    $this->userB = User::factory()->forTenant($this->tenantB)->create();
+    $this->userA = User::factory()->forTenant($this->tenantA)
+        ->withRole(Rbac::ROLE_TENANT_OWNER)->create();
+    $this->userB = User::factory()->forTenant($this->tenantB)
+        ->withRole(Rbac::ROLE_TENANT_OWNER)->create();
 
     app(TenantContext::class)->set($this->tenantA);
     $this->customerA = Customer::factory()->create(['tenant_id' => $this->tenantA->id]);

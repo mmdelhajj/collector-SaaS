@@ -25,6 +25,8 @@ class InvoiceController extends Controller
 
     public function index(Request $request): AnonymousResourceCollection
     {
+        abort_unless($request->user()?->can('invoices.view'), 403);
+
         $perPage = (int) min(max((int) $request->integer('per_page', 25), 1), 100);
 
         $query = Invoice::query()->with([
@@ -80,6 +82,8 @@ class InvoiceController extends Controller
 
     public function store(StoreInvoiceRequest $request): JsonResponse
     {
+        abort_unless($request->user()?->can('invoices.create'), 403);
+
         $data = $request->validated();
         $items = $data['items'];
         unset($data['items']);
@@ -132,8 +136,10 @@ class InvoiceController extends Controller
             ->setStatusCode(201);
     }
 
-    public function show(string $id): InvoiceResource
+    public function show(Request $request, string $id): InvoiceResource
     {
+        abort_unless($request->user()?->can('invoices.view'), 403);
+
         $invoice = Invoice::query()
             ->with(['items', 'customer'])
             ->findOrFail($id);
@@ -141,15 +147,20 @@ class InvoiceController extends Controller
         return new InvoiceResource($invoice);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
+        abort_unless($request->user()?->can('invoices.cancel'), 403);
+
         $invoice = Invoice::query()->findOrFail($id);
         if ($invoice->paid_amount > 0) {
             return response()->json([
                 'message' => 'Cannot delete an invoice that has received payment. Cancel it instead.',
             ], 409);
         }
+        $label = $invoice->number;
         $invoice->delete();
+
+        \App\Support\Audit::record('invoice.cancelled', $invoice, null, $label);
 
         return response()->json(null, 204);
     }
@@ -159,6 +170,8 @@ class InvoiceController extends Controller
      */
     public function generateBulk(Request $request, InvoiceGenerator $generator): JsonResponse
     {
+        abort_unless($request->user()?->can('invoices.create'), 403);
+
         $summary = $generator->runMonthlyBillingForCurrentTenant();
 
         return response()->json([
@@ -172,8 +185,10 @@ class InvoiceController extends Controller
     /**
      * Stream a printable PDF of the invoice.
      */
-    public function pdf(string $id): Response
+    public function pdf(Request $request, string $id): Response
     {
+        abort_unless($request->user()?->can('invoices.view'), 403);
+
         $invoice = Invoice::query()
             ->with(['items', 'customer', 'tenant'])
             ->findOrFail($id);

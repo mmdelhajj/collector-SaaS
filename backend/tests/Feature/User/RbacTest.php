@@ -71,13 +71,15 @@ it('collector CANNOT invite users', function () {
         ->assertForbidden();
 });
 
-it('any authenticated tenant user can read /users (no permission gate on read)', function () {
+it('users without users.manage are blocked from reading /users', function () {
     $support = User::factory()->forTenant($this->tenant)->create();
     $support->assignRole(Rbac::ROLE_SUPPORT);
 
+    // Pre-fix this returned 200 — the staff directory leaked to anyone with
+    // a session. Now read is gated behind users.manage like write.
     $this->actingAs($support, 'sanctum')
         ->getJson('/api/v1/users')
-        ->assertOk();
+        ->assertForbidden();
 });
 
 it('seeded role grids match the spec', function () {

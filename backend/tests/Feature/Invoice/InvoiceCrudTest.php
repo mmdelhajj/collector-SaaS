@@ -8,11 +8,14 @@ use App\Models\Invoice;
 use App\Models\Package;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Rbac;
 use App\Support\TenantContext;
 
 beforeEach(function () {
     $this->tenant = Tenant::factory()->create();
-    $this->user = User::factory()->forTenant($this->tenant)->create();
+    $this->user = User::factory()->forTenant($this->tenant)
+        ->withRole(Rbac::ROLE_TENANT_OWNER)
+        ->create();
     app(TenantContext::class)->set($this->tenant);
 });
 

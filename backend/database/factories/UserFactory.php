@@ -51,4 +51,22 @@ class UserFactory extends Factory
 
         return $this->state(fn () => ['tenant_id' => $id]);
     }
+
+    /**
+     * Assign a Spatie role after creation. Convenience for tests so each
+     * controller's `can(...)` gate is satisfied without boilerplate. Also
+     * lazily seeds the role+permission catalogue for the user's tenant if
+     * it hasn't been seeded yet (Spatie roles are team-scoped here).
+     */
+    public function withRole(string $roleName): static
+    {
+        return $this->afterCreating(function ($user) use ($roleName): void {
+            if ($user->tenant_id) {
+                (new \Database\Seeders\RolesSeeder)->seedForTenant((string) $user->tenant_id);
+                app(\Spatie\Permission\PermissionRegistrar::class)
+                    ->setPermissionsTeamId($user->tenant_id);
+            }
+            $user->assignRole($roleName);
+        });
+    }
 }

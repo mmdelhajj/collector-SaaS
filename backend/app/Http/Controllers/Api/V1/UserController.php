@@ -19,6 +19,8 @@ class UserController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
+        abort_unless($request->user()?->can('users.manage'), 403);
+
         $perPage = (int) min(max((int) $request->integer('per_page', 25), 1), 100);
 
         $query = User::query()
@@ -83,6 +85,8 @@ class UserController extends Controller
 
     public function show(int $id, Request $request): UserResource
     {
+        abort_unless($request->user()?->can('users.manage'), 403);
+
         $user = User::query()
             ->where('tenant_id', $request->user()->tenant_id)
             ->with('roles')
