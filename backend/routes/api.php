@@ -46,6 +46,19 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
     // Public auth endpoints (rate-limited inside the controller).
     Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
 
+    // Public password-reset flow. Both endpoints are unauthenticated and
+    // rely on the route-group throttle plus per-email rate limiting inside
+    // the controller. Always return generic responses to prevent email
+    // enumeration.
+    Route::post(
+        'auth/forgot-password',
+        [\App\Http\Controllers\Api\V1\ForgotPasswordController::class, 'sendLink']
+    )->name('auth.forgot-password');
+    Route::post(
+        'auth/reset-password',
+        [\App\Http\Controllers\Api\V1\ForgotPasswordController::class, 'reset']
+    )->name('auth.reset-password');
+
     // Public self-service signup — no auth required.
     Route::get('plans', [SignupController::class, 'plans'])->name('plans.index');
     Route::post('signup', [SignupController::class, 'signup'])->name('signup');

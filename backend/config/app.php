@@ -54,6 +54,12 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Public URL of the Next.js admin panel. Used to build links in
+    // password-reset emails and any other tenant-user-facing email that
+    // points back at the app. Falls back to APP_URL when unset, but should
+    // be set explicitly in prod since APP_URL is the API host.
+    'frontend_url' => env('APP_FRONTEND_URL', env('APP_URL', 'http://localhost:3000')),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
