@@ -68,32 +68,8 @@ jobs:
           DB_PASSWORD: secret
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
-        shell: bash {0} # disable default `set -e -o pipefail` so grep no-match doesn't kill our diagnostic
         run: |
-          cp .env.example .env || { echo "::error::cp .env.example failed"; exit 1; }
-          php artisan key:generate || { echo "::error::key:generate failed"; exit 1; }
-          php artisan migrate --force 2>&1 | tee /tmp/migrate.log
-          MIGRATE_EXIT=${PIPESTATUS[0]}
-          if [ "$MIGRATE_EXIT" -ne 0 ]; then
-            tail_msg=$(tail -40 /tmp/migrate.log | sed 's/%/%25/g; s/\r/%0D/g' | awk 'BEGIN{ORS="%0A"}{print}')
-            echo "::error title=migration failed::$tail_msg"
-            exit "$MIGRATE_EXIT"
-          fi
-
-          ./vendor/bin/pest --colors=never 2>&1 | tee /tmp/pest.log
-          PEST_EXIT=${PIPESTATUS[0]}
-
-          if [ "$PEST_EXIT" -ne 0 ]; then
-            # Pull the FAILED block from pest output (everything between the
-            # first "FAILED" or "FAIL" line and the "Tests:" summary). Encode
-            # newlines as %0A so the whole thing fits in one annotation,
-            # which we can fetch via the public check-runs/annotations API
-            # without admin auth.
-            tail_msg=$(tail -120 /tmp/pest.log | sed 's/%/%25/g; s/\r/%0D/g' | awk 'BEGIN{ORS="%0A"}{print}')
-            echo "::error title=pest failure (last 120 lines)::$tail_msg"
-
-            ext_msg=$(php -m | sort | tr '\n' ',' | sed 's/,$//')
-            echo "::error title=php extensions::$ext_msg"
-          fi
-
-          exit "$PEST_EXIT"
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+          ./vendor/bin/pest --colors=always
