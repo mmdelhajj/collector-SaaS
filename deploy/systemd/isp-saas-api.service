@@ -1,0 +1,24 @@
+[Unit]
+Description=ISP SaaS — Laravel API
+After=network-online.target postgresql.service redis-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=isp-saas
+Group=isp-saas
+WorkingDirectory=/srv/isp-saas/backend
+ExecStart=/usr/bin/php artisan serve --host=127.0.0.1 --port=8000
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/isp-saas/api.log
+StandardError=append:/var/log/isp-saas/api.error.log
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/isp-saas/backend /var/log/isp-saas
+
+[Install]
+WantedBy=multi-user.target

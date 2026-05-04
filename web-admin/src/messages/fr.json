@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "operations": "Opérations",
+    "customers": "Clients",
+    "packages": "Forfaits",
+    "invoices": "Factures",
+    "payments": "Paiements",
+    "collectors": "Collecteurs",
+    "cashHandovers": "Remises de caisse",
+    "tickets": "Tickets",
+    "network": "Réseau",
+    "radius": "RADIUS",
+    "messages": "Messages",
+    "insights": "Rapports",
+    "reports": "Rapports",
+    "settings": "Paramètres",
+    "liveMap": "Carte en direct"
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher",
+    "loading": "Chargement…",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré.",
+    "yes": "Oui",
+    "no": "Non",
+    "today": "Aujourd'hui",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois"
+  },
+  "auth": {
+    "signIn": "Connexion",
+    "signOut": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "twoFactor": "Authentification à deux facteurs",
+    "code": "Code"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "workspace": "Espace de travail",
+    "integrations": "Intégrations",
+    "notifications": "Notifications",
+    "templates": "Modèles de messages",
+    "roles": "Rôles et permissions",
+    "zones": "Zones",
+    "audit": "Journal d'audit",
+    "security": "Sécurité",
+    "users": "Utilisateurs et rôles"
+  }
+}

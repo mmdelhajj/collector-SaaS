@@ -1,0 +1,23 @@
+[Unit]
+Description=ISP SaaS — Laravel Horizon (queue worker)
+After=network-online.target redis-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=isp-saas
+Group=isp-saas
+WorkingDirectory=/srv/isp-saas/backend
+ExecStart=/usr/bin/php artisan horizon
+ExecStop=/bin/kill -SIGTERM $MAINPID
+KillMode=process
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/isp-saas/horizon.log
+StandardError=append:/var/log/isp-saas/horizon.error.log
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "operations": "Operations",
+    "customers": "Customers",
+    "packages": "Packages",
+    "invoices": "Invoices",
+    "payments": "Payments",
+    "collectors": "Collectors",
+    "cashHandovers": "Cash handovers",
+    "tickets": "Tickets",
+    "network": "Network",
+    "radius": "RADIUS",
+    "messages": "Messages",
+    "insights": "Insights",
+    "reports": "Reports",
+    "settings": "Settings",
+    "liveMap": "Live map"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "saved": "Saved.",
+    "yes": "Yes",
+    "no": "No",
+    "today": "Today",
+    "thisWeek": "This week",
+    "thisMonth": "This month"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "email": "Email",
+    "password": "Password",
+    "twoFactor": "Two-factor authentication",
+    "code": "Code"
+  },
+  "settings": {
+    "title": "Settings",
+    "workspace": "Workspace",
+    "integrations": "Integrations",
+    "notifications": "Notifications",
+    "templates": "Message templates",
+    "roles": "Roles & permissions",
+    "zones": "Zones",
+    "audit": "Audit log",
+    "security": "Security",
+    "users": "Users & roles"
+  }
+}

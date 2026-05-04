@@ -1,0 +1,12 @@
+[Unit]
+Description=ISP SaaS — Laravel scheduler (one-shot, run every minute by timer)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=isp-saas
+Group=isp-saas
+WorkingDirectory=/srv/isp-saas/backend
+ExecStart=/usr/bin/php artisan schedule:run
+StandardOutput=append:/var/log/isp-saas/scheduler.log
+StandardError=append:/var/log/isp-saas/scheduler.error.log

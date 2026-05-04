@@ -1,0 +1,65 @@
+# Caddy reverse proxy + automatic Let's Encrypt TLS for the ISP SaaS platform.
+#
+# Usage:
+#   1. Replace `app.example.com` and `api.example.com` with your domains.
+#   2. Point both A records at this server.
+#   3. Copy this file to /etc/caddy/Caddyfile.
+#   4. systemctl reload caddy
+#
+# Caddy will:
+#   - Provision Let's Encrypt certs automatically (HTTP-01 / TLS-ALPN-01).
+#   - Redirect all HTTP traffic to HTTPS.
+#   - Add HSTS, gzip, sensible security headers.
+
+{
+    # Email used by Let's Encrypt for renewal notices.
+    email ops@example.com
+    # Set servers tls block for stricter configs if needed.
+}
+
+# ── Web admin (Next.js) ────────────────────────────────────────────────
+app.example.com {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(self), camera=(self), microphone=()"
+    }
+
+    # Next.js production server is bound to 127.0.0.1:3000 (see systemd unit).
+    reverse_proxy 127.0.0.1:3000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# ── Backend API (Laravel via php-fpm or `php artisan serve`) ───────────
+api.example.com {
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # CORS headers for the web-admin only — locked to the app domain.
+        Access-Control-Allow-Origin "https://app.example.com"
+        Access-Control-Allow-Credentials "true"
+        Access-Control-Allow-Methods "GET, POST, PATCH, PUT, DELETE, OPTIONS"
+        Access-Control-Allow-Headers "Authorization, Content-Type, Accept, X-Requested-With, X-Tenant-ID"
+    }
+
+    @options method OPTIONS
+    respond @options 204
+
+    # If using nginx/php-fpm: point at php-fpm socket and tweak.
+    # If using `php artisan serve`: bind to 127.0.0.1:8000 from the systemd unit below.
+    reverse_proxy 127.0.0.1:8000 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

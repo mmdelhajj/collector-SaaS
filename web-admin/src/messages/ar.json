@@ -1,0 +1,56 @@
+{
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "operations": "العمليات",
+    "customers": "العملاء",
+    "packages": "الباقات",
+    "invoices": "الفواتير",
+    "payments": "الدفعات",
+    "collectors": "المحصّلون",
+    "cashHandovers": "تسليم النقود",
+    "tickets": "تذاكر العمل",
+    "network": "الشبكة",
+    "radius": "RADIUS",
+    "messages": "الرسائل",
+    "insights": "التقارير",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "liveMap": "الخريطة المباشرة"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "loading": "جارٍ التحميل…",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم الحفظ.",
+    "yes": "نعم",
+    "no": "لا",
+    "today": "اليوم",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر"
+  },
+  "auth": {
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "twoFactor": "المصادقة الثنائية",
+    "code": "الرمز"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "workspace": "مساحة العمل",
+    "integrations": "التكاملات",
+    "notifications": "الإشعارات",
+    "templates": "قوالب الرسائل",
+    "roles": "الأدوار والصلاحيات",
+    "zones": "المناطق",
+    "audit": "سجل المراجعة",
+    "security": "الأمان",
+    "users": "المستخدمون والأدوار"
+  }
+}
