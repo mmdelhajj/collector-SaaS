@@ -53,13 +53,25 @@ class PlatformSettingsController extends Controller
     public function updateSmtp(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'host' => ['required', 'string', 'max:120'],
+            // Host must be a hostname/IP, NOT an email address. The @ check
+            // catches the common mistake of pasting your username (e.g.
+            // "user@example.com") into the Host field — Symfony Mailer would
+            // try to DNS-resolve it and fail with a confusing getaddrinfo
+            // error. Friendlier to reject at form-validation time.
+            'host' => [
+                'required', 'string', 'max:120',
+                'regex:/^[A-Za-z0-9.\-]+$/',
+                'not_regex:/@/',
+            ],
             'port' => ['required', 'integer', 'between:1,65535'],
             'username' => ['nullable', 'string', 'max:255'],
             'password' => ['nullable', 'string', 'max:255'],
             'encryption' => ['nullable', Rule::in(['tls', 'ssl', 'none'])],
             'from_address' => ['required', 'email', 'max:255'],
             'from_name' => ['required', 'string', 'max:120'],
+        ], [
+            'host.regex' => 'Host must be a server hostname (e.g. mail.example.com), not an email address. Put the email in Username / From address.',
+            'host.not_regex' => 'Host must be a server hostname (e.g. mail.example.com), not an email address. Put the email in Username / From address.',
         ]);
 
         $existing = PlatformSetting::get('smtp', []) ?? [];
