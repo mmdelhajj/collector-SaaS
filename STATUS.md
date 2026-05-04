@@ -124,7 +124,41 @@ _Date: 2026-05-04_
 
 ## 📝 Session Notes
 
-### Session 2026-05-04
+### Session 2026-05-04 (overnight security hardening pass)
+**Big push — all 20 prioritized findings from the security audit applied across 4 commits.**
+
+Backend security:
+- **RADIUS cross-tenant auth (CRITICAL):** `tenant_id` resolution is now mandatory — derived from explicit body field OR from the NAS source IP via `nas_devices` lookup. `hash_equals` replaces `!==` for password comparison. New tests prove same-username-across-tenants no longer cross-authenticates.
+- **Login/logout/failed audit (CRITICAL):** `LogAuthenticationEvents` listener registered in `AppServiceProvider` writes `user.login`, `user.logout`, `user.login_failed` rows. Tested.
+- **Per-action permission gates (HIGH):** `Customer/Invoice/Payment/User/RadiusUser` controllers now `abort_unless($user->can(...))`. `InvoiceController::destroy` audits `invoice.cancelled`. `PaymentController::refund` audits `payment.refunded`. `RadiusUserController::changeSpeed` audits `radius.speed_changed`. `UserFactory::withRole()` helper auto-seeds Spatie roles for tests.
+- **Cross-tenant `users.id` foreign keys (HIGH):** `Rule::exists` scoped by current tenant in `HandoverRequest`, `TicketController`, `CollectorZoneController`. Pre-fix attackers could reference users from other tenants.
+- **Tenant integration secrets encrypted (HIGH):** `whatsapp.api_key`, `sms.token`, `radius.shared_secret` now AES-encrypted via `Crypt::encryptString` in `tenants.settings` JSONB; the audit log records *which keys* changed but not their values. Helper `SettingsController::readIntegrationSecret` for runtime decryption.
+- **Rate limiting (HIGH):** `throttle:60,1` on `/v1` group, `throttle:1000,1` on RADIUS group.
+- **Public receipt URLs signed (HIGH):** `URL::temporarySignedRoute` with default 30-day TTL (configurable via `tenant.settings.receipt_link_ttl_days`). Unsigned hits return 403.
+- **2FA disable re-auth (HIGH):** Requires current password OR current TOTP code. Frontend two-factor-panel.tsx has an inline form for re-auth instead of a bare confirm() dialog.
+- **Invoice number / customer code race (HIGH):** `App\Support\UniqueRetry::run` retries up to 5 times on `UniqueConstraintViolationException` with random microsecond backoff. Wraps creates in `CustomerController::store`, `InvoiceController::store`, `InvoiceGenerator`.
+- **Payment idempotency (HIGH):** Migration adds nullable `client_uuid` + partial unique index `(tenant_id, client_uuid) WHERE client_uuid IS NOT NULL`. PaymentController detects duplicate UUIDs and returns the original payment instead of creating a duplicate. Test verifies double POST returns same payment ID.
+- **Dual-currency payment conversion (CRITICAL):** Migration adds `amount_received` / `currency_received` / `exchange_rate_used` columns; `PaymentRecorder::normalizeCurrency` converts received-currency to invoice-currency at the locked tenant rate. Pre-fix a 4,475,000 LBP cash payment against a $50 USD invoice instantly marked it paid with `paid_amount = 4_475_050`; post-fix it correctly credits $50.00 and snapshots the rate so a later FX update doesn't retroactively alter accounting.
+- **Job `failed()` handlers (MEDIUM):** All four jobs (`SendPaymentReceiptJob`, `SendInvoiceReminderJob`, `ReactivateServiceJob`, `RefreshExchangeRatesJob`) now flip stuck `messages_log` rows from `queued` → `failed` after `$tries` exhausts and log at ERROR.
+- **CoaService driver gate (MEDIUM):** Config `services.radius.coa_driver = null|radclient`. Null driver logs at WARNING (was INFO) and returns false so staging fails loud instead of silently lying about RADIUS state.
+- **Tenant timezone in cron (MEDIUM):** `SendDueRemindersCommand` resolves `today()` and quiet-hours per tenant timezone instead of APP_TIMEZONE.
+
+Web security:
+- **2FA password leak (CRITICAL):** Pre-fix the login Server Action returned `{email, password, ...}` in its state during a 2FA challenge — visible in network tab. Post-fix credentials are stashed in a short-lived (300s) AES-256-GCM-encrypted httpOnly cookie scoped to `/login` (`lib/two-factor-challenge.ts`). The browser never sees the password again. Production needs `TWO_FACTOR_CHALLENGE_KEY` env var (32+ chars) — dev fallback is `NODE_ENV`-derived and refuses to run when `AUTH_COOKIE_SECURE=true`.
+- **Super-admin / settings Server Actions gated (HIGH):** `actionRequireSuperAdmin` / `actionRequireRole` helpers in `lib/auth.ts`. Applied to `super-admin/tenants/[id]/actions.ts`, `super-admin/tenants/new/actions.ts`, `super-admin/plans/actions.ts`, `super-admin/settings/actions.ts`, `(dashboard)/settings/users/actions.ts`, `(dashboard)/settings/roles/actions.ts`. Layout-only gates were bypassable by direct POST to the action endpoint ID.
+- **Auth-gate internal API routes (HIGH):** `api/customer-search` and `api/collector-live` reject 401 when no cookie present instead of returning empty arrays. `api/customer-search?q=` capped at 200 chars.
+- **Route handler validation (MEDIUM):** `api/invoices/[id]/pdf` validates UUID shape; `api/reports/export?type=` allowlisted to known report types.
+- **QR SVG injection (MEDIUM):** Replaced `dangerouslySetInnerHTML={{ __html: qrSvg }}` with `<img src="data:image/svg+xml;base64,...">` so a compromised upstream SVG can't run inline `<script>`.
+
+Cleanup:
+- Removed unused composer deps: `stancl/tenancy`, `spatie/laravel-pdf`, `maatwebsite/excel`, `simplesoftwareio/simple-qrcode`, `laravel/horizon`, `laravel/reverb`.
+- Removed unused npm deps: `axios`, `next-intl` (custom `lib/i18n.ts` is what's actually used). `shadcn` kept — needed for the `shadcn/tailwind.css` import in globals.css.
+- `pnpm.overrides` clamps `postcss >= 8.5.10` for GHSA-qx2v-qp2m-jg93.
+- `lucide-react@1.14.0` verified as actual current latest (published 2026-04-29) — the dep audit's claim it was a wrong-major was incorrect.
+
+**Test results: 124 passing, 1 todo.** All four commits pushed to `main` on GitHub.
+
+### Session 2026-05-04 (earlier)
 - Confirmed full Phase 1 MVP backend + web are functionally complete; STATUS.md was still the empty template.
 - Smoke-tested end-to-end: backend `/auth/login`, `/auth/me`, `/customers`, `/invoices`, `/reports/dashboard` all 200; web `/login`, `/dashboard` (auth guard 307), `/signup` all rendering.
 - **Fixed exchange rate audit-trail bug** (`SettingsController::updateCurrency`):
@@ -135,7 +169,7 @@ _Date: 2026-05-04_
   - Added dashboard activity-feed labels for both `tenant.currency_changed` and `tenant.exchange_rate_updated` (with `Coins` icon + human-readable detail line).
 - **Ran production build** — 33s build, 43 routes, no errors. Public page TTFB dropped 3-5x vs dev (e.g. `/login` 65ms → 14ms). Authenticated pages 85-237ms TTFB.
 - Set `AUTH_COOKIE_SECURE=false` in `web-admin/.env.local` for local HTTP testing — see Known Issues.
-- Repo has no `.git` directory — flagged as up-next item.
+- Initialized git, pushed to https://github.com/mmdelhajj/collector-SaaS, set up SSH keys for future pushes.
 
 ---
 
