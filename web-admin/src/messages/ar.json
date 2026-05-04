@@ -89,6 +89,14 @@
     "myProfile": "ملفي الشخصي",
     "help": "المساعدة والوثائق"
   },
+  "billing": {
+    "trial": "تجريبي",
+    "daysLeft": "متبقّي {n} يوم",
+    "trialPrompt": "ارقَ إلى خطة Growth للحصول على محصّلين بلا حدود وإيصالات SMS.",
+    "upgradePlan": "ترقية الخطة",
+    "currentPlan": "الخطة الحالية",
+    "changePlan": "تغيير الخطة"
+  },
   "dashboard": {
     "title": "لوحة التحكم",
     "subtitle": "أرقام مباشرة من مساحة عملك.",

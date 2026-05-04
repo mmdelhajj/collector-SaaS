@@ -89,6 +89,14 @@
     "myProfile": "My profile",
     "help": "Help & docs"
   },
+  "billing": {
+    "trial": "Trial",
+    "daysLeft": "{n} days left",
+    "trialPrompt": "Upgrade to Growth for unlimited collectors and SMS receipts.",
+    "upgradePlan": "Upgrade plan",
+    "currentPlan": "Current plan",
+    "changePlan": "Change plan"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Live numbers from your workspace.",

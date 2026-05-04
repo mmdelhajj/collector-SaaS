@@ -89,6 +89,14 @@
     "myProfile": "Mon profil",
     "help": "Aide et docs"
   },
+  "billing": {
+    "trial": "Essai",
+    "daysLeft": "{n} jours restants",
+    "trialPrompt": "Passez à Growth pour des collecteurs illimités et des reçus SMS.",
+    "upgradePlan": "Changer de plan",
+    "currentPlan": "Plan actuel",
+    "changePlan": "Changer de plan"
+  },
   "dashboard": {
     "title": "Tableau de bord",
     "subtitle": "Chiffres en direct de votre espace.",

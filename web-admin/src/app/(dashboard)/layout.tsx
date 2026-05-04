@@ -36,7 +36,7 @@ export default async function DashboardLayout({
   return (
     <I18nProvider locale={locale} messages={messages}>
       <div className="flex min-h-screen flex-1">
-        <Sidebar locale={locale} role={primaryRole(user)} />
+        <Sidebar locale={locale} role={primaryRole(user)} tenant={tenant} />
         <div className="flex min-w-0 flex-1 flex-col">
           {tenant && <TrialBanner tenant={tenant} />}
           <Topbar user={user} />

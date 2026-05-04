@@ -12,16 +12,38 @@ import { useT } from "@/lib/i18n-provider";
 import type { TenantRole } from "@/lib/users-types";
 import { cn } from "@/lib/utils";
 
+type SidebarTenant = {
+  name?: string;
+  status?: string | null;
+  plan?: string | null;
+  trial_ends_at?: string | null;
+};
+
 export function Sidebar({
   locale = "en",
   role,
+  tenant,
 }: {
   locale?: Locale;
   role?: TenantRole | null;
+  tenant?: SidebarTenant | null;
 }) {
   const pathname = usePathname();
   const t = useT();
   const navigation = useMemo(() => navigationFor(role ?? null), [role]);
+
+  // Compute days remaining only when actually on trial. Banner hides itself
+  // for paid/active tenants so we don't pester them.
+  const trialDays =
+    tenant?.status === "trial" && tenant.trial_ends_at
+      ? Math.max(
+          0,
+          Math.ceil(
+            (new Date(tenant.trial_ends_at).getTime() - Date.now()) /
+              (1000 * 60 * 60 * 24),
+          ),
+        )
+      : null;
 
   return (
     <aside className="hidden w-64 shrink-0 border-r bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
@@ -39,7 +61,9 @@ export function Sidebar({
           <p className="truncate text-xs font-medium text-muted-foreground">
             {t("settings.workspace")}
           </p>
-          <p className="truncate text-sm font-semibold">Demo ISP</p>
+          <p className="truncate text-sm font-semibold">
+            {tenant?.name ?? "—"}
+          </p>
         </div>
         <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
       </button>
@@ -95,19 +119,29 @@ export function Sidebar({
 
       <div className="space-y-3 border-t p-3">
         <LocaleSwitcher current={locale} />
-        <div className="rounded-lg bg-sidebar-accent/40 p-3">
-          <p className="text-xs font-medium">Trial · 12 days left</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Upgrade to Growth for unlimited collectors and SMS receipts.
-          </p>
-          <Link
-            href="/settings"
-            className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
-            prefetch={false}
-          >
-            Upgrade plan →
-          </Link>
-        </div>
+        {/*
+          Trial banner only shows while the tenant is actually on trial.
+          Once they upgrade (status flips to active or anything else), it
+          disappears so we don't keep nagging paying customers.
+        */}
+        {trialDays !== null && (
+          <div className="rounded-lg bg-sidebar-accent/40 p-3">
+            <p className="text-xs font-medium">
+              {t("billing.trial")} ·{" "}
+              {t("billing.daysLeft").replace("{n}", String(trialDays))}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("billing.trialPrompt")}
+            </p>
+            <Link
+              href="/settings/billing"
+              className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
+              prefetch={false}
+            >
+              {t("billing.upgradePlan")} →
+            </Link>
+          </div>
+        )}
       </div>
     </aside>
   );
