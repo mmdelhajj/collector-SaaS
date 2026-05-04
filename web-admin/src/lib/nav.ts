@@ -59,7 +59,10 @@ export const navigation: NavSection[] = [
         label: "My route",
         href: "/my-route",
         icon: Route,
-        roles: ["collector", "tenant_owner", "tenant_admin", "manager"],
+        // Collector-only nav item. The page itself also redirects non-
+        // collectors to /dashboard, so this is just hiding it from the
+        // sidebar where it's irrelevant for admins/managers.
+        roles: ["collector"],
       },
     ],
   },

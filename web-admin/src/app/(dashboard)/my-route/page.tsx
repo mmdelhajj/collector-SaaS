@@ -9,7 +9,8 @@ import {
   Receipt,
   XCircle,
 } from "lucide-react";
-import { requireRole } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import {
   listMyAssignments,
   getMyStats,
@@ -35,12 +36,12 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default async function MyRoutePage() {
-  const me = await requireRole([
-    "collector",
-    "tenant_owner",
-    "tenant_admin",
-    "manager",
-  ]);
+  // /my-route is the field-collector working surface only. Admins/managers
+  // who land here (e.g. via a stale bookmark) get bounced to /dashboard so
+  // they're not stuck on a page that just shows their personal cash tally.
+  const me = await getCurrentUser();
+  if (!me) redirect("/login");
+  if (!me.roles.includes("collector")) redirect("/dashboard");
   const [assignments, stats, payments, pendingCash, supervisors] =
     await Promise.all([
       listMyAssignments(),
