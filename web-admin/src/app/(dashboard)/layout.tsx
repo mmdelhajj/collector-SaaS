@@ -9,6 +9,8 @@ import {
   isAdminUser,
   primaryRole,
 } from "@/lib/auth";
+import { getMessages } from "@/lib/i18n";
+import { I18nProvider } from "@/lib/i18n-provider";
 import { readLocale } from "@/lib/locale-cookie";
 
 export default async function DashboardLayout({
@@ -29,15 +31,20 @@ export default async function DashboardLayout({
   }
 
   const locale = await readLocale();
+  const messages = getMessages(locale);
 
   return (
-    <div className="flex min-h-screen flex-1">
-      <Sidebar locale={locale} role={primaryRole(user)} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        {tenant && <TrialBanner tenant={tenant} />}
-        <Topbar user={user} />
-        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
+    <I18nProvider locale={locale} messages={messages}>
+      <div className="flex min-h-screen flex-1">
+        <Sidebar locale={locale} role={primaryRole(user)} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          {tenant && <TrialBanner tenant={tenant} />}
+          <Topbar user={user} />
+          <main className="flex-1 overflow-y-auto bg-background">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </I18nProvider>
   );
 }

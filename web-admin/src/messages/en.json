@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "operations": "Operations",
+    "myRoute": "My route",
     "customers": "Customers",
     "packages": "Packages",
     "invoices": "Invoices",
@@ -15,15 +16,21 @@
     "insights": "Insights",
     "reports": "Reports",
     "settings": "Settings",
-    "liveMap": "Live map"
+    "liveMap": "Live map",
+    "superAdmin": "Super admin",
+    "platform": "Platform",
+    "tenants": "Tenants",
+    "plans": "Plans"
   },
   "common": {
     "save": "Save",
+    "saveChanges": "Save changes",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
     "create": "Create",
-    "search": "Search",
+    "add": "Add",
+    "search": "Search…",
     "loading": "Loading…",
     "saving": "Saving…",
     "saved": "Saved.",
@@ -31,15 +38,36 @@
     "no": "No",
     "today": "Today",
     "thisWeek": "This week",
-    "thisMonth": "This month"
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "actions": "Actions",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "or": "or"
   },
   "auth": {
     "signIn": "Sign in",
     "signOut": "Sign out",
     "email": "Email",
     "password": "Password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me on this device",
     "twoFactor": "Two-factor authentication",
-    "code": "Code"
+    "code": "Code",
+    "welcomeBack": "Welcome back",
+    "signInDescription": "Sign in to your workspace to manage customers, invoices, and collectors.",
+    "needAccess": "Need access? Ask your workspace admin to invite you.",
+    "resetTitle": "Reset your password",
+    "resetDescription": "Enter your email and we'll send you a link to set a new password.",
+    "sendResetLink": "Send reset link",
+    "setNewPassword": "Set a new password",
+    "setNewPasswordDescription": "Choose a password you haven't used here before."
   },
   "settings": {
     "title": "Settings",
@@ -51,6 +79,50 @@
     "zones": "Zones",
     "audit": "Audit log",
     "security": "Security",
-    "users": "Users & roles"
+    "users": "Users & roles",
+    "currency": "Currency & FX",
+    "billing": "Billing",
+    "payments": "Payment methods"
+  },
+  "topbar": {
+    "searchPlaceholder": "Search customers, invoices…",
+    "myProfile": "My profile",
+    "help": "Help & docs"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Live numbers from your workspace.",
+    "collectedToday": "Collected today",
+    "collectedThisMonth": "Collected this month",
+    "outstandingTotal": "Total outstanding",
+    "overdueAmount": "Overdue",
+    "activeCustomers": "Active customers",
+    "suspendedCustomers": "Suspended",
+    "openInvoices": "Open invoices",
+    "overdue30Plus": "Overdue 30+ days",
+    "recentActivity": "Recent activity",
+    "noActivity": "No activity yet.",
+    "vsLastMonth": "vs last month"
+  },
+  "packages": {
+    "title": "Packages",
+    "subtitle": "Service plans your tenant offers — internet, electricity, satellite. Each maps to a billing cycle and (for internet) a FreeRADIUS group.",
+    "newPackage": "New package",
+    "editPackage": "Edit package",
+    "name": "Name",
+    "code": "Code",
+    "description": "Description",
+    "billingType": "Billing type",
+    "billingPeriod": "Billing period",
+    "price": "Price (USD)",
+    "radiusGroup": "RADIUS group",
+    "speedDown": "Down (Mbps)",
+    "speedUp": "Up (Mbps)",
+    "speed": "Speed",
+    "billing": "Billing",
+    "subscribers": "Subscribers",
+    "activeHelp": "Active — available for new subscriptions",
+    "createDescription": "Define a service plan: pricing, billing cycle, speeds, and the FreeRADIUS group it maps to.",
+    "editDescription": "Changes apply to new subscriptions immediately. Existing customers keep their current pricing until renewal."
   }
 }

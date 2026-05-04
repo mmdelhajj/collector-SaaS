@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Logo } from "@/components/brand/logo";
+import { makeTranslator } from "@/lib/i18n";
+import { readLocale } from "@/lib/locale-cookie";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -7,7 +9,9 @@ export const metadata: Metadata = {
   description: "Sign in to your ISP SaaS workspace.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const locale = await readLocale();
+  const t = makeTranslator(locale);
   return (
     <div className="relative z-10 w-full max-w-[420px]">
       <div className="mb-8 flex justify-center">
@@ -17,11 +21,10 @@ export default function LoginPage() {
       <div className="rounded-2xl border bg-card p-8 shadow-sm">
         <div className="mb-6 space-y-1.5">
           <h1 className="text-pretty text-2xl font-semibold tracking-tight">
-            Welcome back
+            {t("auth.welcomeBack")}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to your workspace to manage customers, invoices, and
-            collectors.
+            {t("auth.signInDescription")}
           </p>
         </div>
 
@@ -29,7 +32,7 @@ export default function LoginPage() {
       </div>
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Need access? Ask your workspace admin to invite you.
+        {t("auth.needAccess")}
       </p>
     </div>
   );

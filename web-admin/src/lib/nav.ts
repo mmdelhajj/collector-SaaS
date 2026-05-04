@@ -17,7 +17,8 @@ import {
 import type { TenantRole } from "@/lib/users-types";
 
 export type NavItem = {
-  label: string;
+  /** Translation key in messages JSON, e.g. "nav.customers". */
+  labelKey: string;
   href: string;
   icon: LucideIcon;
   badge?: string;
@@ -26,7 +27,8 @@ export type NavItem = {
 };
 
 export type NavSection = {
-  title?: string;
+  /** Optional section header — also a translation key. */
+  titleKey?: string;
   items: NavItem[];
 };
 
@@ -50,48 +52,60 @@ export const navigation: NavSection[] = [
   {
     items: [
       {
-        label: "Dashboard",
+        labelKey: "nav.dashboard",
         href: "/dashboard",
         icon: LayoutDashboard,
         roles: ALL_ADMIN,
       },
       {
-        label: "My route",
+        labelKey: "nav.myRoute",
         href: "/my-route",
         icon: Route,
-        // Collector-only nav item. The page itself also redirects non-
-        // collectors to /dashboard, so this is just hiding it from the
-        // sidebar where it's irrelevant for admins/managers.
         roles: ["collector"],
       },
     ],
   },
   {
-    title: "Operations",
+    titleKey: "nav.operations",
     items: [
-      { label: "Customers", href: "/customers", icon: Users, roles: ALL_ADMIN },
       {
-        label: "Packages",
+        labelKey: "nav.customers",
+        href: "/customers",
+        icon: Users,
+        roles: ALL_ADMIN,
+      },
+      {
+        labelKey: "nav.packages",
         href: "/packages",
         icon: Package,
         roles: PRIVILEGED,
       },
-      { label: "Invoices", href: "/invoices", icon: FileText, roles: FINANCE },
-      { label: "Payments", href: "/payments", icon: Wallet, roles: FINANCE },
       {
-        label: "Collectors",
+        labelKey: "nav.invoices",
+        href: "/invoices",
+        icon: FileText,
+        roles: FINANCE,
+      },
+      {
+        labelKey: "nav.payments",
+        href: "/payments",
+        icon: Wallet,
+        roles: FINANCE,
+      },
+      {
+        labelKey: "nav.collectors",
         href: "/collectors",
         icon: MapPin,
         roles: PRIVILEGED,
       },
       {
-        label: "Cash handovers",
+        labelKey: "nav.cashHandovers",
         href: "/cash-handovers",
         icon: Banknote,
         roles: FINANCE,
       },
       {
-        label: "Tickets",
+        labelKey: "nav.tickets",
         href: "/tickets",
         icon: Wrench,
         roles: [
@@ -105,16 +119,16 @@ export const navigation: NavSection[] = [
     ],
   },
   {
-    title: "Network",
+    titleKey: "nav.network",
     items: [
       {
-        label: "RADIUS",
+        labelKey: "nav.radius",
         href: "/radius",
         icon: Radio,
         roles: ["tenant_owner", "tenant_admin", "manager"],
       },
       {
-        label: "Messages",
+        labelKey: "nav.messages",
         href: "/messages",
         icon: MessageSquare,
         roles: ["tenant_owner", "tenant_admin", "manager", "support"],
@@ -122,11 +136,16 @@ export const navigation: NavSection[] = [
     ],
   },
   {
-    title: "Insights",
+    titleKey: "nav.insights",
     items: [
-      { label: "Reports", href: "/reports", icon: BarChart3, roles: FINANCE },
       {
-        label: "Settings",
+        labelKey: "nav.reports",
+        href: "/reports",
+        icon: BarChart3,
+        roles: FINANCE,
+      },
+      {
+        labelKey: "nav.settings",
         href: "/settings",
         icon: Settings,
         roles: ["tenant_owner", "tenant_admin"],

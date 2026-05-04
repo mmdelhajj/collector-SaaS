@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Building2, Home, Settings, Tag, UserCircle2 } from "lucide-react";
+import { useT } from "@/lib/i18n-provider";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { href: "/super-admin", icon: Home, label: "Platform" },
-  { href: "/super-admin/tenants", icon: Building2, label: "Tenants" },
-  { href: "/super-admin/plans", icon: Tag, label: "Plans" },
-  { href: "/super-admin/settings", icon: Settings, label: "Settings" },
-  { href: "/super-admin/profile", icon: UserCircle2, label: "My profile" },
+  { href: "/super-admin", icon: Home, labelKey: "nav.platform" },
+  { href: "/super-admin/tenants", icon: Building2, labelKey: "nav.tenants" },
+  { href: "/super-admin/plans", icon: Tag, labelKey: "nav.plans" },
+  { href: "/super-admin/settings", icon: Settings, labelKey: "nav.settings" },
+  {
+    href: "/super-admin/profile",
+    icon: UserCircle2,
+    labelKey: "topbar.myProfile",
+  },
 ] as const;
 
 export function SuperAdminNav() {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <nav className="flex-1 px-3 py-4">
@@ -43,7 +49,7 @@ export function SuperAdminNav() {
                       : "text-muted-foreground group-hover:text-foreground",
                   )}
                 />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             </li>
           );

@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { Crown, LogOut } from "lucide-react";
 import { logoutAction } from "@/app/(dashboard)/actions";
 import { getCurrentUser } from "@/lib/auth";
+import { getMessages, makeTranslator } from "@/lib/i18n";
+import { I18nProvider } from "@/lib/i18n-provider";
+import { readLocale } from "@/lib/locale-cookie";
 import { Logo } from "@/components/brand/logo";
 import { SuperAdminNav } from "@/components/super-admin/sidebar-nav";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,59 +41,65 @@ export default async function SuperAdminLayout({
     redirect("/dashboard");
   }
 
+  const locale = await readLocale();
+  const messages = getMessages(locale);
+  const t = makeTranslator(locale);
+
   return (
-    <div className="flex min-h-screen flex-1">
-      {/* Sidebar */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground lg:flex">
-        <div className="flex h-16 items-center gap-2 border-b px-5">
-          <Logo />
-        </div>
+    <I18nProvider locale={locale} messages={messages}>
+      <div className="flex min-h-screen flex-1">
+        {/* Sidebar */}
+        <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground lg:flex">
+          <div className="flex h-16 items-center gap-2 border-b px-5">
+            <Logo />
+          </div>
 
-        <div className="flex items-center gap-2 px-3 pt-3">
-          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800 ring-1 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-300">
-            <Crown className="size-3" />
-            Super-admin
-          </span>
-        </div>
+          <div className="flex items-center gap-2 px-3 pt-3">
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-800 ring-1 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-300">
+              <Crown className="size-3" />
+              Super-admin
+            </span>
+          </div>
 
-        <SuperAdminNav />
+          <SuperAdminNav />
 
-        <div className="border-t p-3">
-          <Link
-            href="/super-admin/profile"
-            className="flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-sidebar-accent/60"
-          >
-            <Avatar className="size-9 border">
-              {user.has_avatar && (
-                <AvatarImage
-                  src={`/api/avatar/me?v=${user.avatar_version ?? "0"}`}
-                  alt={user.name}
-                />
-              )}
-              <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                {initials(user.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium">{user.name}</p>
-              <p className="truncate text-[11px] text-muted-foreground">
-                {user.email}
-              </p>
-            </div>
-          </Link>
-          <form action={logoutAction} className="mt-2">
-            <button
-              type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted"
+          <div className="border-t p-3">
+            <Link
+              href="/super-admin/profile"
+              className="flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-sidebar-accent/60"
             >
-              <LogOut className="size-3.5" />
-              Sign out
-            </button>
-          </form>
-        </div>
-      </aside>
+              <Avatar className="size-9 border">
+                {user.has_avatar && (
+                  <AvatarImage
+                    src={`/api/avatar/me?v=${user.avatar_version ?? "0"}`}
+                    alt={user.name}
+                  />
+                )}
+                <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                  {initials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium">{user.name}</p>
+                <p className="truncate text-[11px] text-muted-foreground">
+                  {user.email}
+                </p>
+              </div>
+            </Link>
+            <form action={logoutAction} className="mt-2">
+              <button
+                type="submit"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-md border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted"
+              >
+                <LogOut className="size-3.5" />
+                {t("auth.signOut")}
+              </button>
+            </form>
+          </div>
+        </aside>
 
-      <main className="flex-1 overflow-y-auto bg-background">{children}</main>
-    </div>
+        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
+      </div>
+    </I18nProvider>
   );
 }

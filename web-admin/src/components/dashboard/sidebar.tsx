@@ -8,6 +8,7 @@ import { Logo } from "@/components/brand/logo";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 import { navigationFor } from "@/lib/nav";
 import type { Locale } from "@/lib/i18n";
+import { useT } from "@/lib/i18n-provider";
 import type { TenantRole } from "@/lib/users-types";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ export function Sidebar({
   role?: TenantRole | null;
 }) {
   const pathname = usePathname();
+  const t = useT();
   const navigation = useMemo(() => navigationFor(role ?? null), [role]);
 
   return (
@@ -35,7 +37,7 @@ export function Sidebar({
       >
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-muted-foreground">
-            Workspace
+            {t("settings.workspace")}
           </p>
           <p className="truncate text-sm font-semibold">Demo ISP</p>
         </div>
@@ -45,9 +47,9 @@ export function Sidebar({
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         {navigation.map((section, idx) => (
           <div key={idx} className="mb-6 last:mb-0">
-            {section.title && (
+            {section.titleKey && (
               <h3 className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {section.title}
+                {t(section.titleKey)}
               </h3>
             )}
             <ul className="space-y-0.5">
@@ -76,7 +78,7 @@ export function Sidebar({
                             : "text-muted-foreground group-hover:text-foreground",
                         )}
                       />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{t(item.labelKey)}</span>
                       {item.badge && (
                         <span className="ms-auto rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
                           {item.badge}

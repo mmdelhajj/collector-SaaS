@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { logoutAction } from "@/app/(dashboard)/actions";
+import { useT } from "@/lib/i18n-provider";
 
 type TopbarProps = {
   user: {
@@ -38,6 +39,7 @@ function initials(name: string) {
 
 export function Topbar({ user }: TopbarProps) {
   const router = useRouter();
+  const t = useT();
   const [isPending, startTransition] = useTransition();
 
   function signOut() {
@@ -52,7 +54,7 @@ export function Topbar({ user }: TopbarProps) {
         <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
-          placeholder="Search customers, invoices, collectors…"
+          placeholder={t("topbar.searchPlaceholder")}
           className="h-9 ps-9 bg-muted/40"
         />
       </div>
@@ -102,7 +104,7 @@ export function Topbar({ user }: TopbarProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/profile")}>
               <UserCircle2 className="size-4" />
-              My profile
+              {t("topbar.myProfile")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -111,7 +113,7 @@ export function Topbar({ user }: TopbarProps) {
               variant="destructive"
             >
               <LogOut className="size-4" />
-              {isPending ? "Signing out…" : "Sign out"}
+              {isPending ? t("common.loading") : t("auth.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

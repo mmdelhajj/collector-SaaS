@@ -13,9 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useT } from "@/lib/i18n-provider";
 import { loginAction, type LoginActionState } from "./actions";
 
 export function LoginForm() {
+  const t = useT();
   const [showPassword, setShowPassword] = useState(false);
   const [useRecovery, setUseRecovery] = useState(false);
   const [state, formAction, isPending] = useActionState<
@@ -123,7 +125,7 @@ export function LoginForm() {
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("auth.email")}</Label>
         <Input
           id="email"
           name="email"
@@ -137,12 +139,12 @@ export function LoginForm() {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <a
             href="/forgot-password"
             className="text-xs text-muted-foreground hover:text-primary hover:underline"
           >
-            Forgot password?
+            {t("auth.forgotPassword")}
           </a>
         </div>
         <div className="relative">
@@ -177,7 +179,7 @@ export function LoginForm() {
           htmlFor="remember"
           className="text-sm font-normal text-muted-foreground"
         >
-          Remember me on this device
+          {t("auth.rememberMe")}
         </Label>
       </div>
 
@@ -185,10 +187,10 @@ export function LoginForm() {
         {isPending ? (
           <>
             <Loader2 className="size-4 animate-spin" />
-            Signing in…
+            {t("common.loading")}
           </>
         ) : (
-          "Sign in"
+          t("auth.signIn")
         )}
       </Button>
 
