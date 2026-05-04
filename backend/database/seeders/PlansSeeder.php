@@ -13,6 +13,22 @@ class PlansSeeder extends Seeder
     {
         $plans = [
             [
+                'code' => 'free',
+                'name' => 'Free',
+                'description' => 'Try the platform with 25 customers — no credit card required.',
+                'price_monthly' => 0,
+                'price_annual' => 0,
+                'limit_customers' => 25,
+                'limit_users' => 1,
+                'limit_collectors' => 1,
+                'feature_radius' => true,
+                'feature_whatsapp' => false,
+                'feature_sms' => false,
+                'feature_priority_support' => false,
+                'is_public' => true,
+                'sort_order' => 0,
+            ],
+            [
                 'code' => 'starter',
                 'name' => 'Starter',
                 'description' => 'Single-user shops getting off spreadsheets.',
@@ -25,6 +41,7 @@ class PlansSeeder extends Seeder
                 'feature_whatsapp' => false,
                 'feature_sms' => false,
                 'feature_priority_support' => false,
+                'is_public' => true,
                 'sort_order' => 1,
             ],
             [
@@ -40,6 +57,7 @@ class PlansSeeder extends Seeder
                 'feature_whatsapp' => true,
                 'feature_sms' => true,
                 'feature_priority_support' => false,
+                'is_public' => true,
                 'sort_order' => 2,
             ],
             [
@@ -48,6 +66,22 @@ class PlansSeeder extends Seeder
                 'description' => 'Established providers with multiple zones + 24/7 support.',
                 'price_monthly' => 249,
                 'price_annual' => 2490,
+                'limit_customers' => 10000,
+                'limit_users' => 50,
+                'limit_collectors' => 30,
+                'feature_radius' => true,
+                'feature_whatsapp' => true,
+                'feature_sms' => true,
+                'feature_priority_support' => true,
+                'is_public' => true,
+                'sort_order' => 3,
+            ],
+            [
+                'code' => 'enterprise',
+                'name' => 'Enterprise',
+                'description' => 'Unlimited everything, dedicated account manager, SLA.',
+                'price_monthly' => 999,
+                'price_annual' => 9990,
                 'limit_customers' => null, // unlimited
                 'limit_users' => null,
                 'limit_collectors' => null,
@@ -55,7 +89,8 @@ class PlansSeeder extends Seeder
                 'feature_whatsapp' => true,
                 'feature_sms' => true,
                 'feature_priority_support' => true,
-                'sort_order' => 3,
+                'is_public' => true,
+                'sort_order' => 4,
             ],
         ];
 
