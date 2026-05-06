@@ -33,12 +33,19 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Failed::class, [LogAuthenticationEvents::class, 'handleFailed']);
 
         // We sit behind Caddy/Cloudflare which terminate TLS. The internal
-        // request arrives as plain HTTP, so URL::temporarySignedRoute()
-        // would emit http:// links — and customers tapping a printed QR
-        // would fail signature validation when Cloudflare upgrades them
-        // to https://. Force scheme on every generated URL in production.
+        // request arrives as plain HTTP from 127.0.0.1, so without forcing
+        // both scheme + root URL, signed URLs would be generated for
+        // http://127.0.0.1:8000 and customers scanning a printed QR would
+        // get a broken link. Anchor every URL to APP_URL in production so
+        // the same signed link works whether generation is triggered by an
+        // authenticated browser request or a Next.js server-side fetch.
         if ((bool) env('FORCE_HTTPS', false) || app()->environment('production')) {
             URL::forceScheme('https');
+
+            $appUrl = config('app.url');
+            if (is_string($appUrl) && $appUrl !== '' && $appUrl !== 'http://localhost') {
+                URL::forceRootUrl($appUrl);
+            }
         }
     }
 }
