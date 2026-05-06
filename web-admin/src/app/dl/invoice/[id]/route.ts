@@ -51,11 +51,14 @@ export async function GET(
     "Content-Type",
     upstream.headers.get("Content-Type") ?? "application/pdf",
   );
-  const cd = upstream.headers.get("Content-Disposition");
-  if (cd) headers.set("Content-Disposition", cd);
-  // Force inline preview when possible (most browsers will render the PDF in-tab).
-  if (!cd)
-    headers.set("Content-Disposition", `inline; filename="invoice-${id}.pdf"`);
+  // Always force a download. The upstream Laravel response uses
+  // Pdf::stream() which sends `inline`, so we override here. Use the
+  // invoice number as filename when DomPDF includes it; otherwise fall
+  // back to the UUID.
+  const upstreamCd = upstream.headers.get("Content-Disposition") ?? "";
+  const nameMatch = upstreamCd.match(/filename="?([^";]+)"?/i);
+  const filename = nameMatch?.[1] ?? `invoice-${id}.pdf`;
+  headers.set("Content-Disposition", `attachment; filename="${filename}"`);
 
   return new Response(upstream.body, {
     status: 200,
