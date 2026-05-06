@@ -66,15 +66,11 @@ export function Topbar({ user }: TopbarProps) {
         </Button>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              aria-label="Notifications"
-            >
-              <Bell className="size-4" />
-            </Button>
+          <DropdownMenuTrigger
+            aria-label="Notifications"
+            className="relative inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-medium transition-colors hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Bell className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-72">
             <DropdownMenuLabel className="flex items-center justify-between">
