@@ -107,7 +107,7 @@ export default async function InvoiceDetailPage({
         </Link>
         <div className="flex items-center gap-2">
           <a
-            href={`/api/invoices/${invoice.id}/pdf`}
+            href={`/dl/invoice/${invoice.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}

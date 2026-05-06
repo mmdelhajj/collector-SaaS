@@ -254,7 +254,7 @@ export function InvoicesSelectableTable({ invoices }: { invoices: Invoice[] }) {
                     </TableCell>
                     <TableCell>
                       <a
-                        href={`/api/invoices/${inv.id}/pdf`}
+                        href={`/dl/invoice/${inv.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
