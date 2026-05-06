@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Radius\RadiusGatewayController;
+use App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController;
 use App\Http\Controllers\Api\SuperAdmin\PlansController;
 use App\Http\Controllers\Api\SuperAdmin\PlatformController;
 use App\Http\Controllers\Api\SuperAdmin\PlatformSettingsController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\V1\CollectorLiveController;
 use App\Http\Controllers\Api\V1\CollectorPeriodController;
 use App\Http\Controllers\Api\V1\CollectorZoneController;
 use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\ForgotPasswordController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\MessageLogController;
 use App\Http\Controllers\Api\V1\MessageTemplateController;
@@ -52,11 +54,11 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
     // enumeration.
     Route::post(
         'auth/forgot-password',
-        [\App\Http\Controllers\Api\V1\ForgotPasswordController::class, 'sendLink']
+        [ForgotPasswordController::class, 'sendLink']
     )->name('auth.forgot-password');
     Route::post(
         'auth/reset-password',
-        [\App\Http\Controllers\Api\V1\ForgotPasswordController::class, 'reset']
+        [ForgotPasswordController::class, 'reset']
     )->name('auth.reset-password');
 
     // Public self-service signup — no auth required.
@@ -93,15 +95,15 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
             // Plan-change approval queue (tenant submits via /v1/billing/change-plan).
             Route::get(
                 'plan-change-requests',
-                [\App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController::class, 'index']
+                [PlanChangeRequestsController::class, 'index']
             )->name('plan-change-requests');
             Route::post(
                 'plan-change-requests/{id}/approve',
-                [\App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController::class, 'approve']
+                [PlanChangeRequestsController::class, 'approve']
             )->name('plan-change-requests.approve');
             Route::post(
                 'plan-change-requests/{id}/reject',
-                [\App\Http\Controllers\Api\SuperAdmin\PlanChangeRequestsController::class, 'reject']
+                [PlanChangeRequestsController::class, 'reject']
             )->name('plan-change-requests.reject');
         });
 

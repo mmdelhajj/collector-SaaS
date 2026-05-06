@@ -29,10 +29,7 @@ function formatDate(iso: string | null) {
   }).format(new Date(iso));
 }
 
-function formatPeriod(
-  start: string | null,
-  end: string | null,
-): string | null {
+function formatPeriod(start: string | null, end: string | null): string | null {
   if (!start || !end) return null;
   const s = new Date(start);
   const e = new Date(end);
@@ -141,7 +138,11 @@ export default async function InvoiceDetailPage({
                 >
                   <path d="M4 12 L7 16 L4 20" strokeWidth="2" opacity="0.3" />
                   <path d="M8 12 L11 16 L8 20" strokeWidth="2" opacity="0.55" />
-                  <path d="M12 12 L15 16 L12 20" strokeWidth="2" opacity="0.8" />
+                  <path
+                    d="M12 12 L15 16 L12 20"
+                    strokeWidth="2"
+                    opacity="0.8"
+                  />
                   <path d="M16 18 L20 22 L28 8" strokeWidth="3.5" />
                 </g>
               </svg>
@@ -173,10 +174,7 @@ export default async function InvoiceDetailPage({
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                 Bill to
               </p>
-              <p
-                className="mt-2 text-sm font-semibold"
-                dir="auto"
-              >
+              <p className="mt-2 text-sm font-semibold" dir="auto">
                 {customer?.full_name ?? "—"}
               </p>
               {customer?.email && (
@@ -238,9 +236,10 @@ export default async function InvoiceDetailPage({
               </thead>
               <tbody>
                 {items.map((item) => {
-                  const meta = item.meta as
-                    | { speed_down_mbps?: number; speed_up_mbps?: number }
-                    | null;
+                  const meta = item.meta as {
+                    speed_down_mbps?: number;
+                    speed_up_mbps?: number;
+                  } | null;
                   return (
                     <tr key={item.id} className="border-b border-border/40">
                       <td className="py-3 align-top" dir="auto">
@@ -249,8 +248,8 @@ export default async function InvoiceDetailPage({
                         </div>
                         {meta?.speed_down_mbps && (
                           <div className="mt-0.5 text-[11px] text-muted-foreground">
-                            {meta.speed_down_mbps} /{" "}
-                            {meta.speed_up_mbps ?? "—"} Mbps
+                            {meta.speed_down_mbps} / {meta.speed_up_mbps ?? "—"}{" "}
+                            Mbps
                           </div>
                         )}
                       </td>

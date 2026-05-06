@@ -11,6 +11,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Services\Billing\InvoiceGenerator;
 use App\Support\Audit;
+use App\Support\InvoiceQr;
 use App\Support\UniqueRetry;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -197,8 +198,8 @@ class InvoiceController extends Controller
             ->with(['items', 'customer', 'tenant'])
             ->findOrFail($id);
 
-        $publicUrl = \App\Support\InvoiceQr::publicUrl($invoice);
-        $qrSvg = \App\Support\InvoiceQr::inlineSvg($publicUrl);
+        $publicUrl = InvoiceQr::publicUrl($invoice);
+        $qrSvg = InvoiceQr::inlineSvg($publicUrl);
 
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $invoice,
@@ -222,12 +223,12 @@ class InvoiceController extends Controller
         abort_unless($request->user()?->can('invoices.view'), 403);
 
         $invoice = Invoice::query()->findOrFail($id);
-        $url = \App\Support\InvoiceQr::publicUrl($invoice);
+        $url = InvoiceQr::publicUrl($invoice);
 
         return response()->json([
             'data' => [
                 'url' => $url,
-                'qr_svg' => \App\Support\InvoiceQr::svg($url, 200),
+                'qr_svg' => InvoiceQr::svg($url, 200),
                 'expires_in_days' => 30,
             ],
         ]);

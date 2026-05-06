@@ -53,7 +53,7 @@ return new class extends Migration
         // Only one pending request per tenant at a time — UX simplicity, no
         // weird "which request wins" fights.
         DB::statement(
-            "CREATE UNIQUE INDEX plan_change_requests_one_pending_per_tenant "
+            'CREATE UNIQUE INDEX plan_change_requests_one_pending_per_tenant '
             ."ON plan_change_requests (tenant_id) WHERE status = 'pending'"
         );
     }

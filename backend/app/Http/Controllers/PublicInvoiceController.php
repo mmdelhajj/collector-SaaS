@@ -37,11 +37,11 @@ class PublicInvoiceController extends Controller
             abort(404);
         }
 
-        $tenant   = Tenant::find($invoice->tenant_id);
+        $tenant = Tenant::find($invoice->tenant_id);
         $customer = $invoice->customer_id
             ? Customer::withoutTenant()->find($invoice->customer_id)
             : null;
-        $items    = InvoiceItem::withoutTenant()
+        $items = InvoiceItem::withoutTenant()
             ->where('invoice_id', $invoice->id)
             ->get();
 
@@ -50,12 +50,12 @@ class PublicInvoiceController extends Controller
         }
 
         return response()->view('invoices.public', [
-            'invoice'     => $invoice,
-            'items'       => $items,
-            'customer'    => $customer,
-            'tenant'      => $tenant,
-            'qrSvg'       => null,
-            'publicUrl'   => null,
+            'invoice' => $invoice,
+            'items' => $items,
+            'customer' => $customer,
+            'tenant' => $tenant,
+            'qrSvg' => null,
+            'publicUrl' => null,
             'isPublicWeb' => true,
         ]);
     }

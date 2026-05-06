@@ -36,6 +36,7 @@ use Illuminate\Validation\ValidationException;
 class ForgotPasswordController extends Controller
 {
     private const SEND_RATE = 5;             // sends per window
+
     private const SEND_DECAY_SECONDS = 900;  // 15 min lockout per email+ip
 
     public function sendLink(Request $request): JsonResponse
