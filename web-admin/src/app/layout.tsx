@@ -22,7 +22,13 @@ export const metadata: Metadata = {
   },
   description:
     "Multi-tenant platform for ISPs and utility providers — billing, collectors, RADIUS, WhatsApp receipts.",
-  icons: { icon: "/favicon.ico" },
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: { url: "/apple-icon.png", sizes: "180x180" },
+  },
 };
 
 export default async function RootLayout({

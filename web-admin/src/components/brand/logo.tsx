@@ -13,25 +13,15 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
         className="relative inline-flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm"
       >
         <svg
-          viewBox="0 0 24 24"
+          viewBox="0 0 32 32"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="size-4"
+          className="size-5"
         >
           <path
-            d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
+            d="M9.6 7.5h7.6c3.4 0 5.7 2.1 5.7 5.2 0 2.4-1.4 4.2-3.7 4.9l4.3 6.9h-4.2l-3.9-6.4H13v6.4H9.6V7.5Zm3.4 2.8v4.9h4c1.7 0 2.7-.9 2.7-2.4 0-1.5-1-2.5-2.7-2.5h-4Z"
+            fill="currentColor"
           />
-          <path
-            d="M7 12c0-2.8 2.2-5 5-5s5 2.2 5 5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            opacity="0.7"
-          />
-          <circle cx="12" cy="12" r="2" fill="currentColor" />
         </svg>
       </span>
       {showWordmark && (
