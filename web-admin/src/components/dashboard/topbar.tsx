@@ -63,7 +63,7 @@ export function Topbar({ user }: TopbarProps) {
 
       <div className="ms-auto flex items-center gap-2">
         <Link
-          href="/invoices"
+          href="/invoices/new"
           className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}
         >
           <Plus className="size-4" />

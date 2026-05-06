@@ -24,6 +24,30 @@ export async function getInvoicePublicLink(
   );
 }
 
+export type CreateInvoicePayload = {
+  customer_id: string;
+  issued_at?: string;
+  due_at: string;
+  period_start?: string | null;
+  period_end?: string | null;
+  notes?: string | null;
+  status?: InvoiceStatus;
+  items: Array<{
+    description: string;
+    quantity?: number;
+    unit_price: number;
+  }>;
+};
+
+export async function createInvoice(
+  payload: CreateInvoicePayload,
+): Promise<{ data: Invoice }> {
+  return apiFetch<{ data: Invoice }>("/api/v1/invoices", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export type InvoiceListParams = {
   page?: number;
   perPage?: number;
