@@ -9,6 +9,17 @@ export const INVOICE_STATUSES = [
 ] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
+export type InvoiceItem = {
+  id: number;
+  package_id: number | null;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  tax_rate: number;
+  total: number;
+  meta: Record<string, unknown> | null;
+};
+
 export type Invoice = {
   id: string;
   number: string;
@@ -35,6 +46,16 @@ export type Invoice = {
     phone_primary: string | null;
     email: string | null;
     city: string | null;
+    district?: string | null;
+    neighborhood?: string | null;
+    address_line?: string | null;
+  };
+  items?: InvoiceItem[];
+  tenant?: {
+    id: string;
+    name: string;
+    currency_primary: string | null;
+    timezone: string | null;
   };
   service_category?: { id: string | number; name: string } | null;
   assignment?: {

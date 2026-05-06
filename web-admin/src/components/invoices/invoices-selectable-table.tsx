@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowDown,
@@ -182,7 +183,12 @@ export function InvoicesSelectableTable({ invoices }: { invoices: Invoice[] }) {
                       />
                     </TableCell>
                     <TableCell className="font-mono text-xs font-semibold">
-                      {inv.number}
+                      <Link
+                        href={`/invoices/${inv.id}`}
+                        className="hover:text-primary hover:underline"
+                      >
+                        {inv.number}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2.5">

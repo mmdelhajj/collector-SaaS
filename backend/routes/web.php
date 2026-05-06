@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PublicInvoiceController;
 use App\Http\Controllers\PublicReceiptController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,3 +16,10 @@ Route::get('/receipts/{paymentId}', [PublicReceiptController::class, 'show'])
     ->where('paymentId', '[0-9a-fA-F\-]{36}')
     ->middleware('signed')
     ->name('receipts.public');
+
+// Public invoice viewer — what the QR code on an invoice PDF resolves to.
+// Same security model as receipts: HMAC-signed expiring URL.
+Route::get('/i/{invoiceId}', [PublicInvoiceController::class, 'show'])
+    ->where('invoiceId', '[0-9a-fA-F\-]{36}')
+    ->middleware('signed')
+    ->name('invoices.public');

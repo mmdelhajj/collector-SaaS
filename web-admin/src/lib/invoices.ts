@@ -1,10 +1,28 @@
 import "server-only";
 import { apiFetch } from "@/lib/api";
 import type { Paginated } from "@/lib/customers-types";
-import type { Invoice, InvoiceStatus } from "@/lib/invoices-types";
+import type { Invoice, InvoiceItem, InvoiceStatus } from "@/lib/invoices-types";
 
-export type { Invoice, InvoiceStatus } from "@/lib/invoices-types";
+export type { Invoice, InvoiceItem, InvoiceStatus } from "@/lib/invoices-types";
 export { INVOICE_STATUSES } from "@/lib/invoices-types";
+
+export async function getInvoice(id: string): Promise<{ data: Invoice }> {
+  return apiFetch<{ data: Invoice }>(`/api/v1/invoices/${id}`);
+}
+
+export type InvoicePublicLink = {
+  url: string;
+  qr_svg: string;
+  expires_in_days: number;
+};
+
+export async function getInvoicePublicLink(
+  id: string,
+): Promise<{ data: InvoicePublicLink }> {
+  return apiFetch<{ data: InvoicePublicLink }>(
+    `/api/v1/invoices/${id}/public-link`,
+  );
+}
 
 export type InvoiceListParams = {
   page?: number;

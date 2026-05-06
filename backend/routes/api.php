@@ -135,6 +135,8 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
                 ->name('invoices.generate-bulk');
             Route::get('invoices/{id}/pdf', [InvoiceController::class, 'pdf'])
                 ->name('invoices.pdf');
+            Route::get('invoices/{id}/public-link', [InvoiceController::class, 'publicLink'])
+                ->name('invoices.public-link');
             Route::apiResource('invoices', InvoiceController::class)
                 ->parameters(['invoices' => 'id'])
                 ->only(['index', 'store', 'show', 'destroy']);

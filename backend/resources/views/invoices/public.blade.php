@@ -3,7 +3,7 @@
     'items' => $items,
     'customer' => $customer,
     'tenant' => $tenant,
-    'qrSvg' => $qrSvg ?? null,
-    'publicUrl' => $publicUrl ?? null,
-    'isPublicWeb' => false,
+    'qrSvg' => null,
+    'publicUrl' => null,
+    'isPublicWeb' => true,
 ])

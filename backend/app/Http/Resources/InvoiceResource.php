@@ -44,8 +44,17 @@ class InvoiceResource extends JsonResource
                 'phone_primary' => $this->customer->phone_primary,
                 'email' => $this->customer->email,
                 'city' => $this->customer->city,
+                'district' => $this->customer->district,
+                'neighborhood' => $this->customer->neighborhood,
+                'address_line' => $this->customer->address_line,
             ]),
             'items' => InvoiceItemResource::collection($this->whenLoaded('items')),
+            'tenant' => $this->whenLoaded('tenant', fn () => [
+                'id' => $this->tenant->id,
+                'name' => $this->tenant->name,
+                'currency_primary' => $this->tenant->currency_primary,
+                'timezone' => $this->tenant->timezone,
+            ]),
             'service_category' => $this->resolveServiceCategory(),
             'assignment' => $this->whenLoaded('activeAssignment', function () {
                 if (! $this->activeAssignment) {

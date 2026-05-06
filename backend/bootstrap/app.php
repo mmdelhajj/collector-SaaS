@@ -7,6 +7,7 @@ use App\Support\TenantContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +22,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'radius.gateway' => EnsureRadiusGateway::class,
             'super-admin' => EnsureSuperAdmin::class,
         ]);
+
+        // Trust Caddy / Cloudflare so Request::url() reflects the public
+        // https://runcollect.com host instead of the internal http://127.0.0.1.
+        // Without this, signed URL validation fails because the URL
+        // reconstructed at validation time differs from the one signed at
+        // generation time.
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR
+            | Request::HEADER_X_FORWARDED_HOST
+            | Request::HEADER_X_FORWARDED_PORT
+            | Request::HEADER_X_FORWARDED_PROTO);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

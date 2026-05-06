@@ -143,7 +143,7 @@ class InvoiceController extends Controller
         abort_unless($request->user()?->can('invoices.view'), 403);
 
         $invoice = Invoice::query()
-            ->with(['items', 'customer'])
+            ->with(['items', 'customer', 'tenant'])
             ->findOrFail($id);
 
         return new InvoiceResource($invoice);
@@ -185,7 +185,9 @@ class InvoiceController extends Controller
     }
 
     /**
-     * Stream a printable PDF of the invoice.
+     * Stream a printable PDF of the invoice. Embeds a QR code that resolves
+     * to the public, signed-URL viewer (so customers can scan the printed
+     * invoice and see a live, expiring web copy).
      */
     public function pdf(Request $request, string $id): Response
     {
@@ -195,13 +197,39 @@ class InvoiceController extends Controller
             ->with(['items', 'customer', 'tenant'])
             ->findOrFail($id);
 
+        $publicUrl = \App\Support\InvoiceQr::publicUrl($invoice);
+        $qrSvg = \App\Support\InvoiceQr::inlineSvg($publicUrl);
+
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $invoice,
             'tenant' => $invoice->tenant,
             'customer' => $invoice->customer,
             'items' => $invoice->items,
+            'qrSvg' => $qrSvg,
+            'publicUrl' => $publicUrl,
         ])->setPaper('a4');
 
         return $pdf->stream("invoice-{$invoice->number}.pdf");
+    }
+
+    /**
+     * Return the signed public URL + an SVG QR code for it. Used by the
+     * admin UI to display the QR + a "share link" without having to download
+     * the full PDF.
+     */
+    public function publicLink(Request $request, string $id): JsonResponse
+    {
+        abort_unless($request->user()?->can('invoices.view'), 403);
+
+        $invoice = Invoice::query()->findOrFail($id);
+        $url = \App\Support\InvoiceQr::publicUrl($invoice);
+
+        return response()->json([
+            'data' => [
+                'url' => $url,
+                'qr_svg' => \App\Support\InvoiceQr::svg($url, 200),
+                'expires_in_days' => 30,
+            ],
+        ]);
     }
 }
