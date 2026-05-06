@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, BellOff, LogOut, Plus, Search, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -60,9 +61,11 @@ export function Topbar({ user }: TopbarProps) {
       </div>
 
       <div className="ms-auto flex items-center gap-2">
-        <Button size="sm" className="gap-1.5">
-          <Plus className="size-4" />
-          <span className="hidden sm:inline">New invoice</span>
+        <Button size="sm" className="gap-1.5" asChild>
+          <Link href="/invoices">
+            <Plus className="size-4" />
+            <span className="hidden sm:inline">New invoice</span>
+          </Link>
         </Button>
 
         <DropdownMenu>
