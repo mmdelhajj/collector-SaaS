@@ -223,19 +223,27 @@
 
     <div class="header">
         <div class="left">
+            @php
+                // Self-contained SVG (background + RunCollect mark) so it
+                // ships as one <img> data URL — DomPDF doesn't render inline
+                // <svg> elements reliably, but it does render data-URL <img>.
+                $brandSvg = <<<'SVG'
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="36" height="36">
+  <rect width="32" height="32" rx="7" fill="#C77035"/>
+  <g stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M4 12 L7 16 L4 20"    stroke-width="2.0" opacity="0.30"/>
+    <path d="M8 12 L11 16 L8 20"   stroke-width="2.0" opacity="0.55"/>
+    <path d="M12 12 L15 16 L12 20" stroke-width="2.0" opacity="0.80"/>
+    <path d="M16 18 L20 22 L28 8"  stroke-width="3.5"/>
+  </g>
+</svg>
+SVG;
+                $brandDataUrl = 'data:image/svg+xml;base64,'.base64_encode($brandSvg);
+            @endphp
             <div class="brand">
-                <span class="brand-tile">
-                    {{-- RunCollect mark: chevron acceleration + check --}}
-                    <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                        <g stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" fill="none">
-                            <path d="M4 12 L7 16 L4 20"     stroke-width="2.0" opacity="0.30"/>
-                            <path d="M8 12 L11 16 L8 20"    stroke-width="2.0" opacity="0.55"/>
-                            <path d="M12 12 L15 16 L12 20"  stroke-width="2.0" opacity="0.80"/>
-                            <path d="M16 18 L20 22 L28 8"   stroke-width="3.5"/>
-                        </g>
-                    </svg>
-                </span>
-                <span>
+                <img src="{{ $brandDataUrl }}" alt="logo"
+                     style="width:36px; height:36px; display:inline-block; vertical-align:middle;"/>
+                <span style="display:inline-block; vertical-align:middle; margin-left:10px;">
                     <span class="brand-name">{{ $tenant->name }}</span>
                     <span class="brand-sub">{{ strtoupper($tenant->currency_primary ?? 'USD') }} · {{ $tenant->timezone }}</span>
                 </span>
