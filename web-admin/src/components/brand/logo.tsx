@@ -18,15 +18,16 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
           xmlns="http://www.w3.org/2000/svg"
           className="size-5"
         >
-          <g stroke="currentColor" strokeLinecap="round" fill="none">
-            <line x1="5" y1="11" x2="10" y2="11" strokeWidth="2" opacity="0.3" />
-            <line x1="5" y1="16" x2="12" y2="16" strokeWidth="2" opacity="0.55" />
-            <line x1="5" y1="21" x2="14" y2="21" strokeWidth="2" opacity="0.8" />
-            <path
-              d="M14.5 17 L18 21 L26 9"
-              strokeWidth="3.2"
-              strokeLinejoin="round"
-            />
+          <g
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          >
+            <path d="M4 12 L7 16 L4 20" strokeWidth="2" opacity="0.3" />
+            <path d="M8 12 L11 16 L8 20" strokeWidth="2" opacity="0.55" />
+            <path d="M12 12 L15 16 L12 20" strokeWidth="2" opacity="0.8" />
+            <path d="M16 18 L20 22 L28 8" strokeWidth="3.5" />
           </g>
         </svg>
       </span>
