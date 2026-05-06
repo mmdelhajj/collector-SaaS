@@ -44,6 +44,7 @@ export type Invoice = {
     code: string;
     full_name: string;
     phone_primary: string | null;
+    whatsapp_phone?: string | null;
     email: string | null;
     city: string | null;
     district?: string | null;

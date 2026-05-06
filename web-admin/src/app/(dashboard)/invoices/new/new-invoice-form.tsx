@@ -1,20 +1,20 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createInvoiceAction, type CreateInvoiceState } from "./actions";
+import {
+  createInvoiceAction,
+  searchCustomersAction,
+  type CreateInvoiceState,
+  type CustomerHit,
+} from "./actions";
 
-type CustomerOption = {
-  id: string;
-  code: string;
-  full_name: string;
-  city: string | null;
-};
+type CustomerOption = CustomerHit;
 
 type LineItem = {
   description: string;
@@ -46,7 +46,11 @@ function formatMoney(n: number): string {
   }).format(n);
 }
 
-export function NewInvoiceForm({ customers }: { customers: CustomerOption[] }) {
+export function NewInvoiceForm({
+  initialCustomers,
+}: {
+  initialCustomers: CustomerOption[];
+}) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState<
     CreateInvoiceState | undefined,
@@ -54,7 +58,10 @@ export function NewInvoiceForm({ customers }: { customers: CustomerOption[] }) {
   >(createInvoiceAction, undefined);
 
   const [search, setSearch] = useState("");
+  const [results, setResults] = useState<CustomerOption[]>(initialCustomers);
+  const [searching, setSearching] = useState(false);
   const [customerId, setCustomerId] = useState<string>("");
+  const [selected, setSelected] = useState<CustomerOption | null>(null);
   const [issuedAt, setIssuedAt] = useState(todayIso());
   const [dueAt, setDueAt] = useState(plusDaysIso(15));
   const [periodStart, setPeriodStart] = useState("");
@@ -64,18 +71,24 @@ export function NewInvoiceForm({ customers }: { customers: CustomerOption[] }) {
     { description: "", quantity: "1", unit_price: "" },
   ]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return customers.slice(0, 20);
-    return customers
-      .filter(
-        (c) =>
-          c.full_name.toLowerCase().includes(q) ||
-          c.code.toLowerCase().includes(q) ||
-          (c.city ?? "").toLowerCase().includes(q),
-      )
-      .slice(0, 20);
-  }, [search, customers]);
+  // Debounced server-side search — fires 250ms after the user stops typing.
+  // Empty query falls back to the first-paint "recent" list rather than
+  // hammering the API with an empty match-all on every backspace.
+  useEffect(() => {
+    const q = search.trim();
+    if (q === "") {
+      setResults(initialCustomers);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const res = await searchCustomersAction(q);
+      setResults(res.hits);
+      setSearching(false);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [search, initialCustomers]);
 
   const subtotal = items.reduce((sum, it) => sum + lineTotal(it), 0);
 
@@ -116,7 +129,7 @@ export function NewInvoiceForm({ customers }: { customers: CustomerOption[] }) {
       unit_price: Number(it.unit_price || 0),
     })),
   );
-  const selectedCustomer = customers.find((c) => c.id === customerId);
+  const selectedCustomer = selected;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -128,26 +141,34 @@ export function NewInvoiceForm({ customers }: { customers: CustomerOption[] }) {
         </p>
 
         <div className="mt-3 space-y-2">
-          <Input
-            type="search"
-            placeholder="Search customers…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              type="search"
+              placeholder="Search customers by name, code, or city…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {searching && (
+              <Loader2 className="absolute end-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+            )}
+          </div>
           <input type="hidden" name="customer_id" value={customerId} />
 
           <div className="max-h-56 overflow-y-auto rounded-md border bg-muted/20">
-            {filtered.length === 0 && (
+            {results.length === 0 && !searching && (
               <p className="px-3 py-4 text-center text-xs text-muted-foreground">
-                No customers match this search.
+                {search.trim()
+                  ? "No customers match this search."
+                  : "Start typing to search customers."}
               </p>
             )}
-            {filtered.map((c) => (
+            {results.map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => {
                   setCustomerId(c.id);
+                  setSelected(c);
                   setSearch(c.full_name);
                 }}
                 className={`flex w-full items-center justify-between border-b px-3 py-2 text-left text-sm last:border-0 hover:bg-muted ${

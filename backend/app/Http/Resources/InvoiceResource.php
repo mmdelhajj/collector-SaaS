@@ -42,6 +42,7 @@ class InvoiceResource extends JsonResource
                 'code' => $this->customer->code,
                 'full_name' => $this->customer->full_name,
                 'phone_primary' => $this->customer->phone_primary,
+                'whatsapp_phone' => $this->customer->whatsapp_phone,
                 'email' => $this->customer->email,
                 'city' => $this->customer->city,
                 'district' => $this->customer->district,

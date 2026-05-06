@@ -7,6 +7,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { getInvoice, getInvoicePublicLink } from "@/lib/invoices";
 import { InvoiceStatusBadge } from "@/components/invoices/invoice-status-badge";
 import { InvoicePublicLinkActions } from "@/components/invoices/invoice-public-link-actions";
+import { InvoiceShareActions } from "@/components/invoices/invoice-share-actions";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -102,7 +103,7 @@ export default async function InvoiceDetailPage({
           <ChevronLeft className="size-4" />
           Back to invoices
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <a
             href={`/dl/invoice/${invoice.id}`}
             download={`${invoice.number}.pdf`}
@@ -117,6 +118,21 @@ export default async function InvoiceDetailPage({
           />
         </div>
       </div>
+
+      {customer && (
+        <div className="flex flex-wrap items-center justify-end gap-2 rounded-lg border bg-muted/30 px-4 py-2">
+          <span className="me-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Send to {customer.full_name.split(" ")[0]}
+          </span>
+          <InvoiceShareActions
+            customer={customer}
+            invoiceNumber={invoice.number}
+            publicUrl={publicLink.url}
+            amountLabel={formatMoney(invoice.balance_due, invoice.currency)}
+            tenantName={tenantName}
+          />
+        </div>
+      )}
 
       {/* Invoice card — visual parity with the PDF + public-web template */}
       <article className="overflow-hidden rounded-2xl border bg-card shadow-sm">

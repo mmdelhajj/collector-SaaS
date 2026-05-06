@@ -3,7 +3,46 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ApiError } from "@/lib/api";
+import { listCustomers } from "@/lib/customers";
 import { createInvoice } from "@/lib/invoices";
+
+/**
+ * Server-side customer search for the new-invoice form's debounced
+ * picker. Returns up to 20 hits — enough for the dropdown without a
+ * round trip to load thousands of customers up-front. Trim to the
+ * fields the picker actually shows so the wire payload stays small.
+ */
+export type CustomerHit = {
+  id: string;
+  code: string;
+  full_name: string;
+  city: string | null;
+};
+
+export async function searchCustomersAction(
+  query: string,
+): Promise<{ hits: CustomerHit[]; error?: string }> {
+  const q = query.trim();
+  try {
+    const res = await listCustomers({
+      search: q || undefined,
+      perPage: 20,
+    });
+    return {
+      hits: res.data.map((c) => ({
+        id: c.id,
+        code: c.code,
+        full_name: c.full_name,
+        city: c.city ?? null,
+      })),
+    };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 401) {
+      return { hits: [], error: "Session expired." };
+    }
+    return { hits: [], error: "Search failed. Try again." };
+  }
+}
 
 const itemSchema = z.object({
   description: z.string().min(1, "Required").max(255),

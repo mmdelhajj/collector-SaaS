@@ -12,10 +12,10 @@ export default async function NewInvoicePage() {
   const me = await getCurrentUser();
   if (!me) redirect("/login");
 
-  // Pre-load the first 200 customers for the picker. Search is client-side
-  // for simplicity; if a tenant has thousands of customers we'd switch to
-  // a debounced server search later.
-  const customers = await listCustomers({ perPage: 200 });
+  // First-paint hint: show the 20 most-recent customers so the picker is
+  // useful before the user types. Real searches go through the
+  // searchCustomersAction server action with a debounce.
+  const recent = await listCustomers({ perPage: 20 });
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 px-4 py-6">
@@ -43,7 +43,7 @@ export default async function NewInvoicePage() {
       </div>
 
       <NewInvoiceForm
-        customers={customers.data.map((c) => ({
+        initialCustomers={recent.data.map((c) => ({
           id: c.id,
           code: c.code,
           full_name: c.full_name,
