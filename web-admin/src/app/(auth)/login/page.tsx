@@ -6,7 +6,7 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to your ISP SaaS workspace.",
+  description: "Sign in to your RunCollect workspace.",
 };
 
 export default async function LoginPage() {

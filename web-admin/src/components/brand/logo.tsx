@@ -36,7 +36,7 @@ export function Logo({ className, showWordmark = true }: LogoProps) {
       </span>
       {showWordmark && (
         <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold tracking-tight">ISP SaaS</span>
+          <span className="text-sm font-semibold tracking-tight">RunCollect</span>
           <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
             Admin
           </span>

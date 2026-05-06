@@ -7,7 +7,7 @@ import { SignupForm } from "./signup-form";
 export const metadata: Metadata = {
   title: "Start your free trial",
   description:
-    "Create your ISP SaaS workspace in 60 seconds. 14-day free trial, no card required.",
+    "Create your RunCollect workspace in 60 seconds. 14-day free trial, no card required.",
 };
 
 export default async function SignupPage({

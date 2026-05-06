@@ -49,7 +49,7 @@ class PlatformMailServiceProvider extends ServiceProvider
         if (! empty($smtp['from_address'])) {
             config([
                 'mail.from.address' => $smtp['from_address'],
-                'mail.from.name' => $smtp['from_name'] ?? 'ISP SaaS',
+                'mail.from.name' => $smtp['from_name'] ?? 'RunCollect',
             ]);
         }
     }

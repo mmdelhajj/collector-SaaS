@@ -136,7 +136,7 @@ export function SmtpForm({ initial }: { initial: SmtpInitial }) {
           label="From name"
           value={fromName}
           onChange={setFromName}
-          placeholder="ISP SaaS"
+          placeholder="RunCollect"
         />
       </div>
 

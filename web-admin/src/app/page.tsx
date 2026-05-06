@@ -15,7 +15,7 @@ import { listPublicPlans } from "@/lib/plans-public";
 import { Logo } from "@/components/brand/logo";
 
 export const metadata: Metadata = {
-  title: "ISP SaaS — billing, collectors, RADIUS, WhatsApp receipts",
+  title: "RunCollect — billing, collectors, RADIUS, WhatsApp receipts",
   description:
     "All-in-one platform for ISPs and utility providers in MENA. Customer billing, door-to-door collectors with mobile app, RADIUS auto-suspend, WhatsApp receipts. Free 14-day trial.",
 };
@@ -322,7 +322,7 @@ function Footer() {
   return (
     <footer className="border-t bg-background py-8">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 text-xs text-muted-foreground sm:flex-row">
-        <p>© 2026 ISP SaaS. Built in Lebanon.</p>
+        <p>© 2026 RunCollect. Built in Lebanon.</p>
         <div className="flex items-center gap-4">
           <Link href="/login" className="hover:text-foreground">
             Sign in

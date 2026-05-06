@@ -39,7 +39,7 @@ class TwoFactorController extends Controller
     {
         $u = $request->user();
         $tenant = $u->tenant;
-        $issuer = $tenant?->name ?? 'ISP SaaS';
+        $issuer = $tenant?->name ?? 'RunCollect';
 
         $secret = $g2fa->generateSecretKey();
         $u->forceFill([

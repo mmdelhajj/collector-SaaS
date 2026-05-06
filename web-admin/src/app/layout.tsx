@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ISP SaaS — Admin",
-    template: "%s · ISP SaaS",
+    default: "RunCollect — Admin",
+    template: "%s · RunCollect",
   },
   description:
     "Multi-tenant platform for ISPs and utility providers — billing, collectors, RADIUS, WhatsApp receipts.",

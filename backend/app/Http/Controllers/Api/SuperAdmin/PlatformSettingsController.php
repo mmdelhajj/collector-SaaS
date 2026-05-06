@@ -36,7 +36,7 @@ class PlatformSettingsController extends Controller
                     'from_name' => $smtp['from_name'] ?? '',
                 ],
                 'branding' => [
-                    'platform_name' => $branding['platform_name'] ?? 'ISP SaaS',
+                    'platform_name' => $branding['platform_name'] ?? 'RunCollect',
                     'support_email' => $branding['support_email'] ?? '',
                     'logo_url' => $branding['logo_url'] ?? '',
                     'tagline' => $branding['tagline'] ?? '',
@@ -162,7 +162,7 @@ class PlatformSettingsController extends Controller
 
         try {
             Mail::raw(
-                "This is a test email from your ISP SaaS platform.\n\nIf you received this, SMTP is working.",
+                "This is a test email from your RunCollect platform.\n\nIf you received this, SMTP is working.",
                 function ($m) use ($data, $smtp) {
                     $m->to($data['to'])
                         ->from($smtp['from_address'], $smtp['from_name'])
