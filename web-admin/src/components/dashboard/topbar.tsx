@@ -4,7 +4,8 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bell, BellOff, LogOut, Plus, Search, UserCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -61,12 +62,13 @@ export function Topbar({ user }: TopbarProps) {
       </div>
 
       <div className="ms-auto flex items-center gap-2">
-        <Button size="sm" className="gap-1.5" asChild>
-          <Link href="/invoices">
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">New invoice</span>
-          </Link>
-        </Button>
+        <Link
+          href="/invoices"
+          className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}
+        >
+          <Plus className="size-4" />
+          <span className="hidden sm:inline">New invoice</span>
+        </Link>
 
         <DropdownMenu>
           <DropdownMenuTrigger
