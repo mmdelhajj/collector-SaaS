@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, LogOut, Plus, Search, UserCircle2 } from "lucide-react";
+import { Bell, BellOff, LogOut, Plus, Search, UserCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -65,15 +65,32 @@ export function Topbar({ user }: TopbarProps) {
           <span className="hidden sm:inline">New invoice</span>
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label="Notifications"
-        >
-          <Bell className="size-4" />
-          <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              aria-label="Notifications"
+            >
+              <Bell className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-72">
+            <DropdownMenuLabel className="flex items-center justify-between">
+              <span>Notifications</span>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <div className="flex flex-col items-center gap-2 px-3 py-6 text-center">
+              <BellOff className="size-5 text-muted-foreground" />
+              <p className="text-sm font-medium">You're all caught up</p>
+              <p className="text-xs text-muted-foreground">
+                New activity (overdue invoices, payments received, collector
+                handovers) will appear here.
+              </p>
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger
