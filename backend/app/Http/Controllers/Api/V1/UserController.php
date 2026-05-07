@@ -10,9 +10,11 @@ use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\Audit;
+use App\Support\Rbac;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
@@ -96,10 +98,12 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function update(UpdateUserRequest $request, int $id): UserResource
+    public function update(UpdateUserRequest $request, int $id)
     {
+        $actor = $request->user();
         $user = User::query()
-            ->where('tenant_id', $request->user()->tenant_id)
+            ->where('tenant_id', $actor->tenant_id)
+            ->with('roles')
             ->findOrFail($id);
 
         $data = $request->validated();
@@ -108,6 +112,12 @@ class UserController extends Controller
 
         $oldActive = $user->is_active;
         $oldRole = $user->roles->first()?->name;
+
+        if ($role !== null && $role !== $oldRole) {
+            if ($guard = $this->guardRoleChange($actor, $user, $oldRole, $role)) {
+                return $guard;
+            }
+        }
 
         $user->update($data);
 
@@ -153,6 +163,188 @@ class UserController extends Controller
         $user->tokens()->delete();
 
         return response()->json(['data' => new UserResource($user->fresh())]);
+    }
+
+    /**
+     * Permanently delete a user, transferring all owned records (payments,
+     * collector assignments, customer ownership, etc.) to another user in the
+     * same tenant. Audit-log and message-log attribution is set NULL by FK
+     * cascade so historical attribution doesn't lie.
+     *
+     * Body: { transfer_to: int } — the inheriting user id.
+     */
+    public function transferAndDelete(Request $request, int $id): JsonResponse
+    {
+        $actor = $request->user();
+        if (! $actor->can('users.manage')) {
+            return response()->json(['message' => 'Forbidden.'], 403);
+        }
+
+        $data = $request->validate([
+            'transfer_to' => ['required', 'integer'],
+        ]);
+
+        if ($actor->id === $id) {
+            return response()->json([
+                'message' => "You can't delete your own account.",
+            ], 409);
+        }
+
+        $target = User::query()
+            ->where('tenant_id', $actor->tenant_id)
+            ->with('roles')
+            ->findOrFail($id);
+
+        $inheritor = User::query()
+            ->where('tenant_id', $actor->tenant_id)
+            ->where('is_active', true)
+            ->where('id', '!=', $target->id)
+            ->find($data['transfer_to']);
+
+        if (! $inheritor) {
+            return response()->json([
+                'message' => 'Inheriting user must be an active user in the same workspace.',
+            ], 422);
+        }
+
+        $actorRank = $this->roleRank($actor->roles->first()?->name);
+        $targetRank = $this->roleRank($target->roles->first()?->name);
+        if ($targetRank < $actorRank) {
+            return response()->json([
+                'message' => "You can't delete a user whose role outranks yours.",
+            ], 403);
+        }
+
+        $targetRole = $target->roles->first()?->name;
+        if ($targetRole === Rbac::ROLE_TENANT_OWNER) {
+            $otherOwners = User::query()
+                ->where('tenant_id', $actor->tenant_id)
+                ->where('id', '!=', $target->id)
+                ->where('is_active', true)
+                ->whereHas('roles', fn ($q) => $q->where('name', Rbac::ROLE_TENANT_OWNER))
+                ->count();
+            if ($otherOwners === 0) {
+                return response()->json([
+                    'message' => "Can't delete the last owner — promote someone else to owner first.",
+                ], 409);
+            }
+        }
+
+        // Tables + columns whose rows should be reassigned (not nulled) so
+        // financial / operational ownership transfers cleanly. audit_logs and
+        // messages_log are intentionally left to FK SET NULL — history must
+        // remain accurate.
+        $reassign = [
+            ['payments', 'collected_by_user_id'],
+            ['customers', 'assigned_to'],
+            ['customers', 'created_by'],
+            ['customers', 'location_pin_set_by'],
+            ['tickets', 'assigned_to_user_id'],
+            ['collector_assignments', 'collector_user_id'],
+            ['collector_assignments', 'assigned_by'],
+            ['collector_routes', 'collector_user_id'],
+            ['collector_zones', 'default_collector_id'],
+            ['cash_handovers', 'from_user_id'],
+            ['cash_handovers', 'to_user_id'],
+            ['plan_change_requests', 'requested_by_user_id'],
+            ['plan_change_requests', 'decided_by_user_id'],
+        ];
+
+        $snapshot = [
+            'email' => $target->email,
+            'name' => $target->name,
+            'role' => $targetRole,
+            'inheritor_id' => $inheritor->id,
+            'inheritor_email' => $inheritor->email,
+        ];
+
+        DB::transaction(function () use ($target, $inheritor, $reassign) {
+            foreach ($reassign as [$table, $column]) {
+                DB::table($table)
+                    ->where($column, $target->id)
+                    ->update([$column => $inheritor->id]);
+            }
+            $target->tokens()->delete();
+            $target->roles()->detach();
+            $target->delete();
+        });
+
+        Audit::record(
+            'user.deleted',
+            $inheritor,
+            $snapshot,
+            $snapshot['email'],
+        );
+
+        return response()->json([
+            'data' => [
+                'deleted_user_id' => $id,
+                'inheritor' => [
+                    'id' => $inheritor->id,
+                    'name' => $inheritor->name,
+                    'email' => $inheritor->email,
+                ],
+            ],
+        ]);
+    }
+
+    /**
+     * Block role changes that would lock the tenant out, demote a higher-rank
+     * user, or let the actor grant a role above their own.
+     * Returns a JsonResponse on rejection, or null when the change is allowed.
+     */
+    private function guardRoleChange(User $actor, User $target, ?string $oldRole, string $newRole): ?JsonResponse
+    {
+        if ($actor->id === $target->id) {
+            return response()->json([
+                'message' => "You can't change your own role. Ask another admin.",
+            ], 409);
+        }
+
+        $actorRole = $actor->roles->first()?->name;
+        $actorRank = $this->roleRank($actorRole);
+        $targetRank = $this->roleRank($oldRole);
+        $newRank = $this->roleRank($newRole);
+
+        if ($targetRank < $actorRank) {
+            return response()->json([
+                'message' => "You can't modify a user whose role outranks yours.",
+            ], 403);
+        }
+
+        if ($newRank < $actorRank) {
+            return response()->json([
+                'message' => "You can't grant a role higher than your own.",
+            ], 403);
+        }
+
+        if ($oldRole === Rbac::ROLE_TENANT_OWNER && $newRole !== Rbac::ROLE_TENANT_OWNER) {
+            $otherOwners = User::query()
+                ->where('tenant_id', $actor->tenant_id)
+                ->where('id', '!=', $target->id)
+                ->where('is_active', true)
+                ->whereHas('roles', fn ($q) => $q->where('name', Rbac::ROLE_TENANT_OWNER))
+                ->count();
+            if ($otherOwners === 0) {
+                return response()->json([
+                    'message' => "Can't demote the last owner — promote someone else to owner first.",
+                ], 409);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Lower number = more privileged. Unknown / no role = lowest privilege.
+     */
+    private function roleRank(?string $role): int
+    {
+        if ($role === null) {
+            return PHP_INT_MAX;
+        }
+        $idx = array_search($role, Rbac::roles(), true);
+        return $idx === false ? PHP_INT_MAX : (int) $idx;
     }
 
     /**

@@ -153,6 +153,8 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
                 ->parameters(['users' => 'id']);
             Route::post('users/{id}/reset-password', [UserController::class, 'resetPassword'])
                 ->name('users.reset-password');
+            Route::post('users/{id}/transfer-and-delete', [UserController::class, 'transferAndDelete'])
+                ->name('users.transfer-and-delete');
 
             // Role permission editor.
             Route::get('roles', [RoleController::class, 'index'])->name('roles.index');

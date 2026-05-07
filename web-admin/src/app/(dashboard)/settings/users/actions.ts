@@ -9,6 +9,8 @@ import {
   updateUser,
   deactivateUser,
   resetUserPassword,
+  transferAndDeleteUser,
+  listUsers,
   TENANT_ROLES,
   type TenantRole,
 } from "@/lib/users";
@@ -102,8 +104,12 @@ export async function changeRoleAction(
     revalidatePath("/settings/users");
     return { ok: true };
   } catch (err) {
-    if (err instanceof ApiError && err.status === 403)
-      return { error: "Forbidden." };
+    if (err instanceof ApiError) {
+      const body = err.body as { message?: string } | null;
+      if (err.status === 403 || err.status === 409) {
+        return { error: body?.message ?? "Not allowed." };
+      }
+    }
     return { error: "Could not change role." };
   }
 }
@@ -149,6 +155,57 @@ export async function resetPasswordAction(
       }
     }
     return { error: "Could not reset password." };
+  }
+}
+
+export type InheritorOption = {
+  id: number;
+  name: string;
+  email: string;
+  role: TenantRole | null;
+};
+
+export async function listInheritorCandidatesAction(
+  excludeId: number,
+): Promise<InheritorOption[]> {
+  if (!(await actionRequireRole(["tenant_owner", "tenant_admin"]))) {
+    return [];
+  }
+  const res = await listUsers({ perPage: 100, isActive: true });
+  return res.data
+    .filter((u) => u.id !== excludeId)
+    .map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      role: (u.roles[0] as TenantRole | undefined) ?? null,
+    }));
+}
+
+export type DeleteUserState = { ok?: boolean; error?: string };
+
+export async function deleteUserAction(
+  userId: number,
+  transferToId: number,
+): Promise<DeleteUserState> {
+  if (!(await actionRequireRole(["tenant_owner", "tenant_admin"]))) {
+    return { error: "Not authorized." };
+  }
+  if (!transferToId) {
+    return { error: "Pick a user to inherit their records." };
+  }
+  try {
+    await transferAndDeleteUser(userId, transferToId);
+    revalidatePath("/settings/users");
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      const body = err.body as { message?: string } | null;
+      if (err.status === 403 || err.status === 409 || err.status === 422) {
+        return { error: body?.message ?? "Not allowed." };
+      }
+    }
+    return { error: "Could not delete user." };
   }
 }
 

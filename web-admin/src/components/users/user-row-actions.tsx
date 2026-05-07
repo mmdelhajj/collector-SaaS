@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   Copy,
   Eye,
@@ -10,6 +10,7 @@ import {
   MoreHorizontal,
   RefreshCw,
   ShieldCheck,
+  Trash2,
   UserMinus,
   UserPlus,
 } from "lucide-react";
@@ -29,8 +30,11 @@ import {
 } from "@/components/ui/sheet";
 import {
   changeRoleAction,
+  deleteUserAction,
+  listInheritorCandidatesAction,
   resetPasswordAction,
   toggleActiveAction,
+  type InheritorOption,
 } from "@/app/(dashboard)/settings/users/actions";
 import { ROLE_LABELS, TENANT_ROLES, type TenantRole } from "@/lib/users-types";
 import { cn } from "@/lib/utils";
@@ -56,6 +60,18 @@ export function UserRowActions({
   const [customPassword, setCustomPassword] = useState("");
   const [showCustomPassword, setShowCustomPassword] = useState(false);
   const [issuedPassword, setIssuedPassword] = useState<string | null>(null);
+  const [inheritors, setInheritors] = useState<InheritorOption[] | null>(null);
+  const [loadingInheritors, setLoadingInheritors] = useState(false);
+  const [inheritorId, setInheritorId] = useState<number | "">("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  useEffect(() => {
+    if (!open || isSelf || inheritors !== null) return;
+    setLoadingInheritors(true);
+    listInheritorCandidatesAction(userId)
+      .then((list) => setInheritors(list))
+      .finally(() => setLoadingInheritors(false));
+  }, [open, isSelf, inheritors, userId]);
 
   function copyPassword(pw: string) {
     navigator.clipboard
@@ -109,6 +125,22 @@ export function UserRowActions({
     });
   }
 
+  function deleteUser() {
+    if (!inheritorId) {
+      toast.error("Pick a user to inherit their records first");
+      return;
+    }
+    startTransition(async () => {
+      const res = await deleteUserAction(userId, inheritorId as number);
+      if (res.ok) {
+        toast.success("User deleted");
+        setOpen(false);
+      } else {
+        toast.error(res.error ?? "Could not delete user");
+      }
+    });
+  }
+
   function toggleActive() {
     startTransition(async () => {
       const res = await toggleActiveAction(userId, !isActive);
@@ -144,6 +176,11 @@ export function UserRowActions({
               <ShieldCheck className="size-4 text-muted-foreground" />
               Role
             </div>
+            {isSelf && (
+              <p className="text-[11px] text-muted-foreground">
+                You can&rsquo;t change your own role. Ask another admin.
+              </p>
+            )}
             <div className="grid grid-cols-1 gap-2">
               {TENANT_ROLES.filter((r) => r !== "customer").map((r) => {
                 const active = pickedRole === r;
@@ -153,13 +190,13 @@ export function UserRowActions({
                     key={r}
                     type="button"
                     onClick={() => setPickedRole(r)}
-                    disabled={isPending}
+                    disabled={isPending || isSelf}
                     className={cn(
                       "flex items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors",
                       active
                         ? "border-primary bg-primary/5"
                         : "border-border hover:bg-muted/40",
-                      isPending && "opacity-60",
+                      (isPending || isSelf) && "opacity-60",
                     )}
                   >
                     <span className="font-medium">{ROLE_LABELS[r]}</span>
@@ -314,6 +351,87 @@ export function UserRowActions({
               </p>
             )}
           </section>
+
+          {!isSelf && (
+            <section className="space-y-2 border-t pt-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                <Trash2 className="size-4" />
+                Delete permanently
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Removes the user and reassigns their payments, customers,
+                tickets, and collector records to the inheritor below. Audit
+                history is preserved with their name. This cannot be undone.
+              </p>
+
+              <Label htmlFor="inheritor" className="text-xs">
+                Inherit records to
+              </Label>
+              <select
+                id="inheritor"
+                value={inheritorId}
+                onChange={(e) =>
+                  setInheritorId(e.target.value ? Number(e.target.value) : "")
+                }
+                disabled={isPending || loadingInheritors}
+                className="h-9 w-full rounded-md border bg-background px-2 text-sm"
+              >
+                <option value="">
+                  {loadingInheritors ? "Loading…" : "Pick a user…"}
+                </option>
+                {(inheritors ?? []).map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name} — {u.email}
+                    {u.role ? ` (${u.role})` : ""}
+                  </option>
+                ))}
+              </select>
+
+              {!confirmDelete ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-2 w-full border-destructive/40 text-destructive hover:bg-destructive/10"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={isPending || !inheritorId}
+                >
+                  <Trash2 className="size-4" />
+                  Delete user…
+                </Button>
+              ) : (
+                <div className="mt-2 space-y-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3">
+                  <p className="text-xs font-medium text-destructive">
+                    This permanently deletes {userName ?? "the user"}. Continue?
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={isPending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={deleteUser}
+                      disabled={isPending}
+                    >
+                      {isPending ? (
+                        <>
+                          <Loader2 className="size-4 animate-spin" />
+                          Deleting…
+                        </>
+                      ) : (
+                        "Yes, delete"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
         </div>
 
         <SheetFooter className="flex-row justify-end gap-2 border-t px-4 py-3">
@@ -323,7 +441,9 @@ export function UserRowActions({
           <Button
             type="button"
             onClick={saveRole}
-            disabled={isPending || !pickedRole || pickedRole === currentRole}
+            disabled={
+              isPending || isSelf || !pickedRole || pickedRole === currentRole
+            }
           >
             {isPending ? (
               <>

@@ -90,6 +90,26 @@ export async function deactivateUser(
   });
 }
 
+export type TransferAndDeleteResult = {
+  data: {
+    deleted_user_id: number;
+    inheritor: { id: number; name: string; email: string };
+  };
+};
+
+export async function transferAndDeleteUser(
+  id: number,
+  transferToId: number,
+): Promise<TransferAndDeleteResult> {
+  return apiFetch<TransferAndDeleteResult>(
+    `/api/v1/users/${id}/transfer-and-delete`,
+    {
+      method: "POST",
+      body: JSON.stringify({ transfer_to: transferToId }),
+    },
+  );
+}
+
 export type PasswordResetResult = {
   data: TenantUser;
   reset: {
