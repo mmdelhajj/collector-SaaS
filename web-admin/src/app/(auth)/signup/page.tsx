@@ -16,7 +16,11 @@ export default async function SignupPage({
   searchParams: Promise<{ plan?: string }>;
 }) {
   const sp = await searchParams;
-  const plans = await listPublicPlans().catch(() => []);
+  const SIGNUP_ELIGIBLE = ["starter", "growth", "pro"] as const;
+  const allPlans = await listPublicPlans().catch(() => []);
+  const plans = allPlans.filter((p) =>
+    (SIGNUP_ELIGIBLE as readonly string[]).includes(p.code),
+  );
   const initialPlan = plans.find((p) => p.code === sp.plan)?.code ?? "growth";
 
   return (
