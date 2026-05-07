@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { ApiError } from "@/lib/api";
 import { actionRequireSuperAdmin } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import {
+  deleteTenantApi,
   reactivateTenant,
   suspendTenant,
   updateTenantApi,
@@ -54,6 +56,26 @@ export async function suspendTenantAction(id: string): Promise<Result> {
     }
     return { error: "Could not suspend." };
   }
+}
+
+export async function deleteTenantAction(
+  id: string,
+  confirmSlug: string,
+): Promise<Result> {
+  if (!(await actionRequireSuperAdmin())) return NOT_AUTHORIZED;
+
+  try {
+    await deleteTenantApi(id, confirmSlug);
+  } catch (err) {
+    if (err instanceof ApiError) {
+      const b = err.body as { message?: string };
+      return { error: b?.message ?? "Could not delete." };
+    }
+    return { error: "Could not delete." };
+  }
+  revalidatePath("/super-admin/tenants");
+  revalidatePath("/super-admin");
+  redirect("/super-admin/tenants");
 }
 
 export async function reactivateTenantAction(id: string): Promise<Result> {

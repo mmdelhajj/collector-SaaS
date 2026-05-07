@@ -8,6 +8,7 @@ import {
   Loader2,
   Pause,
   Play,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+  deleteTenantAction,
   reactivateTenantAction,
   suspendTenantAction,
   updateTenantAction,
@@ -33,12 +35,14 @@ export function TenantActions({
   id,
   status,
   name,
+  slug,
   plan,
   billingPeriod,
 }: {
   id: string;
   status: string;
   name: string;
+  slug: string;
   plan: string;
   billingPeriod: string;
 }) {
@@ -127,7 +131,95 @@ export function TenantActions({
           Suspend
         </Button>
       )}
+
+      <DeleteTenantButton id={id} name={name} slug={slug} />
     </div>
+  );
+}
+
+function DeleteTenantButton({
+  id,
+  name,
+  slug,
+}: {
+  id: string;
+  name: string;
+  slug: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [confirmInput, setConfirmInput] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function submit() {
+    if (confirmInput !== slug) {
+      toast.error(`Type the slug exactly: ${slug}`);
+      return;
+    }
+    startTransition(async () => {
+      const res = await deleteTenantAction(id, confirmInput);
+      // On success the action redirects to /super-admin/tenants, so we only
+      // get here on error.
+      if (res?.error) toast.error(res.error);
+    });
+  }
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger className="inline-flex h-9 items-center gap-1.5 rounded-md border border-rose-400 bg-rose-50 px-3 text-sm font-medium text-rose-700 hover:bg-rose-100">
+        <Trash2 className="size-4" />
+        Delete
+      </SheetTrigger>
+      <SheetContent side="right" className="flex w-full flex-col sm:max-w-md">
+        <SheetHeader>
+          <SheetTitle className="text-rose-700">Delete tenant</SheetTitle>
+          <SheetDescription>
+            Permanently removes <span className="font-semibold">{name}</span>{" "}
+            and every record it owns: users, customers, invoices, payments,
+            messages, RADIUS data, audit logs. This cannot be undone.
+          </SheetDescription>
+        </SheetHeader>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4 pt-2">
+          <div className="rounded-lg border border-rose-300 bg-rose-50 p-3 text-xs text-rose-800">
+            Consider <span className="font-semibold">Suspend</span> instead if
+            the tenant might come back. Deletion is irreversible.
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm">
+              Type the workspace slug to confirm:{" "}
+              <code className="font-mono">{slug}</code>
+            </Label>
+            <Input
+              id="confirm"
+              autoComplete="off"
+              value={confirmInput}
+              onChange={(e) => setConfirmInput(e.target.value)}
+              placeholder={slug}
+              className="font-mono"
+            />
+          </div>
+        </div>
+        <SheetFooter className="flex-row justify-end gap-2 border-t px-4 py-3">
+          <SheetClose className="inline-flex h-9 items-center rounded-md border bg-background px-3 text-sm font-medium hover:bg-muted">
+            Cancel
+          </SheetClose>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={submit}
+            disabled={isPending || confirmInput !== slug}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                Deleting…
+              </>
+            ) : (
+              "Delete permanently"
+            )}
+          </Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

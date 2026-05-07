@@ -70,6 +70,7 @@ export default async function TenantDetailPage({
         id={tenant.id}
         status={tenant.status}
         name={tenant.name}
+        slug={tenant.slug}
         plan={tenant.plan}
         billingPeriod={tenant.billing_period}
       />

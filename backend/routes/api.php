@@ -77,6 +77,7 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
             Route::patch('tenants/{id}', [PlatformController::class, 'updateTenant'])->name('tenants.update');
             Route::post('tenants/{id}/suspend', [PlatformController::class, 'suspend'])->name('tenants.suspend');
             Route::post('tenants/{id}/reactivate', [PlatformController::class, 'reactivate'])->name('tenants.reactivate');
+            Route::post('tenants/{id}/delete', [PlatformController::class, 'deleteTenant'])->name('tenants.delete');
 
             // Platform-level settings.
             Route::get('settings', [PlatformSettingsController::class, 'index'])->name('settings');

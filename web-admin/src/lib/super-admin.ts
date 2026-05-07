@@ -89,6 +89,26 @@ export async function reactivateTenant(id: string): Promise<void> {
   });
 }
 
+export type DeleteTenantResult = {
+  data: {
+    deleted_tenant_id: string;
+    cascaded: { users: number; customers: number; invoices: number; payments: number };
+  };
+};
+
+export async function deleteTenantApi(
+  id: string,
+  confirmSlug: string,
+): Promise<DeleteTenantResult> {
+  return apiFetch<DeleteTenantResult>(
+    `/api/v1/super-admin/tenants/${id}/delete`,
+    {
+      method: "POST",
+      body: JSON.stringify({ confirm_slug: confirmSlug }),
+    },
+  );
+}
+
 export type CreateTenantPayload = {
   company_name: string;
   owner_name: string;

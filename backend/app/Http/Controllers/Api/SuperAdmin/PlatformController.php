@@ -355,6 +355,66 @@ class PlatformController extends Controller
     }
 
     /**
+     * Permanently delete a tenant and everything it owns. CASCADE FKs handle
+     * users, customers, invoices, payments, audit logs, etc. The deletion is
+     * recorded as a platform-level audit entry (NULL tenant) so it survives.
+     *
+     * Body must include `confirm_slug` matching the tenant slug to prevent
+     * fat-finger destruction.
+     */
+    public function deleteTenant(Request $request, string $id): JsonResponse
+    {
+        $tenant = Tenant::query()->findOrFail($id);
+
+        $data = $request->validate([
+            'confirm_slug' => ['required', 'string'],
+        ]);
+
+        if ($data['confirm_slug'] !== $tenant->slug) {
+            return response()->json([
+                'message' => "Confirmation didn't match. Type the workspace slug exactly: {$tenant->slug}",
+            ], 422);
+        }
+
+        $counts = [
+            'users' => User::query()->where('tenant_id', $tenant->id)->count(),
+            'customers' => Customer::query()->where('tenant_id', $tenant->id)->count(),
+            'invoices' => Invoice::query()->where('tenant_id', $tenant->id)->count(),
+            'payments' => Payment::query()->where('tenant_id', $tenant->id)->count(),
+        ];
+
+        $snapshot = [
+            'tenant_id' => $tenant->id,
+            'name' => $tenant->name,
+            'slug' => $tenant->slug,
+            'plan' => $tenant->plan,
+            'status' => $tenant->status,
+            'counts' => $counts,
+        ];
+
+        DB::transaction(function () use ($tenant) {
+            // forceDelete bypasses SoftDeletes so the FK CASCADE on tenant_id
+            // actually fires across the 20 tenant-owned tables. Plain delete()
+            // would only set deleted_at and leave child rows orphaned.
+            $tenant->forceDelete();
+        });
+
+        Audit::record(
+            'platform.tenant_deleted',
+            null,
+            $snapshot,
+            $snapshot['name'],
+        );
+
+        return response()->json([
+            'data' => [
+                'deleted_tenant_id' => $id,
+                'cascaded' => $counts,
+            ],
+        ]);
+    }
+
+    /**
      * Record an audit event under the affected tenant's context, so the row
      * is attributed to that tenant (rather than landing as a platform-level
      * NULL-tenant audit). Restores any prior context on the way out.
