@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../core/auth_storage.dart';
+import '../../core/services/background_sync.dart';
+import '../../shared/widgets/language_toggle.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -41,16 +44,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         userId: user['id'] as int,
         userName: user['name'] as String,
       );
+      // Kick off the OS-managed background drain so payments queued offline
+      // sync even if the collector closes the app or locks the phone.
+      await schedulePeriodicOutboxSync();
       if (!mounted) return;
       context.go('/');
     } catch (e) {
       final msg = _extractError(e);
+      final t = AppLocalizations.of(context);
       setState(() {
         if (msg == 'two_factor_required') {
           _showTwoFactor = true;
-          _error = 'Enter your authenticator code.';
+          _error = t.enterAuthCode;
         } else {
-          _error = msg ?? 'Login failed';
+          _error = msg ?? t.loginFailed;
         }
       });
     } finally {
@@ -76,6 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -89,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const Icon(Icons.account_balance_wallet, size: 64),
                   const SizedBox(height: 16),
                   Text(
-                    'Collector sign-in',
+                    t.collectorSignIn,
                     style: Theme.of(context).textTheme.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
@@ -98,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -110,9 +118,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ],
                   TextField(
                     controller: _email,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: t.email,
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
@@ -120,9 +128,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _password,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: t.password,
+                      border: const OutlineInputBorder(),
                     ),
                     obscureText: true,
                     autofillHints: const [AutofillHints.password],
@@ -131,9 +139,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const SizedBox(height: 12),
                     TextField(
                       controller: _twoFactor,
-                      decoration: const InputDecoration(
-                        labelText: '6-digit code',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: t.twoFactorCode,
+                        border: const OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
                       maxLength: 6,
@@ -154,8 +162,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Sign in'),
+                        : Text(t.signIn),
                   ),
+                  const SizedBox(height: 12),
+                  const LanguageToggle(),
                 ],
               ),
             ),

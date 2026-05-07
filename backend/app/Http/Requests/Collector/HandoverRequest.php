@@ -33,6 +33,9 @@ class HandoverRequest extends FormRequest
                 Rule::exists('users', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
             ],
             'notes' => ['nullable', 'string', 'max:5000'],
+            // Optional proof artifacts captured by the mobile app.
+            'photo' => ['nullable', 'file', 'image', 'max:8192'],
+            'signature' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:1024'],
         ];
     }
 }

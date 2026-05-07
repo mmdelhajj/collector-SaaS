@@ -99,6 +99,27 @@ class PaymentController extends Controller
             }
         }
 
+        // Strip uploaded files from the data array — they're handled below
+        // and the Payment model has no `photo` / `signature` mass-assignable
+        // attributes (only the *_path string columns).
+        unset($data['photo'], $data['signature']);
+
+        $tenantId = $request->user()?->tenant_id;
+        $photoPath = null;
+        $signaturePath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store(
+                "tenants/{$tenantId}/payments/photos",
+                'public',
+            );
+        }
+        if ($request->hasFile('signature')) {
+            $signaturePath = $request->file('signature')->store(
+                "tenants/{$tenantId}/payments/signatures",
+                'public',
+            );
+        }
+
         $attributes = [
             ...$data,
             'currency' => $data['currency'] ?? 'USD',
@@ -106,6 +127,12 @@ class PaymentController extends Controller
             'collected_at' => $data['collected_at'] ?? now(),
             'collected_by_user_id' => $request->user()?->id,
         ];
+        if ($photoPath !== null) {
+            $attributes['photo_path'] = $photoPath;
+        }
+        if ($signaturePath !== null) {
+            $attributes['signature_path'] = $signaturePath;
+        }
 
         $payment = $recorder->record($attributes);
         $payment->load(['customer', 'invoice', 'collector']);

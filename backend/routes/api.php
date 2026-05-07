@@ -183,6 +183,8 @@ Route::prefix('v1')->middleware('throttle:60,1')->name('api.v1.')->group(functio
                 ->name('collector.check-in');
             Route::post('collector/check-out', [CollectorController::class, 'checkOut'])
                 ->name('collector.check-out');
+            Route::get('collector/supervisors', [CollectorController::class, 'supervisors'])
+                ->name('collector.supervisors');
             Route::get('collector/pending-cash', [CollectorController::class, 'pendingCash'])
                 ->name('collector.pending-cash');
             Route::post('collector/handover-cash', [CollectorController::class, 'handover'])

@@ -15,7 +15,9 @@ use App\Models\CollectorAssignment;
 use App\Models\CollectorRoute;
 use App\Models\Payment;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Support\Audit;
+use App\Support\Rbac;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -330,6 +332,38 @@ class CollectorController extends Controller
     }
 
     /**
+     * Active users in this tenant that a collector can hand cash to —
+     * owners, admins, managers, and accountants. Stripped down to id/name
+     * so the collector mobile picker doesn't need broader user access.
+     */
+    public function supervisors(Request $request): JsonResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+        $allowed = [
+            Rbac::ROLE_TENANT_OWNER,
+            Rbac::ROLE_TENANT_ADMIN,
+            Rbac::ROLE_MANAGER,
+            Rbac::ROLE_ACCOUNTANT,
+        ];
+
+        $users = User::query()
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->where('id', '!=', $request->user()->id)
+            ->whereHas('roles', fn ($q) => $q->whereIn('name', $allowed))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
+        return response()->json([
+            'data' => $users->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+            ]),
+        ]);
+    }
+
+    /**
      * Hand cash over to a supervisor. Creates a CashHandover with status
      * `pending`, links every unbundled cash payment from this collector to
      * it (so supervisor can audit later) and writes an audit-log entry.
@@ -345,7 +379,30 @@ class CollectorController extends Controller
             ->where('date', now()->toDateString())
             ->first();
 
-        $handover = DB::transaction(function () use ($request, $userId, $route, $methods) {
+        $tenantId = $request->user()->tenant_id;
+        $photoPath = null;
+        $signaturePath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store(
+                "tenants/{$tenantId}/handovers/photos",
+                'public',
+            );
+        }
+        if ($request->hasFile('signature')) {
+            $signaturePath = $request->file('signature')->store(
+                "tenants/{$tenantId}/handovers/signatures",
+                'public',
+            );
+        }
+
+        $handover = DB::transaction(function () use (
+            $request,
+            $userId,
+            $route,
+            $methods,
+            $photoPath,
+            $signaturePath,
+        ) {
             $h = CashHandover::query()->create([
                 'tenant_id' => $request->user()->tenant_id,
                 'from_user_id' => $userId,
@@ -354,7 +411,8 @@ class CollectorController extends Controller
                 'currency' => $request->input('currency', 'USD'),
                 'status' => 'pending',
                 'notes' => $request->input('notes'),
-                'photo_path' => $request->input('photo_path'),
+                'photo_path' => $photoPath,
+                'signature_path' => $signaturePath,
                 'collector_route_id' => $route?->id,
                 'handed_over_at' => now(),
             ]);

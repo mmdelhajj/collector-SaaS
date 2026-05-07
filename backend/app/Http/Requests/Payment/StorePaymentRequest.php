@@ -41,6 +41,11 @@ class StorePaymentRequest extends FormRequest
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'device_id' => ['nullable', 'string', 'max:64'],
+            // Optional proof artifacts captured by the mobile collector app.
+            // Photo: a snapshot of cash, the customer holding ID, etc.
+            // Signature: a PNG of the customer's on-screen signature.
+            'photo' => ['nullable', 'file', 'image', 'max:8192'],
+            'signature' => ['nullable', 'file', 'mimes:png,jpg,jpeg', 'max:1024'],
         ];
     }
 }

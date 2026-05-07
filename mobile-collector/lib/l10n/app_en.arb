@@ -1,0 +1,141 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Field Collector",
+  "language": "Language",
+  "english": "English",
+  "arabic": "العربية",
+
+  "signIn": "Sign in",
+  "collectorSignIn": "Collector sign-in",
+  "email": "Email",
+  "password": "Password",
+  "twoFactorCode": "6-digit code",
+  "enterAuthCode": "Enter your authenticator code.",
+  "loginFailed": "Login failed",
+
+  "todaysRoute": "Today's route",
+  "hi": "Hi, {name}",
+  "@hi": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "syncNow": "Sync now",
+  "signOut": "Sign out",
+  "signOutAnyway": "Sign out anyway",
+  "cancel": "Cancel",
+  "retry": "Retry",
+  "save": "Save",
+  "clear": "Clear",
+  "syncedOk": "Synced",
+  "syncedErrors": "Sync had errors — check pending payments",
+  "couldNotLoadAssignments": "Could not load assignments.",
+  "noAssignmentsHelp": "No assignments cached yet.\n\nPull down to sync from the server.",
+  "paymentsWaiting": "{count, plural, =1{1 payment waiting to sync} other{{count} payments waiting to sync}}",
+  "@paymentsWaiting": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "pendingPaymentsTitle": "Pending payments",
+  "pendingPaymentsBody": "{count, plural, =1{1 payment not yet synced. If you sign out now it may be lost. Continue?} other{{count} payments not yet synced. If you sign out now they may be lost. Continue?}}",
+  "@pendingPaymentsBody": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+
+  "cashOnHand": "Cash on hand: {amount} ({count, plural, =1{1 payment} other{{count} payments}})",
+  "@cashOnHand": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "count": { "type": "int", "format": "decimalPattern" }
+    }
+  },
+  "handOverArrow": "Hand over →",
+
+  "customer": "Customer",
+  "balanceDue": "Balance due",
+  "outstandingInvoices": "Outstanding invoices",
+  "noOpenInvoices": "No open invoices.",
+  "recentPayments": "Recent payments",
+  "noPaymentsYet": "No payments recorded yet.",
+  "couldNotLoadCustomer": "Could not load customer.",
+  "ofTotal": "of {amount}",
+  "@ofTotal": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+
+  "recordPayment": "Record payment",
+  "amountUsd": "Amount (USD)",
+  "method": "Method",
+  "methodCash": "Cash",
+  "methodWhish": "Whish",
+  "methodOmt": "OMT",
+  "methodBankTransfer": "Bank transfer",
+  "methodCard": "Card",
+  "methodOther": "Other",
+  "notesOptional": "Notes (optional)",
+  "markAsPaid": "Mark as paid",
+  "saving": "Saving…",
+  "savedSyncing": "Saved — syncing in the background.",
+  "outboxFooter": "Payment is saved on this phone first. Receipts go out as soon as the device reaches a server.",
+  "photoProof": "Photo proof",
+  "signatureLabel": "Signature",
+  "captured": "Captured",
+  "optional": "Optional",
+  "enterValidAmount": "Enter a valid amount.",
+  "cameraError": "Camera error: {message}",
+  "@cameraError": {
+    "placeholders": { "message": { "type": "String" } }
+  },
+
+  "tooFarTitle": "Too far from customer",
+  "tooFarBody": "You are {meters} m away — outside the {tolerance} m tolerance.\n\nIf this is correct (e.g. customer moved, paid you elsewhere) enter a reason. Every override is logged for review.",
+  "@tooFarBody": {
+    "placeholders": {
+      "meters": { "type": "int" },
+      "tolerance": { "type": "int" }
+    }
+  },
+  "reasonForDistance": "Reason for distance",
+  "reasonMin4": "Reason must be at least 4 characters.",
+  "confirmPayment": "Confirm payment",
+
+  "customerSignature": "Customer signature",
+  "supervisorSignatureTitle": "Supervisor signature",
+  "pleaseSign": "Please sign before saving.",
+
+  "cashHandover": "Cash handover",
+  "expected": "Expected",
+  "acrossPayments": "{count, plural, =1{Across 1 payment} other{Across {count} payments}}",
+  "@acrossPayments": {
+    "placeholders": { "count": { "type": "int", "format": "decimalPattern" } }
+  },
+  "countedAmountUsd": "Counted amount (USD)",
+  "shortByAddNote": "Short by {amount} — add a note below.",
+  "@shortByAddNote": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "overByAddNote": "Over by {amount} — add a note below.",
+  "@overByAddNote": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "matchesExpected": "Matches expected.",
+  "handCashTo": "Hand cash to (optional)",
+  "notSpecified": "— Not specified —",
+  "nothingToHandOver": "Nothing to hand over.",
+  "noUnbundledCash": "You have no unbundled cash payments.",
+  "handoverSubmitted": "Handover submitted — pending supervisor confirmation.",
+  "statusPendingNote": "Status will be \"pending\" until the supervisor confirms in the admin panel.",
+  "submitHandover": "Submit handover",
+  "submitting": "Submitting…",
+  "photoOfCash": "Photo of cash",
+  "supervisorSignature": "Supervisor signature",
+  "enterCountedAmount": "Enter the counted amount.",
+  "explainDifference": "Counted differs from expected by {amount} — explain the difference in the notes before submitting.",
+  "@explainDifference": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "couldNotLoadPendingCash": "Could not load pending cash.",
+  "notesRequiredForDiff": "Notes (required — explain the difference)"
+}
