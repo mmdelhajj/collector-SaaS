@@ -16,6 +16,10 @@ class ApiClient {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
+          // Default Dart UA (Dart/3.x dart:io) trips Cloudflare bot rules
+          // (Error 1010 — banned browser signature). Identify as a real
+          // mobile client so requests aren't blocked at the edge.
+          'User-Agent': 'ProRADCollector/0.1 (Flutter; Android)',
         },
       ),
     );

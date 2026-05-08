@@ -69,7 +69,7 @@ class SyncService {
       final inv = j['invoice'] as Map<String, dynamic>?;
       final cust = inv?['customer'] as Map<String, dynamic>?;
       return AssignmentsLocalCompanion.insert(
-        id: j['id'] as int,
+        id: Value(j["id"] as int),
         invoiceId: inv?['id']?.toString() ?? '',
         customerId: cust?['id']?.toString() ?? '',
         customerName: cust?['full_name']?.toString() ?? 'Unknown',

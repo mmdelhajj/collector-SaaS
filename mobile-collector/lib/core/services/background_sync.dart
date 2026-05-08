@@ -83,6 +83,7 @@ Future<bool> _drainOutbox() async {
     headers: {
       'Accept': 'application/json',
       'Authorization': 'Bearer $token',
+      'User-Agent': 'ProRADCollector/0.1 (Flutter; Android)',
     },
   ));
 
