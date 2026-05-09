@@ -1,0 +1,82 @@
+workflows:
+  android-release:
+    name: Android Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: 3.41.6
+      java: 21
+      groups:
+        # Optional. If present, populates android/key.properties at build time
+        # so signed AAB upload to Play works. See setup notes below the file.
+        - android_credentials
+    working_directory: mobile-collector
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > android/local.properties
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build APK
+        script: |
+          flutter build apk --release \
+            --dart-define=API_BASE_URL=https://runcollect.com
+      - name: Build App Bundle
+        script: |
+          flutter build appbundle --release \
+            --dart-define=API_BASE_URL=https://runcollect.com
+    artifacts:
+      - mobile-collector/build/**/outputs/**/*.apk
+      - mobile-collector/build/**/outputs/**/*.aab
+    publishing:
+      email:
+        recipients:
+          - mmdelhajj@gmail.com
+
+  ios-release:
+    name: iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    integrations:
+      # Set this up in Codemagic UI: Teams -> Integrations -> App Store Connect.
+      # The label below must match the integration name exactly.
+      app_store_connect: RunCollect App Store
+    environment:
+      groups:
+        - ios_credentials
+      flutter: 3.41.6
+      xcode: latest
+      cocoapods: default
+    working_directory: mobile-collector
+    scripts:
+      - name: Set up keychain
+        script: keychain initialize
+      - name: Fetch signing files
+        script: |
+          app-store-connect fetch-signing-files com.runcollect.ispCollector \
+            --type IOS_APP_STORE \
+            --create \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY
+      - name: Add certificates to keychain
+        script: keychain add-certificates
+      - name: Use profiles
+        script: xcode-project use-profiles
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Install CocoaPods dependencies
+        script: cd ios && pod install
+      - name: Build IPA
+        script: |
+          flutter build ipa --release \
+            --dart-define=API_BASE_URL=https://runcollect.com \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - mobile-collector/build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false
+      email:
+        recipients:
+          - mmdelhajj@gmail.com
