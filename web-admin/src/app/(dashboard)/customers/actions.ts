@@ -152,6 +152,96 @@ export async function updateCustomerAction(
   }
 }
 
+export type SetLocationState = {
+  ok?: boolean;
+  error?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export async function setCustomerLocationAction(
+  customerId: string,
+  latitude: number | null,
+  longitude: number | null,
+): Promise<SetLocationState> {
+  if (latitude !== null && (latitude < -90 || latitude > 90)) {
+    return { error: "Latitude must be between -90 and 90." };
+  }
+  if (longitude !== null && (longitude < -180 || longitude > 180)) {
+    return { error: "Longitude must be between -180 and 180." };
+  }
+  try {
+    const res = await updateCustomer(customerId, { latitude, longitude });
+    revalidatePath(`/customers/${customerId}`);
+    revalidatePath("/customers");
+    return {
+      ok: true,
+      latitude: res.data.latitude,
+      longitude: res.data.longitude,
+    };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      if (err.status === 404) return { error: "Customer not found." };
+      if (err.status === 401) return { error: "Session expired." };
+      if (err.status === 422) {
+        const body = err.body as { message?: string };
+        return { error: body?.message ?? "Validation failed." };
+      }
+    }
+    return { error: "Could not save location." };
+  }
+}
+
+export type GeocodeResult = {
+  ok: true;
+  latitude: number;
+  longitude: number;
+  display_name: string;
+};
+export type GeocodeError = { ok: false; error: string };
+
+export async function geocodeAddressAction(
+  query: string,
+): Promise<GeocodeResult | GeocodeError> {
+  const q = query.trim();
+  if (q.length < 3) {
+    return { ok: false, error: "Type at least 3 characters to search." };
+  }
+  try {
+    // Nominatim is the OpenStreetMap geocoder — free, no API key. Their
+    // usage policy requires a descriptive User-Agent and capping at 1
+    // req/sec; this hits it server-side so we honour both.
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&addressdetails=0`;
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "RunCollect-Admin (support@runcollect.com)",
+        "Accept-Language": "en",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return { ok: false, error: `Geocoder error: ${res.status}` };
+    }
+    const data = (await res.json()) as Array<{
+      lat: string;
+      lon: string;
+      display_name: string;
+    }>;
+    if (!data.length) {
+      return { ok: false, error: "No match for that address." };
+    }
+    const hit = data[0];
+    return {
+      ok: true,
+      latitude: Number(hit.lat),
+      longitude: Number(hit.lon),
+      display_name: hit.display_name,
+    };
+  } catch {
+    return { ok: false, error: "Could not reach the geocoder." };
+  }
+}
+
 export type DeleteCustomerState = { ok?: boolean; error?: string };
 
 export async function deleteCustomerAction(

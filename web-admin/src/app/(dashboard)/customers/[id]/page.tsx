@@ -22,6 +22,7 @@ import { ServiceCategoryBadge } from "@/components/service-category-badge";
 import { PaymentMethodBadge } from "@/components/payments/payment-method-badge";
 import { PaymentOutcomeBadge } from "@/components/payments/payment-outcome-badge";
 import { CustomerRowActions } from "@/components/customers/customer-row-actions";
+import { CustomerLocationCard } from "@/components/customers/customer-location-card";
 import {
   Table,
   TableBody,
@@ -194,6 +195,16 @@ export default async function CustomerDetailPage({
       <OutstandingPanel
         outstanding={outstanding}
         customerName={customer.full_name}
+      />
+
+      {/* Location pin (set/edit inline) */}
+      <CustomerLocationCard
+        customerId={customer.id}
+        initialLat={customer.latitude}
+        initialLng={customer.longitude}
+        defaultSearch={[customer.address_line, customer.city, customer.country]
+          .filter(Boolean)
+          .join(", ")}
       />
 
       {/* Owed-by-service panel */}
