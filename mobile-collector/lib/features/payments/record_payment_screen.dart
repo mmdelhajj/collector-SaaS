@@ -14,6 +14,7 @@ import 'package:signature/signature.dart';
 import '../../core/config.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/sync_service.dart';
+import 'receipt_dialog.dart';
 
 class RecordPaymentScreen extends ConsumerStatefulWidget {
   const RecordPaymentScreen({
@@ -44,6 +45,28 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
   String? _error;
   File? _photo;
   bool _signatureCaptured = false;
+  double? _balanceDue;
+  String? _customerName;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill the amount with the invoice's outstanding balance so the
+    // collector taps "Mark as Paid" in one step for the common (full)
+    // case, and only edits down for partial payments.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final db = ref.read(appDatabaseProvider);
+      final assignment = await db.assignmentForInvoice(widget.invoiceId);
+      if (!mounted || assignment == null) return;
+      setState(() {
+        _balanceDue = assignment.totalDue;
+        _customerName = assignment.customerName;
+        if (_amount.text.isEmpty) {
+          _amount.text = assignment.totalDue.toStringAsFixed(2);
+        }
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -252,15 +275,27 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
       unawaitedFireAndForget(ref.read(syncServiceProvider).syncAll());
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).savedSyncing)),
-      );
+      await _showReceiptDialog(amount: amount);
+      if (!mounted) return;
       context.pop();
     } catch (e) {
       setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  Future<void> _showReceiptDialog({required double amount}) {
+    return showReceiptDialog(
+      context,
+      ReceiptData(
+        customerName: _customerName ?? widget.customerId,
+        invoiceId: widget.invoiceId,
+        amount: amount,
+        method: _method,
+        collectedAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -291,6 +326,9 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
                 labelText: t.amountUsd,
                 border: const OutlineInputBorder(),
                 prefixText: '\$ ',
+                helperText: _balanceDue == null
+                    ? null
+                    : '${t.balanceDue}: \$${_balanceDue!.toStringAsFixed(2)}',
               ),
               keyboardType: const TextInputType.numberWithOptions(
                   decimal: true, signed: false),

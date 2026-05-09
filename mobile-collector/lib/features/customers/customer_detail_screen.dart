@@ -3,8 +3,10 @@ import 'package:isp_collector/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/api_client.dart';
+import '../payments/receipt_dialog.dart';
 
 class CustomerDetail {
   CustomerDetail({
@@ -26,6 +28,8 @@ class CustomerDetail {
   String? get city => customer['city'] as String?;
   String? get status => customer['status'] as String?;
   double get balanceDue => (customer['balance_due'] as num?)?.toDouble() ?? 0.0;
+  double? get latitude => (customer['latitude'] as num?)?.toDouble();
+  double? get longitude => (customer['longitude'] as num?)?.toDouble();
 
   String? get firstOpenInvoiceId {
     for (final inv in invoices) {
@@ -172,8 +176,11 @@ class _CustomerBody extends StatelessWidget {
             itemCount: detail.payments.length,
             separatorBuilder: (_, __) =>
                 const Divider(height: 1, thickness: 0.5),
-            itemBuilder: (_, i) =>
-                _PaymentTile(payment: detail.payments[i], fmt: fmt),
+            itemBuilder: (_, i) => _PaymentTile(
+              payment: detail.payments[i],
+              fmt: fmt,
+              customerName: detail.fullName,
+            ),
           ),
         // Bottom padding so the FAB doesn't cover the last row.
         const SliverToBoxAdapter(child: SizedBox(height: 96)),
@@ -286,24 +293,43 @@ class _ContactRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lines = <Widget>[];
-    if (detail.phonePrimary != null && detail.phonePrimary!.isNotEmpty) {
-      lines.add(_iconLine(Icons.phone, detail.phonePrimary!, context));
+    final primaryPhone = detail.phonePrimary;
+    if (primaryPhone != null && primaryPhone.isNotEmpty) {
+      lines.add(_iconLine(
+        Icons.phone,
+        primaryPhone,
+        context,
+        onTap: () => _dial(context, primaryPhone),
+      ));
     }
-    if (detail.whatsappPhone != null &&
-        detail.whatsappPhone!.isNotEmpty &&
-        detail.whatsappPhone != detail.phonePrimary) {
+    final wa = detail.whatsappPhone;
+    if (wa != null && wa.isNotEmpty && wa != primaryPhone) {
       lines.add(_iconLine(
         Icons.chat,
-        '${detail.whatsappPhone!} (WhatsApp)',
+        '$wa (WhatsApp)',
         context,
+        onTap: () => _whatsapp(context, wa),
+      ));
+    } else if (primaryPhone != null && primaryPhone.isNotEmpty) {
+      // No separate WhatsApp number — offer WhatsApp on the primary phone.
+      lines.add(_iconLine(
+        Icons.chat,
+        '$primaryPhone (WhatsApp)',
+        context,
+        onTap: () => _whatsapp(context, primaryPhone),
       ));
     }
     final addr = [
       detail.addressLine,
       detail.city,
     ].whereType<String>().where((s) => s.isNotEmpty).join(', ');
-    if (addr.isNotEmpty) {
-      lines.add(_iconLine(Icons.location_on, addr, context));
+    if (addr.isNotEmpty || (detail.latitude != null && detail.longitude != null)) {
+      lines.add(_iconLine(
+        Icons.location_on,
+        addr.isEmpty ? '${detail.latitude}, ${detail.longitude}' : addr,
+        context,
+        onTap: () => _openMap(context, detail, addr),
+      ));
     }
     if (lines.isEmpty) return const SizedBox.shrink();
     return Padding(
@@ -315,18 +341,76 @@ class _ContactRow extends StatelessWidget {
     );
   }
 
-  Widget _iconLine(IconData icon, String text, BuildContext ctx) {
-    return Row(
+  Widget _iconLine(IconData icon, String text, BuildContext ctx,
+      {VoidCallback? onTap}) {
+    final primary = Theme.of(ctx).colorScheme.primary;
+    final row = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child:
-              Icon(icon, size: 16, color: Theme.of(ctx).colorScheme.primary),
+          child: Icon(icon, size: 16, color: primary),
         ),
         const SizedBox(width: 8),
-        Expanded(child: SelectableText(text)),
+        Expanded(
+          child: Text(
+            text,
+            style: onTap == null
+                ? null
+                : TextStyle(
+                    color: primary,
+                    decoration: TextDecoration.underline,
+                  ),
+          ),
+        ),
       ],
+    );
+    if (onTap == null) return row;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: row,
+      ),
+    );
+  }
+
+  static Future<void> _dial(BuildContext ctx, String phone) async {
+    final uri = Uri(scheme: 'tel', path: phone);
+    if (!await launchUrl(uri)) {
+      _showError(ctx, 'tel: $phone');
+    }
+  }
+
+  static Future<void> _whatsapp(BuildContext ctx, String phone) async {
+    final cleaned = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    final uri = Uri.parse('https://wa.me/$cleaned');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      _showError(ctx, 'WhatsApp: $phone');
+    }
+  }
+
+  static Future<void> _openMap(
+      BuildContext ctx, CustomerDetail d, String address) async {
+    Uri uri;
+    if (d.latitude != null && d.longitude != null) {
+      // Pinned coordinates: use geo: so the OS picks the user's preferred
+      // map app (Google Maps, Waze, Apple Maps).
+      final label = Uri.encodeComponent(d.fullName);
+      uri = Uri.parse('geo:${d.latitude},${d.longitude}?q=${d.latitude},${d.longitude}($label)');
+    } else {
+      // Fallback to a search URL when we only have a written address.
+      final q = Uri.encodeComponent(address);
+      uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$q');
+    }
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      _showError(ctx, address);
+    }
+  }
+
+  static void _showError(BuildContext ctx, String what) {
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(content: Text('Could not open: $what')),
     );
   }
 }
@@ -446,9 +530,14 @@ class _InvoiceTile extends StatelessWidget {
 }
 
 class _PaymentTile extends StatelessWidget {
-  const _PaymentTile({required this.payment, required this.fmt});
+  const _PaymentTile({
+    required this.payment,
+    required this.fmt,
+    required this.customerName,
+  });
   final Map<String, dynamic> payment;
   final NumberFormat fmt;
+  final String customerName;
 
   @override
   Widget build(BuildContext context) {
@@ -458,6 +547,9 @@ class _PaymentTile extends StatelessWidget {
     final collectedAtStr = payment['collected_at']?.toString();
     final collectedAt =
         collectedAtStr != null ? DateTime.tryParse(collectedAtStr) : null;
+    final invoiceId = payment['invoice_id']?.toString() ??
+        payment['invoice']?['id']?.toString() ??
+        '';
 
     return ListTile(
       dense: true,
@@ -476,6 +568,17 @@ class _PaymentTile extends StatelessWidget {
                 .format(collectedAt.toLocal()),
         ].join(' • '),
         style: const TextStyle(fontSize: 12, color: Colors.black54),
+      ),
+      trailing: const Icon(Icons.print, size: 20),
+      onTap: () => showReceiptDialog(
+        context,
+        ReceiptData(
+          customerName: customerName,
+          invoiceId: invoiceId,
+          amount: amount,
+          method: method,
+          collectedAt: collectedAt ?? DateTime.now(),
+        ),
       ),
     );
   }

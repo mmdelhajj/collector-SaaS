@@ -49,6 +49,14 @@ dependencies:
   # Misc UI
   go_router: ^14.1.4
   fluttertoast: ^8.2.6
+  share_plus: ^10.1.4
+
+  # Bluetooth thermal printer (classic SPP — 58/80mm mini printers)
+  print_bluetooth_thermal: ^1.1.0
+  esc_pos_utils_plus: ^2.0.4
+
+  # External actions: tel:, wa.me, geo: maps
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

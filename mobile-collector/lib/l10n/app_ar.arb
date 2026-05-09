@@ -95,5 +95,26 @@
   "enterCountedAmount": "أدخل المبلغ المعدود.",
   "explainDifference": "المعدود يختلف عن المتوقع بمقدار {amount} — اشرح الفارق في الملاحظات قبل الإرسال.",
   "couldNotLoadPendingCash": "تعذّر تحميل النقد المعلّق.",
-  "notesRequiredForDiff": "ملاحظات (مطلوبة — اشرح الفرق)"
+  "notesRequiredForDiff": "ملاحظات (مطلوبة — اشرح الفرق)",
+
+  "balanceDue": "الرصيد المستحق",
+  "paymentRecorded": "تم تسجيل الدفعة",
+  "shareReceipt": "مشاركة الإيصال",
+  "done": "تم",
+  "receiptHeader": "إيصال دفع",
+  "receiptCustomer": "العميل",
+  "receiptInvoice": "الفاتورة",
+  "receiptAmount": "المبلغ المدفوع",
+  "receiptMethod": "طريقة الدفع",
+  "receiptDate": "التاريخ",
+  "receiptThanks": "شكراً لدفعتك.",
+
+  "printReceipt": "طباعة",
+  "selectPrinter": "اختر الطابعة",
+  "noPrintersFound": "لا توجد طابعة بلوتوث مقترنة. اقترن واحدة من إعدادات أندرويد ← بلوتوث أولاً.",
+  "printing": "جاري الطباعة…",
+  "printerError": "خطأ بالطابعة: {error}",
+  "@printerError": {
+    "placeholders": { "error": { "type": "String" } }
+  }
 }

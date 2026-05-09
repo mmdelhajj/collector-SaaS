@@ -137,5 +137,26 @@
     "placeholders": { "amount": { "type": "String" } }
   },
   "couldNotLoadPendingCash": "Could not load pending cash.",
-  "notesRequiredForDiff": "Notes (required — explain the difference)"
+  "notesRequiredForDiff": "Notes (required — explain the difference)",
+
+  "balanceDue": "Balance due",
+  "paymentRecorded": "Payment recorded",
+  "shareReceipt": "Share receipt",
+  "done": "Done",
+  "receiptHeader": "Payment Receipt",
+  "receiptCustomer": "Customer",
+  "receiptInvoice": "Invoice",
+  "receiptAmount": "Amount paid",
+  "receiptMethod": "Method",
+  "receiptDate": "Date",
+  "receiptThanks": "Thank you for your payment.",
+
+  "printReceipt": "Print",
+  "selectPrinter": "Select printer",
+  "noPrintersFound": "No paired Bluetooth printer found. Pair one in Android Settings → Bluetooth first.",
+  "printing": "Printing…",
+  "printerError": "Printer error: {error}",
+  "@printerError": {
+    "placeholders": { "error": { "type": "String" } }
+  }
 }
