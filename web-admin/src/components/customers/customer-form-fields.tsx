@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CUSTOMER_STATUSES, type Customer } from "@/lib/customers-types";
+import { CustomerLocationPicker } from "@/components/customers/customer-location-picker";
 
 type CustomerFormFieldsProps = {
   defaults?: Partial<Customer> | null;
@@ -94,6 +95,15 @@ export function CustomerFormFields({
           errors={fieldErrors.address_line}
         />
       </div>
+
+      <CustomerLocationPicker
+        defaultLat={defaults?.latitude ?? null}
+        defaultLng={defaults?.longitude ?? null}
+        errors={{
+          latitude: fieldErrors.latitude,
+          longitude: fieldErrors.longitude,
+        }}
+      />
 
       <div className="space-y-1.5">
         <Label htmlFor="notes">Notes</Label>

@@ -44,6 +44,8 @@ export type CreateCustomerPayload = {
   national_id?: string | null;
   city?: string | null;
   address_line?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   status?: CustomerStatus;
   notes?: string | null;
 };

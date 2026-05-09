@@ -10,6 +10,13 @@ import {
   CUSTOMER_STATUSES,
 } from "@/lib/customers";
 
+const coord = z
+  .string()
+  .optional()
+  .or(z.literal(""))
+  .transform((v) => (v === undefined || v === "" ? null : Number(v)))
+  .refine((v) => v === null || Number.isFinite(v), "Invalid number");
+
 const baseSchema = z.object({
   first_name: z.string().min(1, "Required").max(120),
   last_name: z.string().min(1, "Required").max(120),
@@ -18,6 +25,14 @@ const baseSchema = z.object({
   whatsapp_phone: z.string().max(32).optional().or(z.literal("")),
   city: z.string().max(120).optional().or(z.literal("")),
   address_line: z.string().max(255).optional().or(z.literal("")),
+  latitude: coord.refine(
+    (v) => v === null || (v >= -90 && v <= 90),
+    "Latitude must be between -90 and 90",
+  ),
+  longitude: coord.refine(
+    (v) => v === null || (v >= -180 && v <= 180),
+    "Longitude must be between -180 and 180",
+  ),
   status: z.enum(CUSTOMER_STATUSES).optional(),
   notes: z.string().max(5000).optional().or(z.literal("")),
 });
