@@ -14,6 +14,7 @@ import 'package:signature/signature.dart';
 import '../../core/config.dart';
 import '../../core/database/app_database.dart';
 import '../../core/services/sync_service.dart';
+import '../customers/customer_detail_screen.dart' show customerDetailProvider;
 import 'receipt_dialog.dart';
 
 class RecordPaymentScreen extends ConsumerStatefulWidget {
@@ -321,7 +322,18 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
         ));
       }
 
-      unawaitedFireAndForget(ref.read(syncServiceProvider).syncAll());
+      // Wait briefly for sync so the customer-detail re-fetch hits a server
+      // that already has the new rows. If sync is slow or offline we still
+      // pop — the outbox indicator on the home tab shows the queue.
+      try {
+        await ref
+            .read(syncServiceProvider)
+            .syncAll()
+            .timeout(const Duration(seconds: 2));
+      } catch (_) {
+        // ignore — offline or timeout is fine, server will catch up later.
+      }
+      ref.invalidate(customerDetailProvider(widget.customerId));
 
       if (!mounted) return;
       await _showReceiptDialog(amount: amount, entries: entries);
