@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AlertCircle, Banknote, MapPin, Phone, Wallet } from "lucide-react";
 import { listAssignments, type AssignmentStatus } from "@/lib/collectors";
 import { listHandovers } from "@/lib/handovers";
+import { listCollectors } from "@/lib/users";
 import { ApiError } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth";
 import { AssignmentStatusBadge } from "@/components/collectors/assignment-status-badge";
@@ -77,10 +78,12 @@ export default async function CollectorsPage({
 
   let list: Awaited<ReturnType<typeof listAssignments>>;
   let pendingHandovers: Awaited<ReturnType<typeof listHandovers>>;
+  let collectorOptions: Awaited<ReturnType<typeof listCollectors>>;
   try {
-    [list, pendingHandovers] = await Promise.all([
+    [list, pendingHandovers, collectorOptions] = await Promise.all([
       listAssignments({ page, perPage: PER_PAGE, status, date: todayIso }),
       listHandovers({ status: "pending", perPage: 25 }),
+      listCollectors(),
     ]);
   } catch (err) {
     if (err instanceof ApiError) {
@@ -386,7 +389,16 @@ export default async function CollectorsPage({
                     <AssignmentStatusBadge status={a.status} />
                   </TableCell>
                   <TableCell className="text-right">
-                    <AssignmentRowActions id={a.id} currentStatus={a.status} />
+                    <AssignmentRowActions
+                      id={a.id}
+                      currentStatus={a.status}
+                      invoiceId={a.invoice?.id}
+                      currentCollectorId={a.collector?.id ?? null}
+                      collectors={collectorOptions.map((u) => ({
+                        id: u.id,
+                        name: u.name,
+                      }))}
+                    />
                   </TableCell>
                 </TableRow>
               ))

@@ -2,7 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Loader2, Play, XCircle } from "lucide-react";
+import {
+  ArrowRightLeft,
+  CheckCircle2,
+  Loader2,
+  Play,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +22,13 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateAssignmentStatusAction } from "@/app/(dashboard)/collectors/actions";
+import {
+  reassignAssignmentAction,
+  updateAssignmentStatusAction,
+} from "@/app/(dashboard)/collectors/actions";
 import type { AssignmentStatus, FailureReason } from "@/lib/collectors-types";
+
+export type ReassignOption = { id: number; name: string };
 
 const FAILURE_REASONS: { value: FailureReason; label: string; hint: string }[] =
   [
@@ -51,9 +62,15 @@ const FAILURE_REASONS: { value: FailureReason; label: string; hint: string }[] =
 export function AssignmentRowActions({
   id,
   currentStatus,
+  invoiceId,
+  currentCollectorId,
+  collectors,
 }: {
   id: number;
   currentStatus: AssignmentStatus;
+  invoiceId?: string;
+  currentCollectorId?: number | null;
+  collectors?: ReassignOption[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -86,6 +103,9 @@ export function AssignmentRowActions({
     return null;
   }
 
+  const canReassign =
+    !!invoiceId && !!collectors && collectors.length > 1;
+
   return (
     <div className="flex items-center justify-end gap-1">
       {currentStatus === "pending" && (
@@ -114,11 +134,144 @@ export function AssignmentRowActions({
         <CheckCircle2 className="size-3" />
         Done
       </Button>
+      {canReassign && (
+        <ReassignDialog
+          invoiceId={invoiceId!}
+          currentCollectorId={currentCollectorId ?? null}
+          collectors={collectors!}
+          onReassigned={() => router.refresh()}
+        />
+      )}
       <FailDialog
         onPick={(reason, notes) => setStatus("failed", reason, notes)}
         disabled={isPending}
       />
     </div>
+  );
+}
+
+function ReassignDialog({
+  invoiceId,
+  currentCollectorId,
+  collectors,
+  onReassigned,
+}: {
+  invoiceId: string;
+  currentCollectorId: number | null;
+  collectors: ReassignOption[];
+  onReassigned: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [picked, setPicked] = useState<number | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const options = collectors.filter((c) => c.id !== currentCollectorId);
+
+  function submit() {
+    if (picked == null) return;
+    startTransition(async () => {
+      const res = await reassignAssignmentAction(invoiceId, picked);
+      if (res.ok) {
+        toast.success("Reassigned");
+        setOpen(false);
+        setPicked(null);
+        onReassigned();
+      } else {
+        toast.error(res.error ?? "Could not reassign.");
+      }
+    });
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) setPicked(null);
+      }}
+    >
+      <DialogTrigger
+        className="inline-flex h-7 items-center gap-1 rounded-md border bg-background px-2 text-xs font-medium transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+        disabled={isPending}
+      >
+        <ArrowRightLeft className="size-3" />
+        Reassign
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reassign this invoice</DialogTitle>
+          <DialogDescription>
+            Pick another collector. The current assignment will be marked
+            &ldquo;reassigned&rdquo; and a fresh one created.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2">
+          {options.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No other active collectors in this tenant.
+            </p>
+          ) : (
+            options.map((c) => {
+              const isSelected = picked === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setPicked(c.id)}
+                  className={
+                    "flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors " +
+                    (isSelected
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "hover:bg-muted/40")
+                  }
+                >
+                  <span
+                    className={
+                      "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border " +
+                      (isSelected
+                        ? "border-primary bg-primary"
+                        : "border-muted-foreground/40")
+                    }
+                    aria-hidden
+                  >
+                    {isSelected && (
+                      <span className="size-1.5 rounded-full bg-primary-foreground" />
+                    )}
+                  </span>
+                  <Label className="cursor-pointer text-sm font-medium">
+                    {c.name}
+                  </Label>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={submit}
+            disabled={picked == null || isPending}
+          >
+            {isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <ArrowRightLeft className="size-4" />
+            )}
+            Reassign
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
