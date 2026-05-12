@@ -83,11 +83,17 @@ class AppDatabase extends _$AppDatabase {
           ]))
           .get();
 
+  /// Home-list stream: only assignments the collector still has work to do
+  /// on. Completed and reassigned drop off so the list shrinks as they
+  /// finish their route.
   Stream<List<AssignmentsLocalData>> watchAssignments() =>
-      (select(assignmentsLocal)..orderBy([
-            (a) => OrderingTerm(expression: a.status, mode: OrderingMode.asc),
-            (a) => OrderingTerm(expression: a.id, mode: OrderingMode.desc),
-          ]))
+      (select(assignmentsLocal)
+            ..where((a) => a.status.isIn(['pending', 'in_progress']))
+            ..orderBy([
+              (a) =>
+                  OrderingTerm(expression: a.status, mode: OrderingMode.asc),
+              (a) => OrderingTerm(expression: a.id, mode: OrderingMode.desc),
+            ]))
           .watch();
 
   Future<void> replaceAssignments(List<AssignmentsLocalCompanion> rows) async {

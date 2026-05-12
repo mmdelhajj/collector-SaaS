@@ -106,6 +106,13 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: t.cashHandover,
+            icon: const Icon(Icons.account_balance_wallet),
+            // Always available — handover screen handles the zero-cash case
+            // gracefully so the collector can open it whenever they need.
+            onPressed: () => context.push('/handover'),
+          ),
+          IconButton(
             tooltip: t.syncNow,
             icon: _syncing
                 ? const SizedBox(
