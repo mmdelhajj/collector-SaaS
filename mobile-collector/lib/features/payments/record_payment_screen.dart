@@ -31,8 +31,19 @@ class RecordPaymentScreen extends ConsumerStatefulWidget {
       _RecordPaymentScreenState();
 }
 
+/// One row in the split-payment list: an amount input + the chosen method.
+/// The collector starts with one row pre-filled to the invoice balance and
+/// can add more (e.g. $20 cash + $20 whish for a single invoice).
+class _Split {
+  _Split({String method = 'cash'})
+      : amount = TextEditingController(),
+        method = method;
+  final TextEditingController amount;
+  String method;
+  void dispose() => amount.dispose();
+}
+
 class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
-  final _amount = TextEditingController();
   final _notes = TextEditingController();
   final _signatureController = SignatureController(
     penStrokeWidth: 2.5,
@@ -40,13 +51,21 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
     exportBackgroundColor: Colors.white,
   );
 
-  String _method = 'cash';
+  final List<_Split> _splits = [_Split()];
   bool _saving = false;
   String? _error;
   File? _photo;
   bool _signatureCaptured = false;
   double? _balanceDue;
   String? _customerName;
+
+  double get _totalAmount {
+    double sum = 0;
+    for (final s in _splits) {
+      sum += double.tryParse(s.amount.text.trim()) ?? 0;
+    }
+    return sum;
+  }
 
   @override
   void initState() {
@@ -61,8 +80,8 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
       setState(() {
         _balanceDue = assignment.totalDue;
         _customerName = assignment.customerName;
-        if (_amount.text.isEmpty) {
-          _amount.text = assignment.totalDue.toStringAsFixed(2);
+        if (_splits.first.amount.text.isEmpty) {
+          _splits.first.amount.text = assignment.totalDue.toStringAsFixed(2);
         }
       });
     });
@@ -70,10 +89,23 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
 
   @override
   void dispose() {
-    _amount.dispose();
+    for (final s in _splits) {
+      s.dispose();
+    }
     _notes.dispose();
     _signatureController.dispose();
     super.dispose();
+  }
+
+  void _addSplit() {
+    setState(() => _splits.add(_Split()));
+  }
+
+  void _removeSplit(int i) {
+    if (_splits.length <= 1) return;
+    setState(() {
+      _splits.removeAt(i).dispose();
+    });
   }
 
   Future<Position?> _currentPosition() async {
@@ -210,10 +242,22 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
     });
     try {
       final t = AppLocalizations.of(context);
-      final amount = double.tryParse(_amount.text.trim());
-      if (amount == null || amount <= 0) {
+      // Validate every split row before doing any I/O. Drop any empty
+      // (zero-amount) rows so the collector can leave an extra row blank.
+      final entries = <({double amount, String method})>[];
+      for (final s in _splits) {
+        final txt = s.amount.text.trim();
+        if (txt.isEmpty) continue;
+        final v = double.tryParse(txt);
+        if (v == null || v <= 0) {
+          throw Exception(t.enterValidAmount);
+        }
+        entries.add((amount: v, method: s.method));
+      }
+      if (entries.isEmpty) {
         throw Exception(t.enterValidAmount);
       }
+      final amount = entries.fold<double>(0, (a, e) => a + e.amount);
       final pos = await _currentPosition();
       final db = ref.read(appDatabaseProvider);
 
@@ -255,27 +299,32 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
         finalNotes = finalNotes.isEmpty ? note : '$finalNotes\n$note';
       }
 
-      // Outbox-first: the payment row, photo, and signature all land on
+      // Outbox-first: the payment rows, photo, and signature all land on
       // disk before any network call. SyncService picks it up next tick.
-      await db.insertPayment(PaymentsOutboxCompanion.insert(
-        clientUuid: generateClientUuid(),
-        invoiceId: widget.invoiceId,
-        customerId: widget.customerId,
-        amount: amount,
-        currency: const Value('USD'),
-        method: _method,
-        notes: Value(finalNotes.isEmpty ? null : finalNotes),
-        latitude: Value(pos?.latitude),
-        longitude: Value(pos?.longitude),
-        photoPath: Value(_photo?.path),
-        signaturePath: Value(sigFile?.path),
-        recordedAt: DateTime.now(),
-      ));
+      // Each split row becomes its own payment in the outbox so per-method
+      // analytics, cash handover, and the customer history all stay clean.
+      final recordedAt = DateTime.now();
+      for (final e in entries) {
+        await db.insertPayment(PaymentsOutboxCompanion.insert(
+          clientUuid: generateClientUuid(),
+          invoiceId: widget.invoiceId,
+          customerId: widget.customerId,
+          amount: e.amount,
+          currency: const Value('USD'),
+          method: e.method,
+          notes: Value(finalNotes.isEmpty ? null : finalNotes),
+          latitude: Value(pos?.latitude),
+          longitude: Value(pos?.longitude),
+          photoPath: Value(_photo?.path),
+          signaturePath: Value(sigFile?.path),
+          recordedAt: recordedAt,
+        ));
+      }
 
       unawaitedFireAndForget(ref.read(syncServiceProvider).syncAll());
 
       if (!mounted) return;
-      await _showReceiptDialog(amount: amount);
+      await _showReceiptDialog(amount: amount, entries: entries);
       if (!mounted) return;
       context.pop();
     } catch (e) {
@@ -285,15 +334,23 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
     }
   }
 
-  Future<void> _showReceiptDialog({required double amount}) {
+  Future<void> _showReceiptDialog({
+    required double amount,
+    required List<({double amount, String method})> entries,
+  }) {
     return showReceiptDialog(
       context,
       ReceiptData(
         customerName: _customerName ?? widget.customerId,
         invoiceId: widget.invoiceId,
         amount: amount,
-        method: _method,
+        method: entries.length == 1 ? entries.first.method : 'split',
         collectedAt: DateTime.now(),
+        splits: entries.length > 1
+            ? entries
+                .map((e) => ReceiptSplit(method: e.method, amount: e.amount))
+                .toList(growable: false)
+            : null,
       ),
     );
   }
@@ -320,38 +377,36 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
               ),
               const SizedBox(height: 12),
             ],
-            TextField(
-              controller: _amount,
-              decoration: InputDecoration(
-                labelText: t.amountUsd,
-                border: const OutlineInputBorder(),
-                prefixText: '\$ ',
-                helperText: _balanceDue == null
-                    ? null
-                    : '${t.balanceDue}: \$${_balanceDue!.toStringAsFixed(2)}',
+            for (int i = 0; i < _splits.length; i++) ...[
+              _SplitRow(
+                amountController: _splits[i].amount,
+                method: _splits[i].method,
+                showRemove: _splits.length > 1,
+                helperText: i == 0 && _balanceDue != null
+                    ? '${t.balanceDue}: \$${_balanceDue!.toStringAsFixed(2)}'
+                    : null,
+                autofocus: i == 0,
+                onMethodChanged: (v) =>
+                    setState(() => _splits[i].method = v ?? 'cash'),
+                onAmountChanged: () => setState(() {}),
+                onRemove: () => _removeSplit(i),
               ),
-              keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true, signed: false),
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _method,
-              decoration: InputDecoration(
-                labelText: t.method,
-                border: const OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(value: 'cash', child: Text(t.methodCash)),
-                DropdownMenuItem(value: 'whish', child: Text(t.methodWhish)),
-                DropdownMenuItem(value: 'omt', child: Text(t.methodOmt)),
-                DropdownMenuItem(
-                    value: 'bank_transfer',
-                    child: Text(t.methodBankTransfer)),
-                DropdownMenuItem(value: 'card', child: Text(t.methodCard)),
-                DropdownMenuItem(value: 'other', child: Text(t.methodOther)),
+              const SizedBox(height: 8),
+            ],
+            Row(
+              children: [
+                TextButton.icon(
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(t.addMethod),
+                  onPressed: _addSplit,
+                ),
+                const Spacer(),
+                if (_splits.length > 1)
+                  Text(
+                    '${t.totalLabel}: \$${_totalAmount.toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
               ],
-              onChanged: (v) => setState(() => _method = v ?? 'cash'),
             ),
             const SizedBox(height: 12),
             TextField(
@@ -424,6 +479,83 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SplitRow extends StatelessWidget {
+  const _SplitRow({
+    required this.amountController,
+    required this.method,
+    required this.showRemove,
+    required this.onMethodChanged,
+    required this.onAmountChanged,
+    required this.onRemove,
+    this.helperText,
+    this.autofocus = false,
+  });
+
+  final TextEditingController amountController;
+  final String method;
+  final bool showRemove;
+  final ValueChanged<String?> onMethodChanged;
+  final VoidCallback onAmountChanged;
+  final VoidCallback onRemove;
+  final String? helperText;
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: TextField(
+            controller: amountController,
+            decoration: InputDecoration(
+              labelText: t.amountUsd,
+              border: const OutlineInputBorder(),
+              prefixText: '\$ ',
+              helperText: helperText,
+              isDense: true,
+            ),
+            keyboardType: const TextInputType.numberWithOptions(
+                decimal: true, signed: false),
+            autofocus: autofocus,
+            onChanged: (_) => onAmountChanged(),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 4,
+          child: DropdownButtonFormField<String>(
+            value: method,
+            decoration: InputDecoration(
+              labelText: t.method,
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: [
+              DropdownMenuItem(value: 'cash', child: Text(t.methodCash)),
+              DropdownMenuItem(value: 'whish', child: Text(t.methodWhish)),
+              DropdownMenuItem(value: 'omt', child: Text(t.methodOmt)),
+              DropdownMenuItem(
+                  value: 'bank_transfer', child: Text(t.methodBankTransfer)),
+              DropdownMenuItem(value: 'card', child: Text(t.methodCard)),
+              DropdownMenuItem(value: 'other', child: Text(t.methodOther)),
+            ],
+            onChanged: onMethodChanged,
+          ),
+        ),
+        if (showRemove)
+          IconButton(
+            icon: const Icon(Icons.remove_circle_outline),
+            tooltip: t.removeMethod,
+            onPressed: onRemove,
+          ),
+      ],
     );
   }
 }

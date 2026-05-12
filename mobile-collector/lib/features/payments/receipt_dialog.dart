@@ -7,6 +7,12 @@ import 'package:share_plus/share_plus.dart';
 /// Snapshot of a payment for receipt rendering. Either freshly recorded
 /// (from RecordPaymentScreen) or pulled from the server payment history
 /// (from CustomerDetailScreen for reprinting).
+class ReceiptSplit {
+  const ReceiptSplit({required this.method, required this.amount});
+  final String method;
+  final double amount;
+}
+
 class ReceiptData {
   const ReceiptData({
     required this.customerName,
@@ -14,6 +20,7 @@ class ReceiptData {
     required this.amount,
     required this.method,
     required this.collectedAt,
+    this.splits,
   });
 
   final String customerName;
@@ -21,22 +28,37 @@ class ReceiptData {
   final double amount;
   final String method;
   final DateTime collectedAt;
+
+  /// When the collector accepted more than one payment method for this
+  /// invoice in a single session, this lists them. `amount` is still the
+  /// grand total. Null/empty for single-method payments and old reprints.
+  final List<ReceiptSplit>? splits;
 }
 
 String buildReceiptText(BuildContext ctx, ReceiptData r) {
   final t = AppLocalizations.of(ctx);
   final dateStr = r.collectedAt.toLocal().toString().split('.').first;
-  return [
+  final hasSplits = (r.splits?.length ?? 0) > 1;
+  final lines = <String>[
     t.receiptHeader,
     '----------------------------',
     '${t.receiptCustomer}: ${r.customerName}',
     '${t.receiptInvoice}: ${r.invoiceId}',
     '${t.receiptAmount}: \$${r.amount.toStringAsFixed(2)}',
-    '${t.receiptMethod}: ${r.method}',
+  ];
+  if (hasSplits) {
+    for (final s in r.splits!) {
+      lines.add('  - \$${s.amount.toStringAsFixed(2)} (${s.method})');
+    }
+  } else {
+    lines.add('${t.receiptMethod}: ${r.method}');
+  }
+  lines.addAll([
     '${t.receiptDate}: $dateStr',
     '----------------------------',
     t.receiptThanks,
-  ].join('\n');
+  ]);
+  return lines.join('\n');
 }
 
 Future<List<int>> _buildEscPosBytes(BuildContext ctx, ReceiptData r) async {
@@ -58,7 +80,15 @@ Future<List<int>> _buildEscPosBytes(BuildContext ctx, ReceiptData r) async {
     '${t.receiptAmount}: \$${r.amount.toStringAsFixed(2)}',
     styles: const PosStyles(bold: true),
   ));
-  out.addAll(gen.text('${t.receiptMethod}: ${r.method}'));
+  if ((r.splits?.length ?? 0) > 1) {
+    for (final s in r.splits!) {
+      out.addAll(gen.text(
+        '  - \$${s.amount.toStringAsFixed(2)} (${s.method})',
+      ));
+    }
+  } else {
+    out.addAll(gen.text('${t.receiptMethod}: ${r.method}'));
+  }
   out.addAll(gen.text('${t.receiptDate}: $dateStr'));
   out.addAll(gen.hr());
   out.addAll(gen.text(t.receiptThanks,
