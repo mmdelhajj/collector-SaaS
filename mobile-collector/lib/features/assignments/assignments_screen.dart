@@ -94,6 +94,10 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
+        ),
         title: FutureBuilder<String?>(
           future: auth.userName(),
           builder: (_, snap) => Text(
