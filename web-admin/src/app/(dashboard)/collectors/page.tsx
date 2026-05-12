@@ -94,7 +94,9 @@ export default async function CollectorsPage({
     throw err;
   }
 
-  // Group by collector for the top section.
+  // Seed the top section with every active collector in the tenant so the
+  // team is always visible — even before anyone has been assigned anything.
+  // Assignments below just overlay counts onto these baseline entries.
   const byCollector = new Map<
     number,
     {
@@ -108,6 +110,18 @@ export default async function CollectorsPage({
       collected: number;
     }
   >();
+  for (const u of collectorOptions) {
+    byCollector.set(u.id, {
+      id: u.id,
+      name: u.name,
+      total: 0,
+      pending: 0,
+      in_progress: 0,
+      completed: 0,
+      failed: 0,
+      collected: 0,
+    });
+  }
   for (const a of list.data) {
     if (!a.collector) continue;
     const id = a.collector.id;
