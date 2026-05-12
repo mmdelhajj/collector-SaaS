@@ -172,20 +172,46 @@ class _CustomerBody extends StatelessWidget {
             ),
           )
         else
-          SliverList.separated(
-            itemCount: detail.payments.length,
-            separatorBuilder: (_, __) =>
-                const Divider(height: 1, thickness: 0.5),
-            itemBuilder: (_, i) => _PaymentTile(
-              payment: detail.payments[i],
-              fmt: fmt,
-              customerName: detail.fullName,
-            ),
-          ),
+          () {
+            final groups = _groupPayments(detail.payments);
+            return SliverList.separated(
+              itemCount: groups.length,
+              separatorBuilder: (_, __) =>
+                  const Divider(height: 1, thickness: 0.5),
+              itemBuilder: (_, i) => _PaymentTile(
+                payments: groups[i],
+                fmt: fmt,
+                customerName: detail.fullName,
+              ),
+            );
+          }(),
         // Bottom padding so the FAB doesn't cover the last row.
         const SliverToBoxAdapter(child: SizedBox(height: 96)),
       ],
     );
+  }
+
+  /// Group payments that were recorded together in a single collector session:
+  /// same invoice + same collected_at timestamp = one logical payment with a
+  /// split breakdown. The list is already sorted by -collected_at server-side
+  /// so consecutive matches collapse cleanly.
+  List<List<Map<String, dynamic>>> _groupPayments(
+    List<Map<String, dynamic>> payments,
+  ) {
+    final groups = <List<Map<String, dynamic>>>[];
+    for (final p in payments) {
+      if (groups.isNotEmpty) {
+        final head = groups.last.first;
+        final sameInvoice = head['invoice_id'] == p['invoice_id'];
+        final sameTime = head['collected_at'] == p['collected_at'];
+        if (sameInvoice && sameTime) {
+          groups.last.add(p);
+          continue;
+        }
+      }
+      groups.add([p]);
+    }
+    return groups;
   }
 
   List<Map<String, dynamic>> _openInvoices(CustomerDetail d) => d.invoices
@@ -531,43 +557,66 @@ class _InvoiceTile extends StatelessWidget {
 
 class _PaymentTile extends StatelessWidget {
   const _PaymentTile({
-    required this.payment,
+    required this.payments,
     required this.fmt,
     required this.customerName,
   });
-  final Map<String, dynamic> payment;
+
+  /// One or more payment rows that share the same invoice + collected_at —
+  /// they represent a single collector session paid via multiple methods.
+  final List<Map<String, dynamic>> payments;
   final NumberFormat fmt;
   final String customerName;
 
   @override
   Widget build(BuildContext context) {
     final localeCode = Localizations.localeOf(context).languageCode;
-    final amount = (payment['amount'] as num?)?.toDouble() ?? 0.0;
-    final method = payment['method']?.toString() ?? '';
-    final collectedAtStr = payment['collected_at']?.toString();
+    final head = payments.first;
+    final total = payments.fold<double>(
+      0,
+      (a, p) => a + ((p['amount'] as num?)?.toDouble() ?? 0),
+    );
+    final collectedAtStr = head['collected_at']?.toString();
     final collectedAt =
         collectedAtStr != null ? DateTime.tryParse(collectedAtStr) : null;
-    final invoiceId = payment['invoice_id']?.toString() ??
-        payment['invoice']?['id']?.toString() ??
+    final invoiceId = head['invoice_id']?.toString() ??
+        head['invoice']?['id']?.toString() ??
         '';
 
+    final isSplit = payments.length > 1;
+    final dateLine = collectedAt == null
+        ? ''
+        : DateFormat.yMMMd(localeCode).add_jm().format(collectedAt.toLocal());
+
     return ListTile(
-      dense: true,
+      dense: !isSplit,
       leading: const Icon(Icons.check_circle_outline, color: Colors.green),
       title: Text(
-        fmt.format(amount),
+        fmt.format(total),
         style: const TextStyle(
             fontFamily: 'monospace', fontWeight: FontWeight.w700),
       ),
-      subtitle: Text(
-        [
-          method,
-          if (collectedAt != null)
-            DateFormat.yMMMd(localeCode)
-                .add_jm()
-                .format(collectedAt.toLocal()),
-        ].join(' • '),
-        style: const TextStyle(fontSize: 12, color: Colors.black54),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isSplit)
+            for (final p in payments)
+              Text(
+                '  • ${fmt.format((p['amount'] as num?)?.toDouble() ?? 0)} '
+                '${p['method']?.toString() ?? ''}',
+                style: const TextStyle(fontSize: 12, color: Colors.black87),
+              )
+          else
+            Text(
+              head['method']?.toString() ?? '',
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+          if (dateLine.isNotEmpty)
+            Text(
+              dateLine,
+              style: const TextStyle(fontSize: 11, color: Colors.black45),
+            ),
+        ],
       ),
       trailing: const Icon(Icons.print, size: 20),
       onTap: () => showReceiptDialog(
@@ -575,9 +624,17 @@ class _PaymentTile extends StatelessWidget {
         ReceiptData(
           customerName: customerName,
           invoiceId: invoiceId,
-          amount: amount,
-          method: method,
+          amount: total,
+          method: isSplit ? 'split' : (head['method']?.toString() ?? ''),
           collectedAt: collectedAt ?? DateTime.now(),
+          splits: isSplit
+              ? payments
+                  .map((p) => ReceiptSplit(
+                        method: p['method']?.toString() ?? '',
+                        amount: (p['amount'] as num?)?.toDouble() ?? 0,
+                      ))
+                  .toList(growable: false)
+              : null,
         ),
       ),
     );
