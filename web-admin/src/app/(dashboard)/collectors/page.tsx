@@ -72,16 +72,14 @@ export default async function CollectorsPage({
       ? (sp.status as AssignmentStatus)
       : undefined;
 
-  // Today's date for the filter — local timezone, ISO date.
-  const today = new Date();
-  const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-
   let list: Awaited<ReturnType<typeof listAssignments>>;
   let pendingHandovers: Awaited<ReturnType<typeof listHandovers>>;
   let collectorOptions: Awaited<ReturnType<typeof listCollectors>>;
   try {
     [list, pendingHandovers, collectorOptions] = await Promise.all([
-      listAssignments({ page, perPage: PER_PAGE, status, date: todayIso }),
+      // No date filter — pending/in-progress assignments stay visible
+      // regardless of when they were assigned. Status chips narrow further.
+      listAssignments({ page, perPage: PER_PAGE, status }),
       listHandovers({ status: "pending", perPage: 25 }),
       listCollectors(),
     ]);
