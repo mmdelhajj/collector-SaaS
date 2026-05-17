@@ -98,3 +98,5 @@ public/uploads/
 # ============ Claude Code & AI tools ============
 .claude/
 .claude-cache/
+mobile-collector/android/fastlane/play-store-key.json
+mobile-collector/android/fastlane/report.xml

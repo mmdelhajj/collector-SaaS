@@ -1,0 +1,101 @@
+default_platform(:android)
+
+PUBSPEC = File.expand_path("../../pubspec.yaml", __dir__)
+
+# Bumps the build number (the part after +) in pubspec.yaml.
+# version: 5.10.0+77  →  version: 5.10.0+78
+def bump_build_number
+  content = File.read(PUBSPEC)
+  unless content =~ /^version:\s*(\S+?)\+(\d+)\s*$/
+    UI.user_error!("Could not parse version line in pubspec.yaml")
+  end
+  semver = $1
+  new_build = $2.to_i + 1
+  new_line = "version: #{semver}+#{new_build}"
+  File.write(PUBSPEC, content.sub(/^version:\s*\S+\s*$/, new_line))
+  UI.success("Bumped pubspec.yaml: #{semver}+#{new_build}")
+  "#{semver}+#{new_build}"
+end
+
+platform :android do
+  desc "Bump build number, build signed AAB, upload to Play Console Alpha"
+  lane :alpha do
+    version = bump_build_number
+    sh("cd ../.. && flutter build appbundle --release")
+    upload_to_play_store(
+      track: "alpha",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft"
+    )
+    UI.success("Uploaded #{version} to Alpha track 🎉")
+  end
+
+  desc "Bump build number, build signed AAB, upload to Play Console Production"
+  lane :production do
+    version = bump_build_number
+    sh("cd ../.. && flutter build appbundle --release")
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft"
+    )
+    UI.success("Uploaded #{version} to Production track 🎉")
+  end
+
+  desc "Bump build number only (no build, no upload)"
+  lane :bump do
+    bump_build_number
+  end
+
+  desc "Upload an already-built AAB to Alpha (skip bump and build)"
+  lane :upload_alpha do
+    upload_to_play_store(
+      track: "alpha",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft"
+    )
+  end
+
+  desc "Upload an already-built AAB to Production (skip bump and build)"
+  lane :upload_production do
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "draft"
+    )
+  end
+
+  desc "Build signed AAB and upload to Internal App Sharing (instant install link)"
+  lane :internal do
+    version = bump_build_number
+    sh("cd ../.. && flutter build appbundle --release")
+    upload_to_play_store_internal_app_sharing(
+      aab: "../build/app/outputs/bundle/release/app-release.aab"
+    )
+    UI.success("Uploaded #{version} to Internal App Sharing 🎉")
+    UI.success("Look above for the download_url — open it on any Android phone to install.")
+  end
+
+  desc "Verify service account credentials work (no upload)"
+  lane :validate do
+    validate_play_store_json_key(
+      json_key: "fastlane/play-store-key.json"
+    )
+  end
+end
