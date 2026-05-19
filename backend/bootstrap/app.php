@@ -32,6 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
             | Request::HEADER_X_FORWARDED_HOST
             | Request::HEADER_X_FORWARDED_PORT
             | Request::HEADER_X_FORWARDED_PROTO);
+
+        // API-only app — return 401 JSON for unauthenticated requests instead
+        // of redirecting to a `route('login')` that doesn't exist. Without
+        // this, every protected /api/v1/* endpoint hit without a Bearer token
+        // crashes with "Route [login] not defined" and returns 500.
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
