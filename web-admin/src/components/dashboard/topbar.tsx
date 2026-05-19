@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logoutAction } from "@/app/(dashboard)/actions";
 import { useT } from "@/lib/i18n-provider";
+import { MobileSidebar } from "@/components/dashboard/mobile-sidebar";
+import type { Locale } from "@/lib/i18n";
+import type { TenantRole } from "@/lib/users-types";
 
 type TopbarProps = {
   user: {
@@ -26,6 +29,14 @@ type TopbarProps = {
     has_avatar?: boolean;
     avatar_version?: string | null;
   };
+  locale?: Locale;
+  role?: TenantRole | null;
+  tenant?: {
+    name?: string;
+    status?: string | null;
+    plan?: string | null;
+    trial_ends_at?: string | null;
+  } | null;
 };
 
 function initials(name: string) {
@@ -39,7 +50,7 @@ function initials(name: string) {
   );
 }
 
-export function Topbar({ user }: TopbarProps) {
+export function Topbar({ user, locale, role, tenant }: TopbarProps) {
   const router = useRouter();
   const t = useT();
   const [isPending, startTransition] = useTransition();
@@ -52,6 +63,7 @@ export function Topbar({ user }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur lg:px-6">
+      <MobileSidebar locale={locale} role={role} tenant={tenant} />
       <div className="relative hidden max-w-md flex-1 md:block">
         <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input

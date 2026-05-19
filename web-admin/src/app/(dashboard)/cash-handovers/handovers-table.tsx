@@ -42,7 +42,7 @@ export function HandoversTable({ rows }: { rows: CashHandover[] }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-card shadow-sm">
+    <div className="overflow-x-auto rounded-xl border bg-card shadow-sm">
       <table className="w-full text-sm">
         <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
           <tr>

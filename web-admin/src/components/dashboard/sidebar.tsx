@@ -19,21 +19,28 @@ type SidebarTenant = {
   trial_ends_at?: string | null;
 };
 
-export function Sidebar({
+/**
+ * Inner body of the sidebar — reused by both the desktop `<aside>` and the
+ * mobile drawer (`MobileSidebar`). Keeping this as a sibling component
+ * means the navigation, workspace switcher, and trial banner live in one
+ * place even though they render in two different containers.
+ */
+export function SidebarBody({
   locale = "en",
   role,
   tenant,
+  onNavigate,
 }: {
   locale?: Locale;
   role?: TenantRole | null;
   tenant?: SidebarTenant | null;
+  /** Called after the user clicks a nav link — used to close the drawer. */
+  onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const t = useT();
   const navigation = useMemo(() => navigationFor(role ?? null), [role]);
 
-  // Compute days remaining only when actually on trial. Banner hides itself
-  // for paid/active tenants so we don't pester them.
   const trialDays =
     tenant?.status === "trial" && tenant.trial_ends_at
       ? Math.max(
@@ -46,9 +53,13 @@ export function Sidebar({
       : null;
 
   return (
-    <aside className="hidden w-64 shrink-0 border-r bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
+    <>
       <div className="flex h-16 items-center border-b px-5">
-        <Link href="/dashboard" className="flex items-center">
+        <Link
+          href="/dashboard"
+          className="flex items-center"
+          onClick={onNavigate}
+        >
           <Logo />
         </Link>
       </div>
@@ -87,6 +98,7 @@ export function Sidebar({
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      onClick={onNavigate}
                       className={cn(
                         "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                         isActive
@@ -119,11 +131,6 @@ export function Sidebar({
 
       <div className="space-y-3 border-t p-3">
         <LocaleSwitcher current={locale} />
-        {/*
-          Trial banner only shows while the tenant is actually on trial.
-          Once they upgrade (status flips to active or anything else), it
-          disappears so we don't keep nagging paying customers.
-        */}
         {trialDays !== null && (
           <div className="rounded-lg bg-sidebar-accent/40 p-3">
             <p className="text-xs font-medium">
@@ -137,12 +144,25 @@ export function Sidebar({
               href="/settings/billing"
               className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
               prefetch={false}
+              onClick={onNavigate}
             >
               {t("billing.upgradePlan")} →
             </Link>
           </div>
         )}
       </div>
+    </>
+  );
+}
+
+export function Sidebar(props: {
+  locale?: Locale;
+  role?: TenantRole | null;
+  tenant?: SidebarTenant | null;
+}) {
+  return (
+    <aside className="hidden w-64 shrink-0 border-r bg-sidebar text-sidebar-foreground lg:flex lg:flex-col">
+      <SidebarBody {...props} />
     </aside>
   );
 }

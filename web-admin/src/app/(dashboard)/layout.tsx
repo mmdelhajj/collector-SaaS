@@ -39,7 +39,12 @@ export default async function DashboardLayout({
         <Sidebar locale={locale} role={primaryRole(user)} tenant={tenant} />
         <div className="flex min-w-0 flex-1 flex-col">
           {tenant && <TrialBanner tenant={tenant} />}
-          <Topbar user={user} />
+          <Topbar
+            user={user}
+            locale={locale}
+            role={primaryRole(user)}
+            tenant={tenant}
+          />
           <main className="flex-1 overflow-y-auto bg-background">
             {children}
           </main>
