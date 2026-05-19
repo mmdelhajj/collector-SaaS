@@ -71,7 +71,7 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to attach a proof image to a recorded payment.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Used to confirm the collector is at the customer&apos;s address before recording a payment.</string>
+	<string>Used to confirm you&apos;re at the customer&apos;s address when recording a payment, and to show your live position on your supervisor&apos;s map so they can dispatch nearby work.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Used to connect to a thermal receipt printer over Bluetooth.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>

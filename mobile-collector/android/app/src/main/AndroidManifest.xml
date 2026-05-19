@@ -5,6 +5,11 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+    <!-- Foreground GPS pings for the live-collector admin map (60s interval
+         while the app is in use). Background location is intentionally NOT
+         requested — keeps Play review simple and Android battery happy. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <application
         android:label="RunCollect"
         android:name="${applicationName}"

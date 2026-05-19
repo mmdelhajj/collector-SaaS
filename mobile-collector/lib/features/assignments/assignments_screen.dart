@@ -8,6 +8,7 @@ import '../../core/auth_storage.dart';
 import '../../core/database/app_database.dart';
 import '../../core/locale_provider.dart';
 import '../../core/services/background_sync.dart';
+import '../../core/services/location_service.dart';
 import '../../core/services/sync_service.dart';
 
 final assignmentsStreamProvider =
@@ -66,6 +67,10 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
       // thanks to ExistingPeriodicWorkPolicy.keep, so this is safe to call
       // on every warm start.
       schedulePeriodicOutboxSync();
+      // Restart the live-tracking ping loop. start() is idempotent — if the
+      // collector signed in this session it's already running and this is a
+      // no-op; on warm-starts (token still valid) it (re-)attaches here.
+      ref.read(locationServiceProvider).start();
     });
   }
 
@@ -167,6 +172,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
                 if (confirm != true) return;
               }
               await cancelPeriodicOutboxSync();
+              ref.read(locationServiceProvider).stop();
               await auth.clear();
               await ref.read(appDatabaseProvider).wipe();
               if (mounted) context.go('/login');

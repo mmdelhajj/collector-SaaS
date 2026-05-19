@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:isp_collector/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../core/auth_storage.dart';
 import '../../core/services/background_sync.dart';
+import '../../core/services/location_service.dart';
 import '../../shared/widgets/language_toggle.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -39,14 +42,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final res = await api.dio.post('/api/v1/auth/login', data: body);
       final data = res.data as Map<String, dynamic>;
       final user = data['user'] as Map<String, dynamic>;
+      // /auth/login doesn't return the user's roles — only /auth/me does.
+      // Save token first so the interceptor can attach it, then fetch
+      // roles in a follow-up call. Failure to fetch roles is non-fatal
+      // (user lands on a "pick a role" fallback screen we never want to
+      // see; better than blocking sign-in over a transient blip).
       await auth.save(
         token: data['token'] as String,
         userId: user['id'] as int,
         userName: user['name'] as String,
       );
+      try {
+        final me = await api.dio.get('/api/v1/auth/me');
+        final meUser = (me.data as Map<String, dynamic>)['user']
+            as Map<String, dynamic>?;
+        final roles = (meUser?['roles'] as List?)
+                ?.map((r) => r.toString())
+                .toList() ??
+            const <String>[];
+        await auth.saveRoles(roles);
+      } catch (_) {
+        // ignored — fallback role logic in router handles unknown
+      }
       // Kick off the OS-managed background drain so payments queued offline
       // sync even if the collector closes the app or locks the phone.
       await schedulePeriodicOutboxSync();
+      // Start the live-tracking ping loop so this collector shows up on the
+      // admin live map. Fire-and-forget — if location permission is denied
+      // or the user isn't a collector, the service stays off and we don't
+      // block sign-in.
+      unawaited(ref.read(locationServiceProvider).start());
       if (!mounted) return;
       context.go('/');
     } catch (e) {
