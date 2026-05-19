@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AlertCircle, Banknote, MapPin, Phone, Wallet } from "lucide-react";
+import { AlertCircle, Banknote, MapPin, Phone, Radar, Wallet } from "lucide-react";
 import { listAssignments, type AssignmentStatus } from "@/lib/collectors";
 import { listHandovers } from "@/lib/handovers";
 import { listCollectors } from "@/lib/users";
@@ -174,11 +174,20 @@ export default async function CollectorsPage({
             .
           </p>
         </div>
-        <InviteUserSheet
-          defaultRole="collector"
-          triggerLabel="Add collector"
-          title="Add a new collector"
-        />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/collectors/live"
+            className="inline-flex h-9 items-center gap-2 rounded-md border bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <Radar className="size-4" />
+            Live map
+          </Link>
+          <InviteUserSheet
+            defaultRole="collector"
+            triggerLabel="Add collector"
+            title="Add a new collector"
+          />
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

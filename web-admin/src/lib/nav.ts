@@ -6,6 +6,7 @@ import {
   Wallet,
   Banknote,
   MapPin,
+  Radar,
   Radio,
   MessageSquare,
   Route,
@@ -96,6 +97,12 @@ export const navigation: NavSection[] = [
         labelKey: "nav.collectors",
         href: "/collectors",
         icon: MapPin,
+        roles: PRIVILEGED,
+      },
+      {
+        labelKey: "nav.collectorsLive",
+        href: "/collectors/live",
+        icon: Radar,
         roles: PRIVILEGED,
       },
       {
