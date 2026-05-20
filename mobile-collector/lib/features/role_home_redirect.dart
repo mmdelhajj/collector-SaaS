@@ -39,11 +39,13 @@ class _RoleHomeRedirectState extends ConsumerState<RoleHomeRedirect> {
       case AppRole.tenantOwner:
       case AppRole.tenantAdmin:
       case AppRole.manager:
-        context.go('/admin');
-        return;
       case AppRole.accountant:
       case AppRole.support:
-        context.go('/web');
+        // All office roles get the embedded admin WebView — same UI as
+        // runcollect.com, every feature accessible. The dedicated native
+        // dashboard (/admin) and live-map (/admin/live) are still
+        // available for the times when we want a faster native peek.
+        context.go('/aw');
         return;
       case AppRole.unknown:
         // No role info — most likely a legacy install that signed in

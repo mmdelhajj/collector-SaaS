@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../features/admin/admin_customer_search_screen.dart';
 import '../features/admin/admin_dashboard_screen.dart';
 import '../features/admin/admin_live_map_screen.dart';
+import '../features/admin_web/admin_web_screen.dart';
 import '../features/assignments/assignments_screen.dart';
 import '../features/auth/login_screen.dart';
 import '../features/cash_handover/handover_screen.dart';
@@ -77,7 +78,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Customer (end-user) home.
       GoRoute(path: '/m', builder: (_, __) => const CustomerHomeScreen()),
 
-      // Admin / Manager / Owner.
+      // Office roles default landing — embedded admin WebView.
+      GoRoute(path: '/aw', builder: (_, __) => const AdminWebScreen()),
+
+      // Admin / Manager / Owner native peek screens (alt path for fast
+      // KPI checks; the WebView at /aw covers the full feature set).
       GoRoute(
         path: '/admin',
         builder: (_, __) => const AdminDashboardScreen(),

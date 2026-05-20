@@ -1,7 +1,7 @@
 name: isp_collector
 description: Field collector app for the ISP SaaS platform.
 publish_to: "none"
-version: 1.0.0+14
+version: 1.0.0+15
 environment:
   sdk: ">=3.4.0 <4.0.0"
   flutter: ">=3.22.0"
@@ -37,6 +37,11 @@ dependencies:
   flutter_map: ^7.0.0
   latlong2: ^0.9.1
   geolocator: ^11.0.0
+
+  # Embedded admin WebView for office roles (owner/admin/manager/accountant/
+  # support). Lets them use the full responsive web admin from inside the
+  # app without rebuilding 17 admin sections natively.
+  webview_flutter: ^4.10.0
 
   # Camera + signature
   image_picker: ^1.1.2
