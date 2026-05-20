@@ -71,5 +71,25 @@ export async function GET(req: NextRequest) {
 
   await setAuthCookie(token, expiresAt);
 
-  return NextResponse.redirect(new URL(next, req.url));
+  // `req.url` resolves to the internal Next.js origin (e.g. localhost:3000)
+  // when we're behind Caddy, which makes the redirect un-reachable from a
+  // mobile WebView. Always build the redirect against the public origin
+  // — env-provided in prod (`NEXT_PUBLIC_APP_URL`), falling back to the
+  // forwarded headers Caddy already trusts.
+  const publicOrigin =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (() => {
+      const proto = req.headers.get("x-forwarded-proto") ?? "https";
+      const host = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+      return host ? `${proto}://${host}` : null;
+    })();
+
+  if (!publicOrigin) {
+    return NextResponse.json(
+      { message: "Could not resolve public origin" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.redirect(new URL(next, publicOrigin));
 }
