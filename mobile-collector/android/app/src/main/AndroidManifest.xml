@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for HTTPS calls to runcollect.com. Flutter ships this in
+         the debug/ + profile/ manifest variants automatically, but the
+         release (Play Store) build merges only `main/` — without this line
+         every login attempt on a release build silently fails because the
+         OS blocks the network request. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Bluetooth thermal printer — classic SPP (most cheap 58mm mini printers).
          BLUETOOTH_CONNECT/SCAN are runtime permissions on Android 12+ (API 31). -->
     <uses-permission android:name="android.permission.BLUETOOTH"/>
@@ -10,6 +16,23 @@
          requested — keeps Play review simple and Android battery happy. -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- Explicit `required="false"` on every hardware feature implied by our
+         permissions so Play Console keeps the app installable on devices
+         that lack the hardware. Without these, the BLUETOOTH + LOCATION
+         permissions above implicitly require the bluetooth + GPS hardware
+         features (Android's default), which silently excludes tablets and
+         lower-end phones from the supported-device list. Each feature is
+         OPTIONAL — the collector workflow degrades gracefully when missing
+         (no printer = manual receipts, no GPS = no live pin / no proximity
+         check). -->
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+    <uses-feature android:name="android.hardware.location" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.network" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
     <application
         android:label="RunCollect"
         android:name="${applicationName}"
