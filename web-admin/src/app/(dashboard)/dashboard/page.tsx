@@ -22,7 +22,7 @@ import type { Metadata } from "next";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getCurrentUser, isCollectorOnly } from "@/lib/auth";
-import { getDashboardReport } from "@/lib/reports";
+import { getDashboardReport, type DashboardReport } from "@/lib/reports";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -160,18 +160,16 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 lg:px-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Welcome back, {firstName}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Live numbers from your workspace.
-          </p>
-        </div>
-        <BackupChip backup={report.backup} />
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Welcome back, {firstName}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Here&apos;s how things look right now.
+        </p>
       </div>
 
+      {/* The 4 numbers that answer "am I OK?" — each with a comparison. */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label="Active customers"
@@ -215,150 +213,96 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Collectors today */}
-        <section className="rounded-xl border bg-card lg:col-span-2">
-          <header className="flex items-center justify-between border-b px-5 py-3">
-            <h2 className="flex items-center gap-2 text-sm font-semibold">
-              <MapPin className="size-4 text-primary" />
-              Collectors today
-            </h2>
-            <Link
-              href="/collectors"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              All collectors
-              <ArrowRight className="size-3" />
-            </Link>
-          </header>
-          {report.collectors_today.length === 0 ? (
-            <div className="px-5 py-12 text-center text-sm text-muted-foreground">
-              No collector activity today yet. Assign some invoices on{" "}
-              <Link href="/invoices" className="text-primary hover:underline">
-                /invoices
-              </Link>
-              .
-            </div>
-          ) : (
-            <ul className="divide-y">
-              {report.collectors_today.map((c) => (
-                <li key={c.id}>
-                  <Link
-                    href={`/collectors/${c.id}?range=today`}
-                    className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/30"
-                  >
-                    <Avatar className="size-9 border">
-                      <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                        {c.name
-                          .split(" ")
-                          .slice(0, 2)
-                          .map((p) => p[0])
-                          .join("")
-                          .toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-semibold">
-                          {c.name}
-                        </p>
-                        <span
-                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${
-                            c.status === "done"
-                              ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20"
-                              : c.status === "on-route"
-                                ? "bg-amber-50 text-amber-700 ring-amber-600/20"
-                                : "bg-zinc-100 text-zinc-600 ring-zinc-600/20"
-                          }`}
-                        >
-                          {c.status === "done"
-                            ? "Done"
-                            : c.status === "on-route"
-                              ? "On route"
-                              : "Not started"}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full bg-primary transition-all"
-                            style={{ width: `${c.progress}%` }}
-                          />
-                        </div>
-                        <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                          {c.completed}/{c.total}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        <Banknote className="me-1 inline size-3 text-emerald-600" />
-                        <span className="font-mono tabular-nums">
-                          {FORMAT_MONEY(c.collected_today)}
-                        </span>{" "}
-                        collected
-                      </p>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+      {/* The heart of the dashboard: plain-language things to act on. */}
+      <NeedsAttention report={report} />
 
-        {/* Recent activity */}
-        <section className="rounded-xl border bg-card">
-          <header className="flex items-center justify-between border-b px-5 py-3">
-            <h2 className="text-sm font-semibold">Recent activity</h2>
-            <Link
-              href="/settings/audit"
-              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-            >
-              Full log
-              <ArrowRight className="size-3" />
+      {/* Collectors today */}
+      <section className="rounded-xl border bg-card">
+        <header className="flex items-center justify-between border-b px-5 py-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            <MapPin className="size-4 text-primary" />
+            Collectors today
+          </h2>
+          <Link
+            href="/collectors"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            All collectors
+            <ArrowRight className="size-3" />
+          </Link>
+        </header>
+        {report.collectors_today.length === 0 ? (
+          <div className="px-5 py-12 text-center text-sm text-muted-foreground">
+            No collector activity today yet. Assign some invoices on{" "}
+            <Link href="/invoices" className="text-primary hover:underline">
+              /invoices
             </Link>
-          </header>
-          {report.recent_activity.length === 0 ? (
-            <div className="px-5 py-8 text-center text-xs text-muted-foreground">
-              Nothing yet. Audit entries appear here as soon as someone records
-              a payment, changes a role, or suspends a service.
-            </div>
-          ) : (
-            <ul className="divide-y">
-              {report.recent_activity.map((a) => {
-                const meta = ACTION_META[a.action] ?? {
-                  icon: CheckCircle2,
-                  color: "text-zinc-500",
-                  label: a.action,
-                };
-                const Icon = meta.icon;
-                return (
-                  <li key={a.id} className="flex items-start gap-3 px-5 py-3">
-                    <Icon className={`mt-0.5 size-4 shrink-0 ${meta.color}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{meta.label}</p>
-                      {(() => {
-                        const det = activityDetail(
-                          a.action,
-                          a.subject_label,
-                          a.changes,
-                        );
-                        return det ? (
-                          <p className="truncate text-xs text-muted-foreground">
-                            {det}
-                          </p>
-                        ) : null;
-                      })()}
-                      <p className="mt-0.5 text-[10px] text-muted-foreground">
-                        {a.user_name ? `${a.user_name} · ` : ""}
-                        {timeAgo(a.created_at)}
+            .
+          </div>
+        ) : (
+          <ul className="divide-y">
+            {report.collectors_today.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/collectors/${c.id}?range=today`}
+                  className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/30"
+                >
+                  <Avatar className="size-9 border">
+                    <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                      {c.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((p) => p[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-semibold">
+                        {c.name}
                       </p>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ring-inset ${
+                          c.status === "done"
+                            ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20"
+                            : c.status === "on-route"
+                              ? "bg-amber-50 text-amber-700 ring-amber-600/20"
+                              : "bg-zinc-100 text-zinc-600 ring-zinc-600/20"
+                        }`}
+                      >
+                        {c.status === "done"
+                          ? "Done"
+                          : c.status === "on-route"
+                            ? "On route"
+                            : "Not started"}
+                      </span>
                     </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-      </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full bg-primary transition-all"
+                          style={{ width: `${c.progress}%` }}
+                        />
+                      </div>
+                      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                        {c.completed}/{c.total}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      <Banknote className="me-1 inline size-3 text-emerald-600" />
+                      <span className="font-mono tabular-nums">
+                        {FORMAT_MONEY(c.collected_today)}
+                      </span>{" "}
+                      collected
+                    </p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Quick links */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -387,7 +331,152 @@ export default async function DashboardPage() {
           tone="primary"
         />
       </div>
+
+      {/* Recent activity — demoted below the fold; the boss doesn't run the
+          business off an audit log. */}
+      <section className="rounded-xl border bg-card">
+        <header className="flex items-center justify-between border-b px-5 py-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Recent activity
+          </h2>
+          <Link
+            href="/settings/audit"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            Full log
+            <ArrowRight className="size-3" />
+          </Link>
+        </header>
+        {report.recent_activity.length === 0 ? (
+          <div className="px-5 py-8 text-center text-xs text-muted-foreground">
+            Nothing yet. Audit entries appear here as soon as someone records a
+            payment, changes a role, or suspends a service.
+          </div>
+        ) : (
+          <ul className="divide-y">
+            {report.recent_activity.slice(0, 6).map((a) => {
+              const meta = ACTION_META[a.action] ?? {
+                icon: CheckCircle2,
+                color: "text-zinc-500",
+                label: a.action,
+              };
+              const Icon = meta.icon;
+              return (
+                <li key={a.id} className="flex items-start gap-3 px-5 py-3">
+                  <Icon className={`mt-0.5 size-4 shrink-0 ${meta.color}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">{meta.label}</p>
+                    {(() => {
+                      const det = activityDetail(
+                        a.action,
+                        a.subject_label,
+                        a.changes,
+                      );
+                      return det ? (
+                        <p className="truncate text-xs text-muted-foreground">
+                          {det}
+                        </p>
+                      ) : null;
+                    })()}
+                    <p className="mt-0.5 text-[10px] text-muted-foreground">
+                      {a.user_name ? `${a.user_name} · ` : ""}
+                      {timeAgo(a.created_at)}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
     </div>
+  );
+}
+
+/** Plain-language "do this now" list, built from numbers already in the
+ *  dashboard report — no extra API calls. Each row is one sentence + one
+ *  button. When nothing needs doing, shows a reassuring all-clear card. */
+function NeedsAttention({ report }: { report: DashboardReport }) {
+  const items: {
+    key: string;
+    icon: LucideIcon;
+    tone: "rose" | "amber";
+    text: string;
+    action: string;
+    href: string;
+  }[] = [];
+
+  if (report.overdue_30_plus > 0) {
+    items.push({
+      key: "overdue",
+      icon: AlertCircle,
+      tone: "rose",
+      text: `${report.overdue_30_plus} ${report.overdue_30_plus === 1 ? "invoice" : "invoices"} overdue 30 days+ · ${FORMAT_MONEY(report.overdue_outstanding)} to chase`,
+      action: "Send reminder",
+      href: "/invoices?status=overdue",
+    });
+  }
+  if (report.suspended_customers > 0) {
+    items.push({
+      key: "suspended",
+      icon: ShieldAlert,
+      tone: "amber",
+      text: `${report.suspended_customers} ${report.suspended_customers === 1 ? "customer" : "customers"} suspended`,
+      action: "Review",
+      href: "/customers?status=suspended",
+    });
+  }
+
+  const toneRow = {
+    rose: "border-rose-200 bg-rose-50/60 dark:border-rose-900/50 dark:bg-rose-950/20",
+    amber:
+      "border-amber-200 bg-amber-50/60 dark:border-amber-900/50 dark:bg-amber-950/20",
+  } as const;
+  const toneIcon = {
+    rose: "text-rose-600",
+    amber: "text-amber-600",
+  } as const;
+  const toneBtn = {
+    rose: "bg-rose-600 hover:bg-rose-700",
+    amber: "bg-amber-600 hover:bg-amber-700",
+  } as const;
+
+  return (
+    <section className="rounded-xl border bg-card">
+      <header className="border-b px-5 py-3">
+        <h2 className="text-sm font-semibold">Needs your attention</h2>
+      </header>
+      {items.length === 0 ? (
+        <div className="flex items-center gap-3 px-5 py-8 text-sm text-muted-foreground">
+          <CheckCircle2 className="size-5 text-emerald-600" />
+          You&apos;re all caught up — nothing needs action right now.
+        </div>
+      ) : (
+        <ul className="divide-y">
+          {items.map((it) => {
+            const Icon = it.icon;
+            return (
+              <li
+                key={it.key}
+                className={`flex flex-wrap items-center gap-3 border-l-4 px-5 py-4 ${toneRow[it.tone]}`}
+              >
+                <Icon className={`size-5 shrink-0 ${toneIcon[it.tone]}`} />
+                <span className="min-w-0 flex-1 text-sm font-medium">
+                  {it.text}
+                </span>
+                <Link
+                  href={it.href}
+                  className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors ${toneBtn[it.tone]}`}
+                >
+                  {it.action}
+                  <ArrowRight className="size-3" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 
@@ -416,70 +505,5 @@ function QuickLink({
       <span className="text-sm font-semibold">{label}</span>
       <ArrowRight className="ms-auto size-4 opacity-60" />
     </Link>
-  );
-}
-
-function BackupChip({
-  backup,
-}: {
-  backup: {
-    last_success_at: string | null;
-    age_hours: number | null;
-    status: "healthy" | "stale" | "failing" | "unknown";
-  };
-}) {
-  if (backup.status === "unknown" || !backup.last_success_at) {
-    return (
-      <div
-        className="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-1.5 text-xs"
-        title="Backup heartbeat file not found"
-      >
-        <span className="size-2 rounded-full bg-zinc-400" />
-        <span className="text-muted-foreground">No backup status</span>
-      </div>
-    );
-  }
-
-  const ageH = backup.age_hours ?? 0;
-  const ageLabel =
-    ageH < 1
-      ? "just now"
-      : ageH < 24
-        ? `${Math.round(ageH)}h ago`
-        : `${Math.round(ageH / 24)}d ago`;
-
-  const styles = {
-    healthy:
-      "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-950/40 dark:text-emerald-400",
-    stale:
-      "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-950/40 dark:text-amber-400",
-    failing:
-      "bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-950/40 dark:text-rose-400",
-    unknown: "bg-zinc-100 text-zinc-700 ring-zinc-600/20",
-  } as const;
-
-  const dot = {
-    healthy: "bg-emerald-500",
-    stale: "bg-amber-500",
-    failing: "bg-rose-500",
-    unknown: "bg-zinc-400",
-  } as const;
-
-  const label = {
-    healthy: "Backed up",
-    stale: "Backup stale",
-    failing: "BACKUP FAILING",
-    unknown: "No backup",
-  } as const;
-
-  return (
-    <div
-      className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium ring-1 ring-inset ${styles[backup.status]}`}
-      title={`Last successful backup: ${new Date(backup.last_success_at).toLocaleString()}`}
-    >
-      <span className={`size-2 rounded-full ${dot[backup.status]}`} />
-      <span>{label[backup.status]}</span>
-      <span className="opacity-70">· {ageLabel}</span>
-    </div>
   );
 }

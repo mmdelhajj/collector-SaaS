@@ -163,6 +163,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                         const SizedBox(height: 16),
                         _KpiGrid(data: _data!, money: _money),
                         const SizedBox(height: 16),
+                        _NeedsAttention(data: _data!, money: _money),
+                        const SizedBox(height: 16),
                         _CollectorsToday(
                           collectors: _data!.collectorsToday,
                           money: _money,
@@ -307,6 +309,102 @@ class _KpiTile extends StatelessWidget {
             )
           else
             const SizedBox(height: 0),
+        ],
+      ),
+    );
+  }
+}
+
+/// The heart of the boss dashboard: plain-language "what needs doing now",
+/// built from numbers already loaded — no extra calls. Read-only highlight
+/// (the phone is for seeing + approving; the web admin does the actions).
+class _NeedsAttention extends StatelessWidget {
+  final _DashboardData data;
+  final String Function(num) money;
+  const _NeedsAttention({required this.data, required this.money});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    if (data.overdue30Plus > 0) {
+      rows.add(_row(
+        icon: Icons.error_outline,
+        color: Colors.red.shade600,
+        text:
+            '${data.overdue30Plus} ${data.overdue30Plus == 1 ? 'invoice' : 'invoices'} overdue 30d+ · ${money(data.overdueOutstanding)} to chase',
+      ));
+    }
+    if (data.suspendedCustomers > 0) {
+      rows.add(_row(
+        icon: Icons.block,
+        color: Colors.orange.shade700,
+        text:
+            '${data.suspendedCustomers} ${data.suspendedCustomers == 1 ? 'customer' : 'customers'} suspended',
+      ));
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(14, 12, 14, 8),
+            child: Text(
+              'Needs your attention',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ),
+          if (rows.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle,
+                      size: 18, color: Colors.green.shade600),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      "You're all caught up — nothing needs action.",
+                      style:
+                          TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            ...rows,
+        ],
+      ),
+    );
+  }
+
+  Widget _row({
+    required IconData icon,
+    required Color color,
+    required String text,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFF3F4F6))),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w500),
+            ),
+          ),
         ],
       ),
     );
