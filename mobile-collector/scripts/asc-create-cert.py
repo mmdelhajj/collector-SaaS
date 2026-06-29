@@ -45,17 +45,20 @@ def make_jwt(p8_path: str, key_id: str, issuer_id: str) -> str:
         ["openssl", "dgst", "-sha256", "-sign", p8_path, "-binary"],
         input=signing_input.encode(), capture_output=True, check=True,
     ).stdout
-    asn1 = subprocess.run(
-        ["openssl", "asn1parse", "-inform", "DER"],
-        input=der_sig, capture_output=True, check=True,
-    ).stdout.decode()
-    ints = []
-    for line in asn1.splitlines():
-        if "INTEGER" in line and ":" in line:
-            hex_str = line.split(":")[-1].strip()
-            ints.append(bytes.fromhex(hex_str.lstrip("00") or "00"))
-    r = ints[0].rjust(32, b"\x00")[-32:]
-    s = ints[1].rjust(32, b"\x00")[-32:]
+    # Parse DER ECDSA sig (SEQ{ INTEGER r, INTEGER s }) into raw r||s.
+    assert der_sig[0] == 0x30
+    i = 2
+    if der_sig[1] & 0x80:
+        i = 2 + (der_sig[1] & 0x7F)
+    assert der_sig[i] == 0x02
+    rlen = der_sig[i + 1]
+    r = der_sig[i + 2:i + 2 + rlen]
+    j = i + 2 + rlen
+    assert der_sig[j] == 0x02
+    slen = der_sig[j + 1]
+    s = der_sig[j + 2:j + 2 + slen]
+    r = r.rjust(32, b"\x00")[-32:]
+    s = s.rjust(32, b"\x00")[-32:]
     return f"{signing_input}.{b64url(r + s)}"
 
 
