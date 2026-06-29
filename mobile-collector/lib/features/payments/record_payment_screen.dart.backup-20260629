@@ -166,13 +166,14 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
     }
   }
 
-  /// Confirm a far-from-customer payment with ONE TAP on a reason chip.
-  /// Returns the chosen reason, or null if cancelled. Never blocks on typing.
+  /// Prompt the collector to confirm a far-from-customer payment with a
+  /// typed reason. Returns the trimmed reason on confirm, or null on cancel.
   Future<String?> _askForFarOverride(double meters) async {
     final t = AppLocalizations.of(context);
-    final reasons = <String>[t.reasonMoved, t.reasonGpsWeak, t.methodOther];
-    return showDialog<String>(
+    final reasonCtrl = TextEditingController();
+    final result = await showDialog<String>(
       context: context,
+      barrierDismissible: false,
       builder: (ctx) => AlertDialog(
         title: Text(t.tooFarTitle),
         content: Column(
@@ -183,19 +184,15 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
               meters.round(),
               AppConfig.paymentGeofenceMeters.round(),
             )),
-            const SizedBox(height: 16),
-            Text(t.reasonForDistance),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final r in reasons)
-                  ActionChip(
-                    label: Text(r),
-                    onPressed: () => Navigator.of(ctx).pop(r),
-                  ),
-              ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonCtrl,
+              autofocus: true,
+              maxLines: 2,
+              decoration: InputDecoration(
+                labelText: t.reasonForDistance,
+                border: const OutlineInputBorder(),
+              ),
             ),
           ],
         ),
@@ -204,9 +201,24 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(t.cancel),
           ),
+          FilledButton(
+            onPressed: () {
+              final r = reasonCtrl.text.trim();
+              if (r.length < 4) {
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  SnackBar(content: Text(t.reasonMin4)),
+                );
+                return;
+              }
+              Navigator.of(ctx).pop(r);
+            },
+            child: Text(t.confirmPayment),
+          ),
         ],
       ),
     );
+    reasonCtrl.dispose();
+    return result;
   }
 
   Future<File?> _saveSignaturePng() async {
@@ -377,109 +389,80 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
               ),
               const SizedBox(height: 12),
             ],
-            // The first payment row is always visible: big amount + method.
-            _SplitRow(
-              amountController: _splits[0].amount,
-              method: _splits[0].method,
-              showRemove: false,
-              helperText: _balanceDue != null
-                  ? '${t.balanceDue}: \$${_balanceDue!.toStringAsFixed(2)}'
-                  : null,
-              autofocus: true,
-              onMethodChanged: (v) =>
-                  setState(() => _splits[0].method = v ?? 'cash'),
-              onAmountChanged: () => setState(() {}),
-              onRemove: () {},
+            for (int i = 0; i < _splits.length; i++) ...[
+              _SplitRow(
+                amountController: _splits[i].amount,
+                method: _splits[i].method,
+                showRemove: _splits.length > 1,
+                helperText: i == 0 && _balanceDue != null
+                    ? '${t.balanceDue}: \$${_balanceDue!.toStringAsFixed(2)}'
+                    : null,
+                autofocus: i == 0,
+                onMethodChanged: (v) =>
+                    setState(() => _splits[i].method = v ?? 'cash'),
+                onAmountChanged: () => setState(() {}),
+                onRemove: () => _removeSplit(i),
+              ),
+              const SizedBox(height: 8),
+            ],
+            Row(
+              children: [
+                TextButton.icon(
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(t.addMethod),
+                  onPressed: _addSplit,
+                ),
+                const Spacer(),
+                if (_splits.length > 1)
+                  Text(
+                    '${t.totalLabel}: \$${_totalAmount.toStringAsFixed(2)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _notes,
+              decoration: InputDecoration(
+                labelText: t.notesOptional,
+                border: const OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            _ProofRow(
+              label: t.photoProof,
+              caption: _photo == null ? t.optional : t.captured,
+              icon: _photo == null ? Icons.photo_camera : Icons.check_circle,
+              iconColor: _photo == null ? null : Colors.green,
+              preview: _photo == null
+                  ? null
+                  : ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.file(
+                        _photo!,
+                        height: 56,
+                        width: 56,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+              onAction: _takePhoto,
+              onClear:
+                  _photo == null ? null : () => setState(() => _photo = null),
             ),
             const SizedBox(height: 8),
-            // Everything else is tucked away — most collections never need it.
-            Theme(
-              data: Theme.of(context)
-                  .copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                tilePadding: EdgeInsets.zero,
-                childrenPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.tune),
-                title: Text(t.moreOptions),
-                children: [
-                  for (int i = 1; i < _splits.length; i++) ...[
-                    _SplitRow(
-                      amountController: _splits[i].amount,
-                      method: _splits[i].method,
-                      showRemove: true,
-                      autofocus: false,
-                      onMethodChanged: (v) =>
-                          setState(() => _splits[i].method = v ?? 'cash'),
-                      onAmountChanged: () => setState(() {}),
-                      onRemove: () => _removeSplit(i),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        icon: const Icon(Icons.add, size: 18),
-                        label: Text(t.addMethod),
-                        onPressed: _addSplit,
-                      ),
-                      const Spacer(),
-                      if (_splits.length > 1)
-                        Text(
-                          '${t.totalLabel}: \$${_totalAmount.toStringAsFixed(2)}',
-                          style: const TextStyle(fontWeight: FontWeight.w600),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _notes,
-                    decoration: InputDecoration(
-                      labelText: t.notesOptional,
-                      border: const OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 16),
-                  _ProofRow(
-                    label: t.photoProof,
-                    caption: _photo == null ? t.optional : t.captured,
-                    icon: _photo == null
-                        ? Icons.photo_camera
-                        : Icons.check_circle,
-                    iconColor: _photo == null ? null : Colors.green,
-                    preview: _photo == null
-                        ? null
-                        : ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Image.file(
-                              _photo!,
-                              height: 56,
-                              width: 56,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                    onAction: _takePhoto,
-                    onClear: _photo == null
-                        ? null
-                        : () => setState(() => _photo = null),
-                  ),
-                  const SizedBox(height: 8),
-                  _ProofRow(
-                    label: t.signatureLabel,
-                    caption: _signatureCaptured ? t.captured : t.optional,
-                    icon:
-                        _signatureCaptured ? Icons.check_circle : Icons.draw,
-                    iconColor: _signatureCaptured ? Colors.green : null,
-                    onAction: _captureSignature,
-                    onClear: _signatureCaptured
-                        ? () {
-                            _signatureController.clear();
-                            setState(() => _signatureCaptured = false);
-                          }
-                        : null,
-                  ),
-                ],
-              ),
+            _ProofRow(
+              label: t.signatureLabel,
+              caption: _signatureCaptured ? t.captured : t.optional,
+              icon: _signatureCaptured ? Icons.check_circle : Icons.draw,
+              iconColor: _signatureCaptured ? Colors.green : null,
+              onAction: _captureSignature,
+              onClear: _signatureCaptured
+                  ? () {
+                      _signatureController.clear();
+                      setState(() => _signatureCaptured = false);
+                    }
+                  : null,
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -493,15 +476,10 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
                       ),
                     )
                   : const Icon(Icons.check),
-              label: Text(
-                _saving
-                    ? t.saving
-                    : '${t.markAsPaid}   \$${_totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
+              label: Text(_saving ? t.saving : t.markAsPaid),
               onPressed: _saving ? null : _record,
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 18),
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
             ),
             const SizedBox(height: 8),
@@ -538,82 +516,57 @@ class _SplitRow extends StatelessWidget {
   final String? helperText;
   final bool autofocus;
 
-  String _labelFor(AppLocalizations t, String m) {
-    switch (m) {
-      case 'cash':
-        return t.methodCash;
-      case 'whish':
-        return t.methodWhish;
-      case 'omt':
-        return t.methodOmt;
-      case 'bank_transfer':
-        return t.methodBankTransfer;
-      case 'card':
-        return t.methodCard;
-      default:
-        return t.methodOther;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    // Friendly: big amount + tappable method chips (no tiny dropdown).
-    const methods = <(String, IconData)>[
-      ('cash', Icons.payments),
-      ('whish', Icons.account_balance_wallet),
-      ('omt', Icons.swap_horiz),
-      ('bank_transfer', Icons.account_balance),
-      ('card', Icons.credit_card),
-      ('other', Icons.more_horiz),
-    ];
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: amountController,
-                style: const TextStyle(
-                    fontSize: 26, fontWeight: FontWeight.bold),
-                decoration: InputDecoration(
-                  labelText: t.amountUsd,
-                  border: const OutlineInputBorder(),
-                  prefixText: '\$ ',
-                  helperText: helperText,
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true, signed: false),
-                autofocus: autofocus,
-                onChanged: (_) => onAmountChanged(),
-              ),
+        Expanded(
+          flex: 3,
+          child: TextField(
+            controller: amountController,
+            decoration: InputDecoration(
+              labelText: t.amountUsd,
+              border: const OutlineInputBorder(),
+              prefixText: '\$ ',
+              helperText: helperText,
+              isDense: true,
             ),
-            if (showRemove)
-              IconButton(
-                icon: const Icon(Icons.remove_circle_outline),
-                tooltip: t.removeMethod,
-                onPressed: onRemove,
-              ),
-          ],
+            keyboardType: const TextInputType.numberWithOptions(
+                decimal: true, signed: false),
+            autofocus: autofocus,
+            onChanged: (_) => onAmountChanged(),
+          ),
         ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final (m, icon) in methods)
-              ChoiceChip(
-                label: Text(_labelFor(t, m)),
-                avatar: Icon(icon, size: 18),
-                selected: method == m,
-                onSelected: (_) => onMethodChanged(m),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              ),
-          ],
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 4,
+          child: DropdownButtonFormField<String>(
+            value: method,
+            decoration: InputDecoration(
+              labelText: t.method,
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: [
+              DropdownMenuItem(value: 'cash', child: Text(t.methodCash)),
+              DropdownMenuItem(value: 'whish', child: Text(t.methodWhish)),
+              DropdownMenuItem(value: 'omt', child: Text(t.methodOmt)),
+              DropdownMenuItem(
+                  value: 'bank_transfer', child: Text(t.methodBankTransfer)),
+              DropdownMenuItem(value: 'card', child: Text(t.methodCard)),
+              DropdownMenuItem(value: 'other', child: Text(t.methodOther)),
+            ],
+            onChanged: onMethodChanged,
+          ),
         ),
+        if (showRemove)
+          IconButton(
+            icon: const Icon(Icons.remove_circle_outline),
+            tooltip: t.removeMethod,
+            onPressed: onRemove,
+          ),
       ],
     );
   }

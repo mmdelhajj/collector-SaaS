@@ -119,5 +119,10 @@
   "printerError": "خطأ بالطابعة: {error}",
   "@printerError": {
     "placeholders": { "error": { "type": "String" } }
-  }
+  },
+  "moreOptions": "خيارات إضافية (تقسيم، ملاحظة، صورة)",
+  "collectedToday": "المحصّل اليوم",
+  "toCollect": "للتحصيل",
+  "reasonMoved": "العميل انتقل",
+  "reasonGpsWeak": "إشارة GPS ضعيفة"
 }

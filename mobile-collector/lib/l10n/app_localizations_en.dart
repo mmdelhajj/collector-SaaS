@@ -396,4 +396,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String printerError(String error) {
     return 'Printer error: $error';
   }
+
+  @override
+  String get moreOptions => 'More options (split, notes, photo)';
+
+  @override
+  String get collectedToday => 'Collected today';
+
+  @override
+  String get toCollect => 'to collect';
+
+  @override
+  String get reasonMoved => 'Customer moved';
+
+  @override
+  String get reasonGpsWeak => 'GPS weak';
 }

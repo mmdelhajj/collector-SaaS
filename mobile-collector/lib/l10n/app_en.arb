@@ -161,5 +161,10 @@
   "printerError": "Printer error: {error}",
   "@printerError": {
     "placeholders": { "error": { "type": "String" } }
-  }
+  },
+  "moreOptions": "More options (split, notes, photo)",
+  "collectedToday": "Collected today",
+  "toCollect": "to collect",
+  "reasonMoved": "Customer moved",
+  "reasonGpsWeak": "GPS weak"
 }

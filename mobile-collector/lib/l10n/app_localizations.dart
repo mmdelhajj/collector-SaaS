@@ -727,6 +727,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Printer error: {error}'**
   String printerError(String error);
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More options (split, notes, photo)'**
+  String get moreOptions;
+
+  /// No description provided for @collectedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Collected today'**
+  String get collectedToday;
+
+  /// No description provided for @toCollect.
+  ///
+  /// In en, this message translates to:
+  /// **'to collect'**
+  String get toCollect;
+
+  /// No description provided for @reasonMoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer moved'**
+  String get reasonMoved;
+
+  /// No description provided for @reasonGpsWeak.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS weak'**
+  String get reasonGpsWeak;
 }
 
 class _AppLocalizationsDelegate

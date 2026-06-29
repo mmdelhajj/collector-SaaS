@@ -409,4 +409,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String printerError(String error) {
     return 'خطأ بالطابعة: $error';
   }
+
+  @override
+  String get moreOptions => 'خيارات إضافية (تقسيم، ملاحظة، صورة)';
+
+  @override
+  String get collectedToday => 'المحصّل اليوم';
+
+  @override
+  String get toCollect => 'للتحصيل';
+
+  @override
+  String get reasonMoved => 'العميل انتقل';
+
+  @override
+  String get reasonGpsWeak => 'إشارة GPS ضعيفة';
 }
