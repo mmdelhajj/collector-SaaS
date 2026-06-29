@@ -144,6 +144,7 @@ export type TenantInfo = {
   name: string;
   plan: string;
   status: string;
+  primary_color: string | null;
   trial_ends_at: string | null;
   subscription_ends_at: string | null;
 };
