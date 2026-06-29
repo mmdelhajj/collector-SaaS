@@ -183,6 +183,7 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
       body: Column(
         children: [
           if (pending > 0) _PendingBanner(count: pending),
+          const _TodaySummaryBar(),
           _CashOnHandBar(
             onTap: () => context.push('/handover'),
           ),
@@ -276,6 +277,91 @@ class _CashOnHandBar extends ConsumerWidget {
   }
 }
 
+/// Friendly progress strip: how much collected today vs. still to collect.
+/// Computed from the cached assignment rows so it works fully offline and
+/// updates the moment a visit flips to "completed" after a payment syncs.
+class _TodaySummaryBar extends ConsumerWidget {
+  const _TodaySummaryBar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = AppLocalizations.of(context);
+    final rows = ref.watch(assignmentsStreamProvider).asData?.value;
+    if (rows == null || rows.isEmpty) return const SizedBox.shrink();
+
+    double collected = 0;
+    double toCollect = 0;
+    int done = 0;
+    int left = 0;
+    for (final a in rows) {
+      if (a.status == 'completed') {
+        collected += a.totalDue;
+        done++;
+      } else if (a.status != 'failed') {
+        toCollect += a.totalDue;
+        left++;
+      }
+    }
+    final total = done + left;
+    final progress = total == 0 ? 0.0 : done / total;
+
+    return Container(
+      width: double.infinity,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.collectedToday,
+                        style: const TextStyle(fontSize: 12)),
+                    Text(
+                      '\$${collected.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.green.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('$left ${t.toCollect}',
+                      style: const TextStyle(fontSize: 12)),
+                  Text(
+                    '\$${toCollect.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: Colors.black12,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(Colors.green.shade600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _PendingBanner extends StatelessWidget {
   const _PendingBanner({required this.count});
   final int count;
@@ -353,9 +439,12 @@ class _AssignmentTile extends StatelessWidget {
         ],
       ),
       trailing: const Icon(Icons.chevron_right),
-      onTap: () => context.push(
-        '/customer/${a.customerId}?invoice=${a.invoiceId}',
-      ),
+      // Friendly redesign: tapping a row with an open invoice goes STRAIGHT to
+      // the Collect screen — no Customer Detail interstitial (which fired 3 API
+      // calls). Only customers with no open invoice open the detail page.
+      onTap: () => a.invoiceId.isNotEmpty
+          ? context.push('/record/${a.invoiceId}/${a.customerId}')
+          : context.push('/customer/${a.customerId}'),
     );
   }
 
