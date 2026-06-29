@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,12 +12,23 @@ type CustomerFormFieldsProps = {
   fieldErrors?: Record<string, string[]>;
 };
 
+// Friendly labels so the owner doesn't see raw enum words like "prospect".
+// Unknown values fall back to a capitalised version of the raw value.
+const STATUS_LABELS: Record<string, string> = {
+  prospect: "Lead (not active yet)",
+  active: "Active",
+  suspended: "Suspended",
+  cancelled: "Cancelled",
+  canceled: "Cancelled",
+};
+
 export function CustomerFormFields({
   defaults,
   fieldErrors = {},
 }: CustomerFormFieldsProps) {
   return (
     <>
+      {/* Required essentials — for most customers this is the whole form. */}
       <div className="grid grid-cols-2 gap-3">
         <Field
           label="First name"
@@ -44,25 +56,6 @@ export function CustomerFormFields({
         errors={fieldErrors.phone_primary}
       />
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field
-          label="WhatsApp"
-          name="whatsapp_phone"
-          type="tel"
-          placeholder="+96170123456"
-          defaultValue={defaults?.whatsapp_phone ?? ""}
-          errors={fieldErrors.whatsapp_phone}
-        />
-        <Field
-          label="Email"
-          name="email"
-          type="email"
-          placeholder="customer@example.com"
-          defaultValue={defaults?.email ?? ""}
-          errors={fieldErrors.email}
-        />
-      </div>
-
       <div className="space-y-1.5">
         <Label htmlFor="status">Status</Label>
         <select
@@ -73,51 +66,84 @@ export function CustomerFormFields({
         >
           {CUSTOMER_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {STATUS_LABELS[s] ?? s.charAt(0).toUpperCase() + s.slice(1)}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field
-          label="City"
-          name="city"
-          placeholder="Beirut"
-          defaultValue={defaults?.city ?? ""}
-          errors={fieldErrors.city}
-        />
-        <Field
-          label="Address"
-          name="address_line"
-          placeholder="Hamra Street 12"
-          defaultValue={defaults?.address_line ?? ""}
-          errors={fieldErrors.address_line}
-        />
-      </div>
+      {/* Everything else is optional — collapsed so the form stays short.
+          Native <details> keeps these inputs in the DOM (still submitted)
+          even while collapsed, which matters when editing an existing
+          customer. */}
+      <details className="group rounded-lg border bg-muted/20 [&_summary]:list-none">
+        <summary className="flex cursor-pointer items-center justify-between gap-2 px-4 py-3 text-sm font-medium">
+          More details (contact, address, map, notes)
+          <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="space-y-4 px-4 pb-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label="WhatsApp"
+              name="whatsapp_phone"
+              type="tel"
+              placeholder="+96170123456"
+              defaultValue={defaults?.whatsapp_phone ?? ""}
+              errors={fieldErrors.whatsapp_phone}
+            />
+            <Field
+              label="Email"
+              name="email"
+              type="email"
+              placeholder="customer@example.com"
+              defaultValue={defaults?.email ?? ""}
+              errors={fieldErrors.email}
+            />
+          </div>
 
-      <CustomerLocationPicker
-        defaultLat={defaults?.latitude ?? null}
-        defaultLng={defaults?.longitude ?? null}
-        errors={{
-          latitude: fieldErrors.latitude,
-          longitude: fieldErrors.longitude,
-        }}
-      />
+          <div className="grid grid-cols-2 gap-3">
+            <Field
+              label="City"
+              name="city"
+              placeholder="Beirut"
+              defaultValue={defaults?.city ?? ""}
+              errors={fieldErrors.city}
+            />
+            <Field
+              label="Address"
+              name="address_line"
+              placeholder="Hamra Street 12"
+              defaultValue={defaults?.address_line ?? ""}
+              errors={fieldErrors.address_line}
+            />
+          </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea
-          id="notes"
-          name="notes"
-          rows={3}
-          placeholder="Optional internal notes…"
-          defaultValue={(defaults as { notes?: string | null })?.notes ?? ""}
-        />
-        {fieldErrors.notes?.[0] && (
-          <p className="text-xs text-destructive">{fieldErrors.notes[0]}</p>
-        )}
-      </div>
+          <CustomerLocationPicker
+            defaultLat={defaults?.latitude ?? null}
+            defaultLng={defaults?.longitude ?? null}
+            errors={{
+              latitude: fieldErrors.latitude,
+              longitude: fieldErrors.longitude,
+            }}
+          />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              name="notes"
+              rows={3}
+              placeholder="Optional internal notes…"
+              defaultValue={
+                (defaults as { notes?: string | null })?.notes ?? ""
+              }
+            />
+            {fieldErrors.notes?.[0] && (
+              <p className="text-xs text-destructive">{fieldErrors.notes[0]}</p>
+            )}
+          </div>
+        </div>
+      </details>
     </>
   );
 }

@@ -6,7 +6,6 @@ import {
   Wallet,
   Banknote,
   MapPin,
-  Radar,
   Radio,
   MessageSquare,
   Route,
@@ -67,7 +66,7 @@ export const navigation: NavSection[] = [
     ],
   },
   {
-    titleKey: "nav.operations",
+    titleKey: "nav.dailyWork",
     items: [
       {
         labelKey: "nav.customers",
@@ -76,40 +75,12 @@ export const navigation: NavSection[] = [
         roles: ALL_ADMIN,
       },
       {
-        labelKey: "nav.packages",
-        href: "/packages",
-        icon: Package,
-        roles: PRIVILEGED,
-      },
-      {
-        labelKey: "nav.invoices",
-        href: "/invoices",
-        icon: FileText,
-        roles: FINANCE,
-      },
-      {
-        labelKey: "nav.payments",
-        href: "/payments",
-        icon: Wallet,
-        roles: FINANCE,
-      },
-      {
+        // Collectors + live map are one screen now (Map/List toggle inside),
+        // so there is a single sidebar entry instead of two.
         labelKey: "nav.collectors",
         href: "/collectors",
         icon: MapPin,
         roles: PRIVILEGED,
-      },
-      {
-        labelKey: "nav.collectorsLive",
-        href: "/collectors/live",
-        icon: Radar,
-        roles: PRIVILEGED,
-      },
-      {
-        labelKey: "nav.cashHandovers",
-        href: "/cash-handovers",
-        icon: Banknote,
-        roles: FINANCE,
       },
       {
         labelKey: "nav.tickets",
@@ -123,17 +94,6 @@ export const navigation: NavSection[] = [
           "technician",
         ],
       },
-    ],
-  },
-  {
-    titleKey: "nav.network",
-    items: [
-      {
-        labelKey: "nav.radius",
-        href: "/radius",
-        icon: Radio,
-        roles: ["tenant_owner", "tenant_admin", "manager"],
-      },
       {
         labelKey: "nav.messages",
         href: "/messages",
@@ -143,13 +103,48 @@ export const navigation: NavSection[] = [
     ],
   },
   {
-    titleKey: "nav.insights",
+    titleKey: "nav.money",
     items: [
+      {
+        labelKey: "nav.invoices",
+        href: "/invoices",
+        icon: FileText,
+        roles: FINANCE,
+      },
+      {
+        labelKey: "nav.payments",
+        href: "/payments",
+        icon: Wallet,
+        roles: FINANCE,
+      },
+      {
+        labelKey: "nav.cashHandovers",
+        href: "/cash-handovers",
+        icon: Banknote,
+        roles: FINANCE,
+      },
       {
         labelKey: "nav.reports",
         href: "/reports",
         icon: BarChart3,
         roles: FINANCE,
+      },
+    ],
+  },
+  {
+    titleKey: "nav.setup",
+    items: [
+      {
+        labelKey: "nav.packages",
+        href: "/packages",
+        icon: Package,
+        roles: PRIVILEGED,
+      },
+      {
+        labelKey: "nav.radius",
+        href: "/radius",
+        icon: Radio,
+        roles: ["tenant_owner", "tenant_admin", "manager"],
       },
       {
         labelKey: "nav.settings",
