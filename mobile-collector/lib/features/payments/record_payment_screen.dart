@@ -476,10 +476,15 @@ class _RecordPaymentScreenState extends ConsumerState<RecordPaymentScreen> {
                       ),
                     )
                   : const Icon(Icons.check),
-              label: Text(_saving ? t.saving : t.markAsPaid),
+              label: Text(
+                _saving
+                    ? t.saving
+                    : '${t.markAsPaid}   \$${_totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
               onPressed: _saving ? null : _record,
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: const EdgeInsets.symmetric(vertical: 18),
               ),
             ),
             const SizedBox(height: 8),
@@ -516,57 +521,82 @@ class _SplitRow extends StatelessWidget {
   final String? helperText;
   final bool autofocus;
 
+  String _labelFor(AppLocalizations t, String m) {
+    switch (m) {
+      case 'cash':
+        return t.methodCash;
+      case 'whish':
+        return t.methodWhish;
+      case 'omt':
+        return t.methodOmt;
+      case 'bank_transfer':
+        return t.methodBankTransfer;
+      case 'card':
+        return t.methodCard;
+      default:
+        return t.methodOther;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    return Row(
+    // Friendly: big amount + tappable method chips (no tiny dropdown).
+    const methods = <(String, IconData)>[
+      ('cash', Icons.payments),
+      ('whish', Icons.account_balance_wallet),
+      ('omt', Icons.swap_horiz),
+      ('bank_transfer', Icons.account_balance),
+      ('card', Icons.credit_card),
+      ('other', Icons.more_horiz),
+    ];
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          flex: 3,
-          child: TextField(
-            controller: amountController,
-            decoration: InputDecoration(
-              labelText: t.amountUsd,
-              border: const OutlineInputBorder(),
-              prefixText: '\$ ',
-              helperText: helperText,
-              isDense: true,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextField(
+                controller: amountController,
+                style: const TextStyle(
+                    fontSize: 26, fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  labelText: t.amountUsd,
+                  border: const OutlineInputBorder(),
+                  prefixText: '\$ ',
+                  helperText: helperText,
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true, signed: false),
+                autofocus: autofocus,
+                onChanged: (_) => onAmountChanged(),
+              ),
             ),
-            keyboardType: const TextInputType.numberWithOptions(
-                decimal: true, signed: false),
-            autofocus: autofocus,
-            onChanged: (_) => onAmountChanged(),
-          ),
+            if (showRemove)
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline),
+                tooltip: t.removeMethod,
+                onPressed: onRemove,
+              ),
+          ],
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          flex: 4,
-          child: DropdownButtonFormField<String>(
-            value: method,
-            decoration: InputDecoration(
-              labelText: t.method,
-              border: const OutlineInputBorder(),
-              isDense: true,
-            ),
-            items: [
-              DropdownMenuItem(value: 'cash', child: Text(t.methodCash)),
-              DropdownMenuItem(value: 'whish', child: Text(t.methodWhish)),
-              DropdownMenuItem(value: 'omt', child: Text(t.methodOmt)),
-              DropdownMenuItem(
-                  value: 'bank_transfer', child: Text(t.methodBankTransfer)),
-              DropdownMenuItem(value: 'card', child: Text(t.methodCard)),
-              DropdownMenuItem(value: 'other', child: Text(t.methodOther)),
-            ],
-            onChanged: onMethodChanged,
-          ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final (m, icon) in methods)
+              ChoiceChip(
+                label: Text(_labelFor(t, m)),
+                avatar: Icon(icon, size: 18),
+                selected: method == m,
+                onSelected: (_) => onMethodChanged(m),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              ),
+          ],
         ),
-        if (showRemove)
-          IconButton(
-            icon: const Icon(Icons.remove_circle_outline),
-            tooltip: t.removeMethod,
-            onPressed: onRemove,
-          ),
       ],
     );
   }
