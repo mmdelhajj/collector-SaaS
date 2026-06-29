@@ -424,4 +424,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reasonGpsWeak => 'إشارة GPS ضعيفة';
+
+  @override
+  String get selectSupervisor => 'يرجى اختيار الشخص الذي سلّمته النقد.';
+
+  @override
+  String get handCashToRequired => 'تسليم النقد إلى';
+
+  @override
+  String get differenceReasonOptional => 'سبب الفرق (اختياري)';
+
+  @override
+  String get reasonShortPaid => 'العميل دفع أقل';
+
+  @override
+  String get reasonCountError => 'خطأ في العدّ';
+
+  @override
+  String get reasonExpense => 'صُرف على مصروف';
 }

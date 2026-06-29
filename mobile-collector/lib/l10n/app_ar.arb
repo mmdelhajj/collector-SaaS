@@ -124,5 +124,11 @@
   "collectedToday": "المحصّل اليوم",
   "toCollect": "للتحصيل",
   "reasonMoved": "العميل انتقل",
-  "reasonGpsWeak": "إشارة GPS ضعيفة"
+  "reasonGpsWeak": "إشارة GPS ضعيفة",
+  "selectSupervisor": "يرجى اختيار الشخص الذي سلّمته النقد.",
+  "handCashToRequired": "تسليم النقد إلى",
+  "differenceReasonOptional": "سبب الفرق (اختياري)",
+  "reasonShortPaid": "العميل دفع أقل",
+  "reasonCountError": "خطأ في العدّ",
+  "reasonExpense": "صُرف على مصروف"
 }

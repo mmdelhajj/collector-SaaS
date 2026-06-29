@@ -166,5 +166,11 @@
   "collectedToday": "Collected today",
   "toCollect": "to collect",
   "reasonMoved": "Customer moved",
-  "reasonGpsWeak": "GPS weak"
+  "reasonGpsWeak": "GPS weak",
+  "selectSupervisor": "Please choose who you handed the cash to.",
+  "handCashToRequired": "Hand cash to",
+  "differenceReasonOptional": "Reason for the difference (optional)",
+  "reasonShortPaid": "Customer paid less",
+  "reasonCountError": "Counting error",
+  "reasonExpense": "Used for an expense"
 }

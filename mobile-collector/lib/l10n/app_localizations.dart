@@ -757,6 +757,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'GPS weak'**
   String get reasonGpsWeak;
+
+  /// No description provided for @selectSupervisor.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose who you handed the cash to.'**
+  String get selectSupervisor;
+
+  /// No description provided for @handCashToRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Hand cash to'**
+  String get handCashToRequired;
+
+  /// No description provided for @differenceReasonOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for the difference (optional)'**
+  String get differenceReasonOptional;
+
+  /// No description provided for @reasonShortPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Customer paid less'**
+  String get reasonShortPaid;
+
+  /// No description provided for @reasonCountError.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting error'**
+  String get reasonCountError;
+
+  /// No description provided for @reasonExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for an expense'**
+  String get reasonExpense;
 }
 
 class _AppLocalizationsDelegate

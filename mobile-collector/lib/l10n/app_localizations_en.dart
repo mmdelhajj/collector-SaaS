@@ -411,4 +411,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reasonGpsWeak => 'GPS weak';
+
+  @override
+  String get selectSupervisor => 'Please choose who you handed the cash to.';
+
+  @override
+  String get handCashToRequired => 'Hand cash to';
+
+  @override
+  String get differenceReasonOptional => 'Reason for the difference (optional)';
+
+  @override
+  String get reasonShortPaid => 'Customer paid less';
+
+  @override
+  String get reasonCountError => 'Counting error';
+
+  @override
+  String get reasonExpense => 'Used for an expense';
 }

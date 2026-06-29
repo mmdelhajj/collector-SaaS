@@ -167,13 +167,21 @@ class _HandoverScreenState extends ConsumerState<HandoverScreen> {
       if (amount == null || amount <= 0) {
         throw Exception(t.enterCountedAmount);
       }
-      // Soft mismatch check — let collector continue, but force a notes
-      // entry explaining the gap so the supervisor sees it instantly.
-      final mismatch = (amount - pending.expectedAmount).abs();
-      if (mismatch > 0.01 && _notesCtrl.text.trim().isEmpty) {
-        throw Exception(
-          t.explainDifference('\$${mismatch.toStringAsFixed(2)}'),
-        );
+      // Accountability: never an anonymous cash drop. This is the only
+      // hard requirement — a collector must say who received the money.
+      if (_supervisorId == null) {
+        throw Exception(t.selectSupervisor);
+      }
+      // Soft mismatch: NEVER block a short/over collector (they may genuinely
+      // be short). Auto-flag the gap in the notes so the supervisor sees it
+      // instantly, then submit either way.
+      var notes = _notesCtrl.text.trim();
+      final diff = amount - pending.expectedAmount;
+      if (diff.abs() > 0.01) {
+        final flag = diff < 0
+            ? '[SHORT \$${(-diff).toStringAsFixed(2)}]'
+            : '[OVER \$${diff.toStringAsFixed(2)}]';
+        notes = notes.isEmpty ? flag : '$flag $notes';
       }
 
       final sigFile = await _saveSignaturePng();
@@ -182,7 +190,7 @@ class _HandoverScreenState extends ConsumerState<HandoverScreen> {
         'amount': amount.toString(),
         'currency': 'USD',
         if (_supervisorId != null) 'to_user_id': _supervisorId.toString(),
-        if (_notesCtrl.text.trim().isNotEmpty) 'notes': _notesCtrl.text.trim(),
+        if (notes.isNotEmpty) 'notes': notes,
         if (_photo != null) 'photo': await MultipartFile.fromFile(_photo!.path),
         if (sigFile != null)
           'signature': await MultipartFile.fromFile(sigFile.path),
@@ -319,26 +327,47 @@ class _HandoverScreenState extends ConsumerState<HandoverScreen> {
                   data: (sups) => DropdownButtonFormField<int?>(
                     value: _supervisorId,
                     decoration: InputDecoration(
-                      labelText: t.handCashTo,
+                      labelText: t.handCashToRequired,
                       border: const OutlineInputBorder(),
                     ),
-                    items: [
-                      DropdownMenuItem<int?>(
-                          value: null, child: Text(t.notSpecified)),
-                      ...sups.map((s) => DropdownMenuItem<int?>(
-                            value: s.id,
-                            child: Text(s.name),
-                          )),
-                    ],
+                    hint: Text(t.notSpecified),
+                    items: sups
+                        .map((s) => DropdownMenuItem<int?>(
+                              value: s.id,
+                              child: Text(s.name),
+                            ))
+                        .toList(),
                     onChanged: (v) => setState(() => _supervisorId = v),
                   ),
                 ),
                 const SizedBox(height: 12),
+                // Mismatch never blocks — offer one-tap reasons, all optional.
+                if (mismatch) ...[
+                  Text(t.differenceReasonOptional,
+                      style: const TextStyle(fontSize: 13)),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      for (final r in [
+                        t.reasonShortPaid,
+                        t.reasonCountError,
+                        t.reasonExpense,
+                      ])
+                        ActionChip(
+                          label: Text(r),
+                          onPressed: () =>
+                              setState(() => _notesCtrl.text = r),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 TextField(
                   controller: _notesCtrl,
                   decoration: InputDecoration(
                     labelText: mismatch
-                        ? t.notesRequiredForDiff
+                        ? t.differenceReasonOptional
                         : t.notesOptional,
                     border: const OutlineInputBorder(),
                   ),
