@@ -130,5 +130,15 @@
   "differenceReasonOptional": "سبب الفرق (اختياري)",
   "reasonShortPaid": "العميل دفع أقل",
   "reasonCountError": "خطأ في العدّ",
-  "reasonExpense": "صُرف على مصروف"
+  "reasonExpense": "صُرف على مصروف",
+  "printerSettings": "الطابعة",
+  "searchPrinters": "البحث عن الطابعات",
+  "foundPrinters": "الطابعات المقترنة",
+  "defaultPrinter": "الطابعة الافتراضية",
+  "noPrinterSelected": "لم يتم اختيار طابعة بعد",
+  "useThisPrinter": "استخدام هذه الطابعة",
+  "testPrint": "طباعة تجريبية",
+  "testPrintSent": "تم إرسال الطباعة التجريبية إلى الطابعة.",
+  "printerSaved": "تم الحفظ كطابعة افتراضية.",
+  "enableBluetoothHint": "شغّل البلوتوث وقم بإقران الطابعة من إعدادات البلوتوث في الهاتف، ثم ابحث مجدداً."
 }

@@ -11,6 +11,7 @@ import '../features/cash_handover/handover_screen.dart';
 import '../features/customer/customer_home_screen.dart';
 import '../features/customers/customer_detail_screen.dart';
 import '../features/payments/record_payment_screen.dart';
+import '../features/printer/printer_settings_screen.dart';
 import '../features/role_home_redirect.dart';
 import '../features/technician/technician_ticket_detail_screen.dart';
 import '../features/technician/technician_tickets_screen.dart';
@@ -66,6 +67,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/handover',
         builder: (_, __) => const HandoverScreen(),
+      ),
+      GoRoute(
+        path: '/printer-settings',
+        builder: (_, __) => const PrinterSettingsScreen(),
       ),
       GoRoute(
         path: '/record/:invoiceId/:customerId',

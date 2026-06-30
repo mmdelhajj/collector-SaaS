@@ -793,6 +793,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Used for an expense'**
   String get reasonExpense;
+
+  /// No description provided for @printerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Printer'**
+  String get printerSettings;
+
+  /// No description provided for @searchPrinters.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for printers'**
+  String get searchPrinters;
+
+  /// No description provided for @foundPrinters.
+  ///
+  /// In en, this message translates to:
+  /// **'Paired printers'**
+  String get foundPrinters;
+
+  /// No description provided for @defaultPrinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Default printer'**
+  String get defaultPrinter;
+
+  /// No description provided for @noPrinterSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No printer selected yet'**
+  String get noPrinterSelected;
+
+  /// No description provided for @useThisPrinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this printer'**
+  String get useThisPrinter;
+
+  /// No description provided for @testPrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Test print'**
+  String get testPrint;
+
+  /// No description provided for @testPrintSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Test sent to the printer.'**
+  String get testPrintSent;
+
+  /// No description provided for @printerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved as your default printer.'**
+  String get printerSaved;
+
+  /// No description provided for @enableBluetoothHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn Bluetooth on and pair your printer in the phone\'s Bluetooth settings, then search again.'**
+  String get enableBluetoothHint;
 }
 
 class _AppLocalizationsDelegate

@@ -1,8 +1,11 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:isp_collector/l10n/app_localizations.dart';
 import 'package:print_bluetooth_thermal/print_bluetooth_thermal.dart';
 import 'package:share_plus/share_plus.dart';
+
+import '../../core/printer_storage.dart';
 
 /// Snapshot of a payment for receipt rendering. Either freshly recorded
 /// (from RecordPaymentScreen) or pulled from the server payment history
@@ -98,6 +101,26 @@ Future<List<int>> _buildEscPosBytes(BuildContext ctx, ReceiptData r) async {
   return out;
 }
 
+Future<BluetoothInfo?> _pickPrinter(
+  BuildContext ctx,
+  List<BluetoothInfo> paired,
+  AppLocalizations t,
+) {
+  return showDialog<BluetoothInfo>(
+    context: ctx,
+    builder: (dialogCtx) => SimpleDialog(
+      title: Text(t.selectPrinter),
+      children: [
+        for (final dev in paired)
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(dialogCtx, dev),
+            child: Text('${dev.name}\n${dev.macAdress}'),
+          ),
+      ],
+    ),
+  );
+}
+
 Future<void> _printReceipt(BuildContext ctx, ReceiptData r) async {
   final t = AppLocalizations.of(ctx);
   final messenger = ScaffoldMessenger.of(ctx);
@@ -107,25 +130,23 @@ Future<void> _printReceipt(BuildContext ctx, ReceiptData r) async {
       messenger.showSnackBar(SnackBar(content: Text(t.noPrintersFound)));
       return;
     }
+    // Prefer the collector's saved default printer (set on the Printer
+    // screen) so this is one tap. Fall back to picking when none is saved.
+    final saved = await PrinterStorage(const FlutterSecureStorage()).get();
     BluetoothInfo? target;
-    if (paired.length == 1) {
-      target = paired.first;
-    } else {
-      target = await showDialog<BluetoothInfo>(
-        context: ctx,
-        builder: (dialogCtx) => SimpleDialog(
-          title: Text(t.selectPrinter),
-          children: [
-            for (final dev in paired)
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(dialogCtx, dev),
-                child: Text('${dev.name}\n${dev.macAdress}'),
-              ),
-          ],
-        ),
-      );
-      if (target == null) return;
+    if (saved != null) {
+      for (final dev in paired) {
+        if (dev.macAdress == saved.mac) {
+          target = dev;
+          break;
+        }
+      }
     }
+    target ??= paired.length == 1
+        ? paired.first
+        : await _pickPrinter(ctx, paired, t);
+    if (target == null) return;
+
     messenger.showSnackBar(SnackBar(content: Text(t.printing)));
     final connected = await PrintBluetoothThermal.connect(
       macPrinterAddress: target.macAdress,

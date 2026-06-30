@@ -442,4 +442,35 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reasonExpense => 'صُرف على مصروف';
+
+  @override
+  String get printerSettings => 'الطابعة';
+
+  @override
+  String get searchPrinters => 'البحث عن الطابعات';
+
+  @override
+  String get foundPrinters => 'الطابعات المقترنة';
+
+  @override
+  String get defaultPrinter => 'الطابعة الافتراضية';
+
+  @override
+  String get noPrinterSelected => 'لم يتم اختيار طابعة بعد';
+
+  @override
+  String get useThisPrinter => 'استخدام هذه الطابعة';
+
+  @override
+  String get testPrint => 'طباعة تجريبية';
+
+  @override
+  String get testPrintSent => 'تم إرسال الطباعة التجريبية إلى الطابعة.';
+
+  @override
+  String get printerSaved => 'تم الحفظ كطابعة افتراضية.';
+
+  @override
+  String get enableBluetoothHint =>
+      'شغّل البلوتوث وقم بإقران الطابعة من إعدادات البلوتوث في الهاتف، ثم ابحث مجدداً.';
 }

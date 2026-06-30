@@ -429,4 +429,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reasonExpense => 'Used for an expense';
+
+  @override
+  String get printerSettings => 'Printer';
+
+  @override
+  String get searchPrinters => 'Search for printers';
+
+  @override
+  String get foundPrinters => 'Paired printers';
+
+  @override
+  String get defaultPrinter => 'Default printer';
+
+  @override
+  String get noPrinterSelected => 'No printer selected yet';
+
+  @override
+  String get useThisPrinter => 'Use this printer';
+
+  @override
+  String get testPrint => 'Test print';
+
+  @override
+  String get testPrintSent => 'Test sent to the printer.';
+
+  @override
+  String get printerSaved => 'Saved as your default printer.';
+
+  @override
+  String get enableBluetoothHint =>
+      'Turn Bluetooth on and pair your printer in the phone\'s Bluetooth settings, then search again.';
 }

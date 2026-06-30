@@ -172,5 +172,15 @@
   "differenceReasonOptional": "Reason for the difference (optional)",
   "reasonShortPaid": "Customer paid less",
   "reasonCountError": "Counting error",
-  "reasonExpense": "Used for an expense"
+  "reasonExpense": "Used for an expense",
+  "printerSettings": "Printer",
+  "searchPrinters": "Search for printers",
+  "foundPrinters": "Paired printers",
+  "defaultPrinter": "Default printer",
+  "noPrinterSelected": "No printer selected yet",
+  "useThisPrinter": "Use this printer",
+  "testPrint": "Test print",
+  "testPrintSent": "Test sent to the printer.",
+  "printerSaved": "Saved as your default printer.",
+  "enableBluetoothHint": "Turn Bluetooth on and pair your printer in the phone's Bluetooth settings, then search again."
 }

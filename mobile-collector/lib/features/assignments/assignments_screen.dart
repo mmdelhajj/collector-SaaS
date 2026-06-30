@@ -118,6 +118,11 @@ class _AssignmentsScreenState extends ConsumerState<AssignmentsScreen> {
             onPressed: () => context.push('/handover'),
           ),
           IconButton(
+            tooltip: t.printerSettings,
+            icon: const Icon(Icons.print),
+            onPressed: () => context.push('/printer-settings'),
+          ),
+          IconButton(
             tooltip: t.syncNow,
             icon: _syncing
                 ? const SizedBox(
